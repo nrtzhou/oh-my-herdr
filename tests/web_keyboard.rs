@@ -56,7 +56,7 @@ fn the_box_stays_whole_above_the_keyboard_and_the_strip_ios_floats_over_it_and_t
     assert!(ROOM.contains("if (box.selectionEnd >= box.value.length) { box.scrollTop = box.scrollHeight; return; }"));
     // measured again as the keyboard comes and goes, the web UI marks the page, and what stands over the box changes
     for on in [r#"vv?.addEventListener("resize", soon)"#, r#"vv?.addEventListener("scroll", soon)"#, r#"attributeFilter: ["data-keyboard", "style"]"#, "sizes?.observe(chat);", "sizes?.observe(composer);"] { assert!(ROOM.contains(on), "{on}"); }
-    assert!(DOC.contains("## Above a phone's keyboard"));
+    assert!(DOC.contains("## 手机键盘弹出时"));
 }
 
 #[test]

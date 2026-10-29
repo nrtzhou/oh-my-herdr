@@ -22,7 +22,7 @@ fn the_mic_is_the_web_uis_tapped_held_or_its_shortcut_with_its_pill_and_escape_t
     for part in [r#""aria-label": "Cancel dictation""#, r#""aria-label": "Insert dictation""#, r#""Transcribing…" : next === "starting" ? "Ready…""#, r#""No microphone input""#] { assert!(VOICE.contains(part), "{part}"); }
     assert!(CSS.contains(".sw-voice-pill.is-open { opacity: 1;") && CSS.contains(r#".sw-mic[aria-pressed="true"] { background: var(--accent,"#) && CSS.contains(".sw-voice[hidden] { display: none; }"));
     assert!(START.contains(r#""voice""#) && sw::webui::page::file("voice.js").is_some() && sw::webui::page::file("voice.css").is_some());
-    assert!(DOC.contains("**Dictation**") && !DOC.contains("- **Dictation** (the mic)."), "the page says the box dictates, and no longer that it does not");
+    assert!(DOC.contains("**听写**") && !DOC.contains("- **Dictation** (the mic)."), "the page says the box dictates, and no longer that it does not");
 }
 
 #[test]

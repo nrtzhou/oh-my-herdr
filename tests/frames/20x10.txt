@@ -1,5 +1,5 @@
 == the list
- omh
+ omh  proj
  All 18  tab next
 ▌ ◐ Max length for
 ▌   task titles
@@ -10,7 +10,7 @@
 ────────────────────
   alt+o open its ag…
 == the task beside it
- omh
+ omh  proj
 ▌ ◐ Max length for
 ▌   task titles
 ▌   Found the cause;
@@ -43,7 +43,7 @@
 ────────────────────
   ↑↓ pick a key
 == a draft
- omh
+ omh  proj
  All 18  tab next
 ▌ ◐ Max length for
 ▌   task titles
