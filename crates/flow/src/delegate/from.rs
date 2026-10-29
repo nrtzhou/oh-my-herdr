@@ -17,7 +17,7 @@ use std::process::{Command, Stdio};
 const FETCH_MS: u64 = 10000;
 fn quiet_git(root: &Path, args: &[&str]) -> Command {
     let mut c = Command::new("git");
-    c.args(args).current_dir(root).env("GIT_TERMINAL_PROMPT", "0").env("GIT_SSH_COMMAND", "ssh -oBatchMode=yes").stdin(Stdio::null());
+    c.args(args).current_dir(root).env("GIT_TERMINAL_PROMPT", "0").env("GIT_SSH_COMMAND", "ssh -oBatchMode=yes").env("LC_ALL", "C").env("LANGUAGE", "C").stdin(Stdio::null());
     c
 }
 /// `main`: the remote's default branch, fetched first if the repo has not been fetched in a day (5 seconds at most).

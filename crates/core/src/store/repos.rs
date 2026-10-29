@@ -9,7 +9,8 @@ use std::process::{Command, Stdio};
 // ---- git plumbing -----------------------------------------------------------------------------------------------------
 /// `git <args>` in a folder: its output, trimmed, or the error it said.
 pub fn git_out(cwd: &Path, args: &[&str]) -> Res<String> {
-    let out = Command::new("git").args(args).current_dir(cwd).stdin(Stdio::null()).output()?;
+    // git's words stay English on any machine: the board reads them (finish/commit.rs `index_lock`) and the tests hold them.
+    let out = Command::new("git").args(args).current_dir(cwd).stdin(Stdio::null()).env("LC_ALL", "C").env("LANGUAGE", "C").output()?;
     if !out.status.success() {
         let err = String::from_utf8_lossy(&out.stderr).trim().to_string();
         return Err(crate::err::Error::new(if err.is_empty() { format!("git {} failed", args.join(" ")) } else { err }));
@@ -151,7 +152,7 @@ pub fn folder_for(reference: &str, fallback: &Path) -> Res<PathBuf> {
 /// `git <args>` with its status, output and error output, whatever it ended with; never asks for a password. Stopped
 /// at `timeout_ms`, it says so in git's own name (`git push did not end within 2m`), never as herdr's.
 pub fn git_full(cwd: &Path, args: &[&str], timeout_ms: u64) -> (i32, String, String) {
-    let child = Command::new("git").args(args).current_dir(cwd).env("GIT_TERMINAL_PROMPT", "0").stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn();
+    let child = Command::new("git").args(args).current_dir(cwd).env("GIT_TERMINAL_PROMPT", "0").env("LC_ALL", "C").env("LANGUAGE", "C").stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn();
     let late = |e: crate::herdr::cli::HerdrError| if e.code == "timeout" { stopped(&format!("git {}", args.first().unwrap_or(&"")), timeout_ms) } else { e.message };
     match child.map_err(|e| e.to_string()).and_then(|c| crate::herdr::cli::wait_with_timeout(c, timeout_ms).map_err(late)) {
         Ok(r) => (r.status, r.stdout, r.stderr),

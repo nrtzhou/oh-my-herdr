@@ -38,7 +38,7 @@ pub fn pr_number(pr: &str) -> String { pr.split("/pull/").nth(1).map(|r| r.chars
 pub const CHECK_BAD: [&str; 7] = ["FAILURE", "ERROR", "TIMED_OUT", "CANCELLED", "ACTION_REQUIRED", "STARTUP_FAILURE", "STALE"];
 pub const CHECK_GOOD: [&str; 3] = ["SUCCESS", "NEUTRAL", "SKIPPED"];
 fn git_quiet(root: &Path, args: &[&str]) -> Res<String> {
-    let out = Command::new("git").args(args).current_dir(root).env("GIT_TERMINAL_PROMPT", "0").stdin(Stdio::null()).output()?;
+    let out = Command::new("git").args(args).current_dir(root).env("GIT_TERMINAL_PROMPT", "0").env("LC_ALL", "C").env("LANGUAGE", "C").stdin(Stdio::null()).output()?;
     if !out.status.success() { crate::fail!("{}", String::from_utf8_lossy(&out.stderr).trim()); }
     Ok(String::from_utf8_lossy(&out.stdout).trim().to_string())
 }
