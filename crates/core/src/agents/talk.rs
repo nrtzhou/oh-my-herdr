@@ -122,7 +122,27 @@ fn pi_talk(rows: &[Value]) -> Vec<Said> {
     }
     out
 }
-fn reader(kind: &str) -> Option<fn(&[Value]) -> Vec<Said>> { match kind { "claude" => Some(claude_talk), "codex" => Some(codex_talk), "pi" => Some(pi_talk), _ => None } }
+/// omp. Its model and thinking level are set at the start of a session; a change of one after that was asked for.
+fn omp_talk(rows: &[Value]) -> Vec<Said> {
+    let mut out = vec![];
+    let (mut model, mut level) = (String::new(), String::new());
+    for e in rows {
+        let (m, at) = (e.at("message"), when(e.at("timestamp")));
+        if e.s("type") == "message" && (m.s("role") == "user" || m.s("role") == "assistant") {
+            add(&mut out, m.s("role") == "user", &text_of(m.at("content"), &["text"]), at);
+            if m.s("role") == "assistant" && m.s("stopReason") == "aborted" { add(&mut out, false, STOPPED, at); }
+        } else if e.s("type") == "compaction" { add(&mut out, false, cmd::COMPACTED, at); }
+        else if e.s("type") == "model_change" && e.t("model") != model {
+            if !out.is_empty() && !model.is_empty() { add(&mut out, false, &format!("Model switched to {}.", e.t("model")), at); }
+            model = e.t("model");
+        } else if e.s("type") == "thinking_level_change" && e.t("thinkingLevel") != level {
+            if !out.is_empty() && !level.is_empty() { add(&mut out, false, &format!("Thinking level set to {}.", e.t("thinkingLevel")), at); }
+            level = e.t("thinkingLevel");
+        }
+    }
+    out
+}
+fn reader(kind: &str) -> Option<fn(&[Value]) -> Vec<Said>> { match kind { "claude" => Some(claude_talk), "codex" => Some(codex_talk), "pi" => Some(pi_talk), "omp" => Some(omp_talk), _ => None } }
 pub fn can_read_talk(kind: &str) -> bool { reader(kind).is_some() }
 
 // Read again only when the file changed, and a conversation's file is looked for once: the board asks on every beat.

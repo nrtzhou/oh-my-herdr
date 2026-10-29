@@ -57,7 +57,7 @@ pub fn listed(k: &str, fresh: bool) -> Listing {
     let age = now() - had.i("at");
     if had.at("taken").is_array() && age < KEPT && !(fresh && age >= 60_000) { return kept(had); }
     // The tests never run a real program: they write models.json themselves.
-    if crate::util::env_set("HERDR_PROJECTS_NO_MODEL_LIST") { return kept(had); }
+    if crate::util::env_set("OMH_NO_MODEL_LIST") { return kept(had); }
     // Its app-server first: the names of the account it is signed in with. Its list command when that cannot be asked.
     let served = if a.models.server.is_empty() { Err(String::new()) } else { super::server::ask(program(k), a.models.server) };
     let names = match served {
@@ -107,6 +107,10 @@ pub fn read(how: Read, out: &str) -> Names {
         }
         Read::Dashed => for l in out.lines() { if let Some((name, _)) = l.split_once(" - ") { if one_word(name.trim()) { add(name.trim(), true, &mut n); } } },
         Read::Lines => for l in out.lines().map(str::trim) { if one_word(l) && !l.starts_with('[') { add(l, true, &mut n); } },
+        Read::Selectors => {
+            let v: Value = serde_json::from_str(out).unwrap_or(Value::Null);
+            for m in v.arr("models") { if one_word(m.s("selector")) { add(m.s("selector"), true, &mut n); } if one_word(m.s("id")) { add(m.s("id"), false, &mut n); } }
+        }
     }
     n
 }

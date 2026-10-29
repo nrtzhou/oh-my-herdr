@@ -66,7 +66,20 @@ pub fn pi_tokens(file: &Path, state: &Value) -> std::io::Result<Value> {
     }
     Ok(json!({ "at": at, "n": n }))
 }
+/// omp writes each reply with its own use, and its side calls (a title, a judge) as `model_usage` entries: the same
+/// use, of a request the conversation paid for too.
+pub fn omp_tokens(file: &Path, state: &Value) -> std::io::Result<Value> {
+    let s = from(file, state);
+    let mut n = s.f("n");
+    let (rows, at) = grown(file, s.f("at") as u64)?;
+    for e in rows {
+        let m = e.at("message");
+        let u = if e.s("type") == "model_usage" { e.at("usage") } else if e.s("type") == "message" && m.s("role") == "assistant" { m.at("usage") } else { continue };
+        if u.is_object() { n += u.f("input") + u.f("cacheRead") + u.f("cacheWrite") + u.f("output"); }
+    }
+    Ok(json!({ "at": at, "n": n }))
+}
 /// This program's counter, where it has one.
 pub fn tokens(kind: &str, file: &Path, state: &Value) -> Option<Value> {
-    match kind { "claude" => claude_tokens(file, state).ok(), "codex" => codex_tokens(file, state).ok(), "pi" => pi_tokens(file, state).ok(), _ => None }
+    match kind { "claude" => claude_tokens(file, state).ok(), "codex" => codex_tokens(file, state).ok(), "pi" => pi_tokens(file, state).ok(), "omp" => omp_tokens(file, state).ok(), _ => None }
 }

@@ -1,8 +1,8 @@
-//! The three programs whose saved conversation the board reads itself: Claude Code, Codex and pi. Verified on claude
-//! 2.1.296, codex 0.160.0, pi 1.1.0 (docs/checked-on-herdr.md). What they do beyond these facts is code of their own
-//! in adapter.rs (the turn-end hook, the conversation files, the Watcher's lean start, Codex's rules and fast mode,
-//! pi's provider in its model).
-use super::{EffortsRead, Kind, Login, Models, Read, BASE, NO_MODELS};
+//! The programs whose saved conversation the board reads itself: Claude Code, Codex, pi and omp. Verified on claude
+//! 2.1.296, codex 0.160.0, pi 1.1.0, omp 18.13.3 (docs/checked-on-herdr.md). What they do beyond these facts is code
+//! of their own in adapter.rs (the turn-end hook, the conversation files, the Watcher's lean start, Codex's rules and
+//! fast mode, pi's provider in its model).
+use super::{EffortsRead, Headless, Kind, Login, Models, Read, BASE, NO_MODELS};
 
 pub static KINDS: &[Kind] = &[
     Kind { name: "claude", min_version: "2.1.296", efforts: &["low", "medium", "high", "xhigh", "max"], access_full: &["--dangerously-skip-permissions"],
@@ -34,6 +34,15 @@ pub static KINDS: &[Kind] = &[
         models: Models { list: &["--list-models"], read: Read::Table, suffix: &[":"], example: "pi/anthropic/claude-opus-5-5", ..NO_MODELS },
         resume: &["--session-id", "{}"], session: &["--session-id", "{}"], standing: &["--append-system-prompt", "{}"], integration: "pi",
         checked: "everything the board does, on 1.1.0", ..BASE },
+    // omp (oh-my-pi) saves its conversation as one line per entry (session.jsonl), read back like pi's. It has no
+    // folder-trust dialog of its own: it never asks to trust a folder, so none is pre-trusted for it.
+    Kind { name: "omp", min_version: "17.4.2", efforts: &["off", "minimal", "low", "medium", "high", "xhigh", "max", "auto"],
+        tokens: true, rules_file: Some("AGENTS.md"), reads_turn: true, model: &["--model={}"], effort: &["--thinking={}"],
+        models: Models { list: &["models", "--json"], read: Read::Selectors, example: "omp/openai/gpt-5.2", ..NO_MODELS },
+        access_full: &["--auto-approve"], access_ask: Some(&["--approval-mode=write"]), resume: &["--resume={}"],
+        standing: &["--append-system-prompt={}"], integration: "omp", needs_integration: true,
+        headless: Some(Headless { args: &["-p", "--no-session", "--no-tools", "--no-skills", "--no-rules"], model: &["--model={}"], system: &["--append-system-prompt={}"], prompt: &["{}"] }),
+        checked: "everything the board does, on 18.13.3", ..BASE },
 ];
 /// Claude Code's full model names, newest first; a new one is one more entry.
 const CLAUDE_MODELS: &[&str] = &[

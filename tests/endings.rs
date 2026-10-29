@@ -12,7 +12,8 @@ fn re(s: &str) -> regex::Regex { regex::Regex::new(s).unwrap() }
 fn a_provider_error_is_read_and_told_apart_as_passing_or_not() {
     let passing = [("codex", "codex-at-capacity", "^Selected model is at capacity", "model is at capacity"), ("pi", "pi-socket-closed", "socket connection was closed", "connection dropped"),
         ("pi", "pi-overloaded", "currently overloaded", "provider is overloaded"), ("pi", "pi-gateway-502", r"API error \(502\)", "provider had a server error"), ("pi", "pi-stream-ended", "stream ended", "connection dropped"),
-        ("claude", "claude-overloaded-made", "529", "provider is overloaded"), ("claude", "claude-rate-limit-made", "429", "model is rate limited")];
+        ("claude", "claude-overloaded-made", "529", "provider is overloaded"), ("claude", "claude-rate-limit-made", "429", "model is rate limited"),
+        ("omp", "omp-rate-limit-made", "Rate limit reached", "model is rate limited")];
     for (kind, name, error, reason) in passing {
         let t = read(kind, name);
         assert!(re(error).is_match(&t.error), "{name}: {}", t.error); assert_eq!(t.stop, "error", "{name}");
@@ -20,7 +21,7 @@ fn a_provider_error_is_read_and_told_apart_as_passing_or_not() {
     }
     let cap = read("codex", "codex-at-capacity");
     assert_eq!((cap.said.as_str(), cap.id.as_str()), ("Selected model is at capacity. Please try a different model.", "01a13034-87eb-7913-81ef-e5142693d7bb"));
-    for (kind, name, error) in [("codex", "codex-model-not-supported", "not supported"), ("pi", "pi-unknown-provider", "Unknown provider"), ("pi", "pi-flagged", "flagged"), ("claude", "claude-model-not-found", "may not exist")] {
+    for (kind, name, error) in [("codex", "codex-model-not-supported", "not supported"), ("pi", "pi-unknown-provider", "Unknown provider"), ("pi", "pi-flagged", "flagged"), ("claude", "claude-model-not-found", "may not exist"), ("omp", "omp-quota-made", "quota exhausted")] {
         let t = read(kind, name);
         assert!(re(error).is_match(&t.error), "{name}: {}", t.error);
         assert_eq!((t.passing, t.reason.as_str(), t.auth), (false, "", false), "{name}");
@@ -29,6 +30,13 @@ fn a_provider_error_is_read_and_told_apart_as_passing_or_not() {
     assert!(login.error.contains("401 Unauthorized")); assert_eq!((login.passing, login.auth), (false, true));
     let done = read("codex", "codex-finished-made");
     assert_eq!((done.finished, done.error.as_str()), (true, ""));
+    // omp's endings are its stopReason: a finished turn's use is read back, a tool call is still going, a stop is a stop
+    let omp_done = read("omp", "omp-finished-made");
+    assert_eq!((omp_done.finished, omp_done.error.as_str(), omp_done.said.as_str()), (true, "", "It says hello now."));
+    assert_eq!(omp_done.usage.map(|u| (u.inp, u.out, u.context)), Some((115.0, 20.0, 135.0)));
+    assert!(read("omp", "omp-pending-made").pending);
+    let aborted = read("omp", "omp-aborted-made");
+    assert_eq!((aborted.interrupted, aborted.stop.as_str()), (true, "interrupted"));
     // the program's own code decides where it has one; an error nobody recognises is not retried
     let p = provider_error("boom", "server_overloaded", 0); assert_eq!((p.passing, p.reason.as_str(), p.auth), (true, "provider is overloaded", false));
     assert!(!provider_error("stream closed", "usage_limit_exceeded", 0).passing);

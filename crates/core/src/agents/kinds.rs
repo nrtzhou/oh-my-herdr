@@ -68,7 +68,7 @@ pub struct Kind {
     pub integration: &'static str,
     /// herdr sees whether it works only through that integration: without it, it is never started.
     pub needs_integration: bool,
-    /// Its own command that says whether it is signed in (`herdr-projects doctor`): signed out when it fails or says
+    /// Its own command that says whether it is signed in (`omh doctor`): signed out when it fails or says
     /// "not logged in". None: the board cannot tell.
     pub login: Option<Login>,
     /// (role, why): a role it cannot do well. The role is a setting's first part (worker, reviewer, coordinator,
@@ -119,6 +119,8 @@ pub enum Read {
     Dashed,
     /// One name a line (opencode's provider/model).
     Lines,
+    /// omp's catalog: JSON, `{"models": [{"selector", "id"}]}`; the id without its provider is taken, not shown.
+    Selectors,
 }
 /// Where a program says the effort levels it takes.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]

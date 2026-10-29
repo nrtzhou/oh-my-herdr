@@ -33,6 +33,22 @@ fn tick(w: &World, now: i64, carry: bool) { let c = |id: &str| { let _ = sw::act
 fn put(id: &str, k: &str, v: Value) { sw::store::tasks::patch(id, |t| { t.put(k, v); }).unwrap(); }
 
 #[test]
+fn omp_counts_tokens_as_the_conversation_paid_for_them_and_keeps_its_place() {
+    let file = std::env::temp_dir().join(format!("omp-tokens-{}.jsonl", std::process::id()));
+    let usage = |i: i64, o: i64| json!({ "input": i, "output": o, "cacheRead": 10, "cacheWrite": 5, "totalTokens": i + o + 15 });
+    // its replies and its side calls (a title, a judge) all cost the conversation tokens
+    line(&file, json!({ "type": "message", "id": "a1", "timestamp": sw::clock::iso(1000), "message": { "role": "assistant", "content": [{ "type": "text", "text": "One." }], "usage": usage(100, 20), "stopReason": "stop" } }));
+    line(&file, json!({ "type": "model_usage", "id": "m1", "timestamp": sw::clock::iso(2000), "purpose": "auto-thinking", "usage": usage(30, 4) }));
+    let first = sw::agents::read_tokens::tokens("omp", &file, &Value::Null).unwrap();
+    assert_eq!(first.f("n"), 184.0);
+    // a second count goes on from where the first stopped, never counting a request twice
+    line(&file, json!({ "type": "message", "id": "a2", "timestamp": sw::clock::iso(3000), "message": { "role": "assistant", "content": [{ "type": "text", "text": "Two." }], "usage": usage(10, 2), "stopReason": "stop" } }));
+    let second = sw::agents::read_tokens::tokens("omp", &file, &first).unwrap();
+    assert_eq!(second.f("n"), 211.0);
+    let _ = std::fs::remove_file(&file);
+}
+
+#[test]
 fn limit_tokens_counted_when_a_turn_ends_stops_before_more_is_spent_and_your_word_gives_it_the_limit_once_more() {
     let w = world();
     let id = at_work(&w, json!({ "limit.tokens": "500k" }));

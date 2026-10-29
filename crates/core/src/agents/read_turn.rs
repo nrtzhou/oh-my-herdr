@@ -234,9 +234,47 @@ pub fn read_pi(file: &Path, bytes: u64) -> Option<Turn> {
         _ => { let done = stop == "stop" || stop == "length"; Turn { said: text, stop: if stop == "length" { "length".into() } else if done { "stop".into() } else { String::new() }, finished: done, pending: !done, ..base } }
     })
 }
+/// omp's saved session: one entry per line (session.jsonl), the model's replies carrying their own use. A failure is
+/// an assistant message whose stopReason says so (`error`, `aborted`), the provider's words in `errorMessage`; a
+/// `toolUse` stop is a turn still going.
+pub fn read_omp(file: &Path, bytes: u64) -> Option<Turn> {
+    let rows = tail_lines(file, bytes).ok()?;
+    let mut last: Option<(bool, &Value)> = None; // (said by the agent, entry)
+    let (mut usage, mut model, mut latest, mut began) = (None::<(f64, f64)>, String::new(), String::new(), 0);
+    for e in &rows {
+        let m = e.at("message");
+        if e.s("type") != "message" || !m.is_object() { continue; }
+        match m.s("role") {
+            "assistant" => {
+                last = Some((true, e));
+                let tx = texts(m.at("content"), &["text"]).trim().to_string();
+                if !tx.is_empty() { latest = tx; }
+                if m.at("usage").is_object() { let u = m.at("usage"); usage = Some((u.f("input") + u.f("cacheRead") + u.f("cacheWrite"), u.f("output"))); }
+                if m.b("model") { model = m.t("model"); }
+            }
+            "user" | "toolResult" | "fileMention" => { last = Some((false, e)); if m.s("role") == "user" { began = when(m.at("timestamp")); } }
+            _ => {}
+        }
+    }
+    let (said_by_agent, e) = last?;
+    let m = e.at("message");
+    let text = texts(m.at("content"), &["text"]).trim().to_string();
+    let stop = m.t("stopReason");
+    let base = Turn { pos: when(e.at("timestamp")).max(when(m.at("timestamp"))), began, usage: usage.and_then(|(i, o)| usage_of(i, o, &model, None)), model: model.clone(), id: e.t("id"), ..Default::default() };
+    if !said_by_agent { return Some(Turn { pending: true, said: latest, ..base }); }
+    Some(match stop.as_str() {
+        "error" => {
+            let err = if m.b("errorMessage") { m.t("errorMessage") } else if !text.is_empty() { text.clone() } else { "error".into() };
+            judge(Turn { said: text, stop: "error".into(), error: err, ..base }, "", m.i("errorStatus"), false)
+        }
+        "aborted" => Turn { said: text, stop: "interrupted".into(), interrupted: true, ..base },
+        "stop" | "length" => Turn { said: text, stop: if stop == "length" { "length".into() } else { "stop".into() }, finished: true, ..base },
+        _ => Turn { said: if text.is_empty() { latest } else { text }, pending: true, ..base },
+    })
+}
 /// The end of a conversation, by this program's reader.
 pub fn read_turn(kind: &str, file: &Path, bytes: u64) -> Option<Turn> {
-    match kind { "claude" => read_claude(file, bytes), "codex" => read_codex(file, bytes), "pi" => read_pi(file, bytes), _ => None }
+    match kind { "claude" => read_claude(file, bytes), "codex" => read_codex(file, bytes), "pi" => read_pi(file, bytes), "omp" => read_omp(file, bytes), _ => None }
 }
 /// A file whose name passes `test`, anywhere under a folder (a few levels deep), newest first.
 pub fn find_file(root: &Path, test: &dyn Fn(&str) -> bool, depth: usize) -> Vec<PathBuf> {

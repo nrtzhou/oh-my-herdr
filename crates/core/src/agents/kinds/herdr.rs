@@ -55,11 +55,6 @@ pub static KINDS: &[Kind] = &[
         cannot: &[("worker", MASTRA), ("reviewer", MASTRA), ("coordinator", MASTRA), ("plan", MASTRA)],
         headless: Some(Headless { args: &["--permission-mode", "deny"], model: &["-m", "{}"], system: &[], prompt: &["--prompt", "{}"] }),
         checked: "flags from mastracode's own source 0.47.0", ..BASE },
-    Kind { name: "omp", integration: "omp", needs_integration: true, model: &["--model={}"], efforts: &["off", "minimal", "low", "medium", "high", "xhigh", "max", "auto"],
-        effort: &["--thinking={}"], access_full: &["--auto-approve"], access_ask: Some(&["--approval-mode=write"]), resume: &["--resume={}"],
-        standing: &["--append-system-prompt={}"], rules_file: Some("AGENTS.md"),
-        headless: Some(Headless { args: &["-p", "--no-session", "--no-tools", "--no-skills", "--no-rules"], model: &["--model={}"], system: &["--append-system-prompt={}"], prompt: ANSWER }),
-        checked: "flags from omp --help 18.11.1; started by herdr 0.9.3 on the board's flags (its first setup)", ..BASE },
     // OpenCode 2's full-screen app takes no `-m`: it is started on its model another way (opencode_v2.rs).
     Kind { name: "opencode", integration: "opencode", model: &["-m", "{}"],
         models: Models { list: &["models"], read: Read::Lines, example: "opencode/anthropic/claude-opus-5-5", ..NO_MODELS }, access_full: &["--auto"], resume: &["--session", "{}"], rules_file: Some("AGENTS.md"),

@@ -1,12 +1,12 @@
 # Agent programs
 
-**Every role can use any program Herdr can start and has its own integration for.** Claude Code, Codex and pi do
+**Every role can use any program Herdr can start and has its own integration for.** Claude Code, Codex, pi and omp do
 everything the board does. The others work too, with a few limits (below).
 
 ```
-herdr-projects set reviewer.agent agy/gemini-3-pro
-herdr-projects set worker.fallback "codex, copilot/gpt-5.5"
-herdr-projects delegate 12 --worker.agent qwen --reviewer.agent cursor
+omh set reviewer.agent agy/gemini-3-pro
+omh set worker.fallback "codex, copilot/gpt-5.5"
+omh delegate 12 --worker.agent qwen --reviewer.agent cursor
 ```
 
 A model goes after a slash ([models and effort](models.md)). The settings that pick a program are `worker.agent`,
@@ -55,7 +55,7 @@ refused them even when the task asked (HP-53). A test holds both: `tests/agent_h
 
 ## What the board knows about each program
 
-The board reads the conversations Claude Code, Codex and pi save. So it knows what they said, what went wrong with the
+The board reads the conversations Claude Code, Codex, pi and omp save. So it knows what they said, what went wrong with the
 provider, and how many tokens they used ([how work gets done](how-work-gets-done.md)).
 
 It reads no other program's conversation. For those, each of these comes from somewhere else:
@@ -92,8 +92,8 @@ A program that cannot do a role well is refused when you set it, with the reason
 - **A model** for a program that takes none when started for work: Droid. Choose its model in Droid's own settings. Its
   one-shot does take one, so `watcher.agent droid/<model>` works.
 - **A model name** the program does not take, with the names it does. They are read from the program's own list where
-  it has one (`codex debug models`, `pi --list-models`, `cursor-agent models`, `opencode models`), else from the names
-  written in the table (Claude Code). `herdr-projects models` lists them ([models and effort](models.md)).
+  it has one (`codex debug models`, `pi --list-models`, `omp models`, `cursor-agent models`, `opencode models`), else from the names
+  written in the table (Claude Code). `omh models` lists them ([models and effort](models.md)).
 - **An effort** the program does not have: a level not on the list the program gives (Codex's catalog, for the model;
   the others' `--help`; the table's where it cannot be read), or any level where it takes none at start (most of
   Herdr's others). Cursor takes its effort in the model's name: `cursor/claude-opus-4-8[effort=high]`.
@@ -116,12 +116,13 @@ tested). The board does not take them. Each would be one more entry in the table
 
 ## The programs
 
-<!-- made:agents Made by `herdr-projects docs` from crates/core/src/agents/kinds/. Do not edit between these two lines. -->
+<!-- made:agents Made by `omh docs` from crates/core/src/agents/kinds/. Do not edit between these two lines. -->
 | Program | Started for work as | Model | Effort | Asking first | Auto mode | Standing rules | Reopened by | Watcher's one-shot | Turn's end read from | herdr's integration | Can do | Checked |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `claude` | `claude --dangerously-skip-permissions` | `--model <model>`; `default`, `fable`, `opus`, `sonnet`, `haiku`, `opusplan` or one of its full names in the table (`claude-fable-5-1`, `claude-fable-5`, `claude-opus-5-5`) | `--effort <level>`; the levels `claude --help` lists, else low, medium, high, xhigh, max | its own default | `--permission-mode auto`, from 2.1.111 | `--append-system-prompt-file <file>` | `--resume <id>` | `claude -p --no-session-persistence --tools ""`, the prompt on its input | its conversation file | `claude` | every role | everything the board does, on 2.1.296 to 2.1.300 |
 | `codex` | `codex --dangerously-bypass-approvals-and-sandbox --no-daemon` | `-m <model>`; the names `codex debug models` lists | `-c model_reasoning_effort="<level>"`; the levels `codex debug models` lists for the model, else low, medium, high, xhigh, max, ultra | `--no-daemon` | `--approve-for-me --no-daemon`, from 0.147.0 | `-c developer_instructions=…` | `resume <id>` | `codex exec --skip-git-repo-check --ephemeral --color never <prompt>` | its conversation file | `codex` | every role | everything the board does, on 0.153.4 to 0.162.1 |
 | `pi` | `pi` | `--model <model>`; the names `pi --list-models` lists | `--thinking <level>`; the levels `pi --help` lists, else off, minimal, low, medium, high, xhigh, max | cannot ask | none | `--append-system-prompt <file>` | `--session-id <id>` | `pi -p --no-session --no-tools --no-skills --no-context-files -- <prompt>` | its conversation file | `pi` | every role | everything the board does, on 1.1.0 |
+| `omp` | `omp --auto-approve` | `--model=<model>`; the names `omp models --json` lists | `--thinking=<level>`; the levels `omp --help` lists, else off, minimal, low, medium, high, xhigh, max, auto | `--approval-mode=write` | none | `--append-system-prompt=<file>` | `--resume=<id>` | `omp -p --no-session --no-tools --no-skills --no-rules <prompt>` | its conversation file | `omp`, needed | every role | everything the board does, on 18.13.3 |
 | `agy` (also `antigravity-cli`, `antigravity`) | `agy --dangerously-skip-permissions` | `--model <model>`; not checked | `--effort <level>`; the levels `agy --help` lists, else low, medium, high, xhigh, max | its own default | none | in its first prompt | `--conversation <id>` | `agy --disable-slash-commands -p <prompt>` | herdr's state and its closing note | `antigravity-cli` | every role | flags from agy --help 1.3.6; started by herdr 0.9.3 on the board's flags (it came up at its login) |
 | `copilot` | `copilot --yolo` | `--model <model>`; not checked | `--reasoning-effort <level>`; the levels `copilot --help` lists, else none, minimal, low, medium, high, xhigh, max | its own default | none | in its first prompt | `--resume=<id>` | `copilot -s --no-custom-instructions --no-ask-user --allow-all-tools -p <prompt>` | herdr's state and its closing note | `copilot` | every role | flags from copilot --help 1.0.98; started by herdr 0.9.3 on the board's flags (its folder-trust dialog) |
 | `cursor` (also `cursor-agent`) | `cursor-agent --yolo` | `--model <model>`; the names `cursor-agent models` lists | cursor takes its effort in the model's name: cursor/claude-opus-4-8[effort=high] | its own default | `--auto-review`, from 2026.06.22 | in its first prompt | `--resume <id>` | `cursor-agent -p --output-format text --mode ask --trust <prompt>` | herdr's state and its closing note | `cursor` | every role | flags from cursor-agent --help 2026.10.01; started by herdr 0.9.3 on the board's flags, given a task |
@@ -133,7 +134,6 @@ tested). The board does not take them. Each would be one more entry in the table
 | `kimi` | `kimi --auto` | `-m <model>`; not checked | none | its own default | none | in its first prompt | `--session <id>` | `kimi -p <prompt>` | herdr's state and its closing note | `kimi` | every role | flags from kimi --help 2.2.0; started by herdr 0.9.3 on the board's flags (its folder-trust dialog) |
 | `letta` | `letta --new --yolo` | `-m <model>`; not checked | none | its own default | none | in its first prompt | `--conversation <id>` | `letta --ephemeral -p <prompt>` | herdr's state and its closing note | `letta` | every role | flags from letta --help 0.34.15; started by herdr 0.9.3 on the board's flags (its first setup held it) |
 | `mastracode` | `mastracode` | none at start | none | its own default | none | in its first prompt | starts afresh | `mastracode --permission-mode deny --prompt <prompt>` | herdr's state and its closing note | `mastracode`, needed | Watcher only: mastracode can be told neither its model nor to work without asking when it starts (only through environment variables, which herdr's start cannot set), and it reopens its folder's last conversation, so it cannot work on a task: it can be the Watcher | flags from mastracode's own source 0.47.0 |
-| `omp` | `omp --auto-approve` | `--model=<model>`; not checked | `--thinking=<level>`; the levels `omp --help` lists, else off, minimal, low, medium, high, xhigh, max, auto | `--approval-mode=write` | none | `--append-system-prompt=<file>` | `--resume=<id>` | `omp -p --no-session --no-tools --no-skills --no-rules <prompt>` | herdr's state and its closing note | `omp`, needed | every role | flags from omp --help 18.11.1; started by herdr 0.9.3 on the board's flags (its first setup) |
 | `opencode` | `opencode --auto` | `-m <model>`; the names `opencode models` lists | none | its own default | none | in its first prompt | `--session <id>` | `opencode run <prompt>` | herdr's state and its closing note | `opencode` | every role | flags from opencode --help 1.18.34; started by herdr 0.9.3 on the board's flags; OpenCode 2.1.4's conversation made on a model and opened by hand |
 | `qodercli` | `qodercli --dangerously-skip-permissions` | `-m <model>`; not checked | `--reasoning-effort <level>`; the levels `qodercli --help` lists, else any level | its own default | `--permission-mode auto`, from 0.2.14 | in its first prompt | `--resume <id>` | `qodercli -p --no-session-persistence --tools "" -- <prompt>` | herdr's state and its closing note | `qodercli` | every role | flags from qodercli --help 1.1.72; npm's launcher hid it from herdr 0.9.3 |
 | `qwen` | `qwen --yolo` | `-m <model>`; not checked | none | its own default | `--approval-mode auto`, from 0.16.0 | in its first prompt | `--resume <id>` | `qwen -p <prompt>` | herdr's state and its closing note | `qwen` | every role | flags from qwen --help 0.25.2; started by herdr 0.9.3 on the board's flags |
