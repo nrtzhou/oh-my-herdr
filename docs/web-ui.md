@@ -21,12 +21,12 @@ moves it: the board finds it under either, `devswha.ovis` first, then `devswha.h
 
 That one change is the whole setup. By hand, any time:
 
-    herdr-projects web-ui            how things stand: the web UI, the front door, which links go through it
-    herdr-projects web-ui link       point the web UI's shared link at the front door
-    herdr-projects web-ui unlink     point it back
+    omh web-ui            how things stand: the web UI, the front door, which links go through it
+    omh web-ui link       point the web UI's shared link at the front door
+    omh web-ui unlink     point it back
 
-- `herdr-projects remove-extras` also points the link back and stops the front door ([installing](install.md)).
-- To turn the whole thing off and keep the rest: `herdr-projects set board.webUi none` ([settings](settings.md)). The front
+- `omh remove-extras` also points the link back and stops the front door ([installing](install.md)).
+- To turn the whole thing off and keep the rest: `omh set board.webUi none` ([settings](settings.md)). The front
   door points the link back by itself, and closes.
 - On the machine itself, the board is also at the front door's own address, which `web-ui` prints
   (`http://127.0.0.1:7327/` unless that port was taken).
@@ -152,7 +152,7 @@ terminal board does, and the page then goes to the web UI's own view of its pane
 
 - **The page goes only once the web UI shows that pane.** A space opened again is a new workspace and pane, and the web
   UI's page drops an address that names a pane it does not know yet: Ovis 0.4.13 stayed on the pane it was on, and the
-  button seemed to do nothing ([#356](https://github.com/eliasstravik/herdr-projects/issues/356)). So the board asks the
+  button seemed to do nothing ([#356](https://github.com/eliasstravik/omh/issues/356)). So the board asks the
   web UI which panes it has (its `/api/machines`) until the new one is there, for 8 seconds at most. That took about a
   second in the check below.
 - **When it still is not there, the page stays and says so**: *“HP-1 Make f” is open in herdr, but the web UI (Ovis) does
@@ -213,7 +213,7 @@ Each machine with both plugins also has a front door and a Board of its own, at 
 
 **When the web UI runs on one machine and the tasks are on another.** The Board is served by the machine the web UI runs
 on. So that machine needs this plugin too, on this version, and it needs the other machine as one of Herdr's saved
-machines there (`herdr machine add`, or `board.machines`), reachable over SSH with `herdr-projects` on its path. The
+machines there (`herdr machine add`, or `board.machines`), reachable over SSH with `omh` on its path. The
 machine with the tasks needs no web UI and no front door. The Board then shows that machine's tasks when the web UI is on
 one of its panes, or through `More` → **Other machines**. The terminal board running on the machine with the tasks is
 that machine's own program: that machine's plugin must be on this version for it to stay put in the web UI's terminal
@@ -255,7 +255,7 @@ The board is as protected as the web UI, by the web UI:
   gate: `server/auth.ts`, `server/access.ts` there). Anything but a plain yes is a no: no answer, an answer it cannot
   read, a web UI that is down. Not logged in, nothing of the board can be read or changed.
 - **A call that changes something must come from the board's own page**: the same origin, and a header of the board's own
-  (`x-herdr-projects`), which a page of another site cannot send. The web UI asks the same of its own controls.
+  (`x-omh`), which a page of another site cannot send. The web UI asks the same of its own controls.
 - **A device the web UI paired to *watch*** can look at the board and change nothing: it can select, find, pick a filter on
   the filter row, put the grouping back to by status, and show or hide; it cannot send, approve, stop or archive.
 - The page's own files (scripts and styles) hold no task and are public, as the web UI's own files are.
@@ -280,7 +280,7 @@ changed with it. The board reads each of them as the web UI under that id does:
   before gets `.ovis/` added the next time a task starts there).
 - The board's page reads `ovis:settings` first, then the old record (Ovis moves the old one over the first time it
   opens): Enter sends, Files at once, and Voice input are the ones you chose there.
-- `herdr-projects web-ui` says which id it found, and its version: `Web UI (Ovis): found at http://127.0.0.1:7317
+- `omh web-ui` says which id it found, and its version: `Web UI (Ovis): found at http://127.0.0.1:7317
   (devswha.ovis 0.4.13)`. Not found, it names both ids.
 - Its `PORT` and `HOST` are in the `env` or `.env` of the plugin's config folder (`herdr plugin config-dir devswha.ovis`),
   as before.
@@ -308,7 +308,7 @@ So the front door stands in front of it instead:
   points at the front door's port, so the web UI would say it has no link and offer the command for a second one. The
   answer is given the link it already has. Anything else in it, and the answer itself whenever it already names a link or
   cannot be read, is passed on as it came.
-- **It answers under one path the web UI does not use**, `/herdr-projects/`: the board's page files and its calls.
+- **It answers under one path the web UI does not use**, `/omh/`: the board's page files and its calls.
 - **A fault of the board never breaks the web UI.** Whatever goes wrong on the board's side, a request that is not the
   board's still goes through. The board's work is done in a thread of its own, so reading tasks never holds up a
   terminal's keystrokes on their way through.
@@ -318,7 +318,7 @@ So the front door stands in front of it instead:
 - **It follows the web UI**: through its restarts and its own updates (it keeps its port), and to another port when it
   takes one. While the web UI is down, its address answers "not answering right now", and the board lets nobody in.
 
-The front door is part of the board's one page server (`herdr-projects serve`, which also serves
+The front door is part of the board's one page server (`omh serve`, which also serves
 [evidence pages](task-panel.md)): one long-lived process, not two. Its bookkeeping (its process, its port, where it passes
 things on to) is `data/front-door.json` in [the home folder](home-folder.md). When the plugin is updated, the process
 hands over to a new one on the same port; a terminal open in the web UI reconnects by itself.
@@ -338,7 +338,7 @@ door's port instead.
 one by itself afterwards. The web UI's Settings → Phone, opened at the link, keeps showing that link as its own (the one
 corrected answer above). Its Phone setup run from Herdr on the machine reads Tailscale itself, finds no entry at its own
 port, and makes one more link on another port: that one goes straight to the web UI, is the one it finds from then on,
-and is left alone. `herdr-projects web-ui` lists both and says which has the Board.
+and is left alone. `omh web-ui` lists both and says which has the Board.
 
 The front door has a port of its own because Tailscale proxies to `127.0.0.1` only (checked on 1.102: a target on the
 other loopback address is refused), so it cannot stand at the web UI's port number.
@@ -361,7 +361,7 @@ load online replaces the copy.
     `agent-title`, `agent-context`);
   - the drawer's scrim (`.scrim.is-open`);
   - its address parameters `ws`, `pane` and `view` (`src/lib/deepLink.ts`), and its `machine` address parameter;
-  - `/api/health?scope=bridge` saying who asks, and that `/herdr-projects/` is still free;
+  - `/api/health?scope=bridge` saying who asks, and that `/omh/` is still free;
   - what `/api/access` says about its link (`server/tailscale.ts`);
   - `/api/machines` naming each PC's `id`, `kind`, `target` and `state`;
   - its plugin id, its state folder, its paste folder and its settings record ([its two names](#its-two-names)).
@@ -370,7 +370,7 @@ load online replaces the copy.
 
 ## Trying it against a copy
 
-`HERDR_PROJECTS_WEBUI=<port>` (or `host:port`) names a web UI that Herdr does not list as a plugin. That is how a copy of
+`OMH_WEBUI=<port>` (or `host:port`) names a web UI that Herdr does not list as a plugin. That is how a copy of
 it is tried out, with a scratch Herdr and a scratch [home folder](home-folder.md). `off` there means none.
 
 ## Checked
@@ -442,8 +442,8 @@ front of it, in Chromium at a desktop's size (1280×800) and a phone's (390×844
 
 | What | Result |
 |---|---|
-| `herdr-projects web-ui`, the program before this change, Ovis installed | `not found: the plugin devswha.herdr-web-ui is not installed in herdr` |
-| `herdr-projects web-ui` now, Ovis only, then both listed | `found at http://127.0.0.1:17417 (devswha.ovis 0.4.13)` both times |
+| `omh web-ui`, the program before this change, Ovis installed | `not found: the plugin devswha.herdr-web-ui is not installed in herdr` |
+| `omh web-ui` now, Ovis only, then both listed | `found at http://127.0.0.1:17417 (devswha.ovis 0.4.13)` both times |
 | Ovis turned off in Herdr, the old id on | `found at … (devswha.herdr-web-ui 0.4.13)`; the front door followed it by itself within half a minute |
 | The Boards section | under Agents, above Install app and Settings, under both ids; on the phone (Ovis) folded as Agents is, with its dot |
 | A pick in it (Ovis at both sizes, the old id on the desktop) | the board opened over the page, docked on Ovis's own chat of the Coordinator, the Call button in its box; on the phone the drawer closed |
@@ -454,7 +454,7 @@ front of it, in Chromium at a desktop's size (1280×800) and a phone's (390×844
 Not checked: Ovis's installer moving a real install from the old id to the new one (both were linked by hand), and
 other machines under the new name (their PCs come from the same `/api/machines` as before).
 
-**Opening a task's agent whose space was closed** ([#356](https://github.com/eliasstravik/herdr-projects/issues/356)),
+**Opening a task's agent whose space was closed** ([#356](https://github.com/eliasstravik/omh/issues/356)),
 checked on 2026-10-23 with Herdr 0.9.3: a scratch Herdr with Ovis 0.4.13 (its release, `devswha.herdr-web-ui`), the front
 door in front of it, a real task's agent (Claude Code) whose task was ready to approve, in Chromium at a desktop's size
 (1280×860):

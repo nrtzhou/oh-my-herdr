@@ -1,4 +1,4 @@
-//! `herdr-projects autopilot …`: every coordinator with its state (no word after it), `show [--machine | --project
+//! `omh autopilot …`: every coordinator with its state (no word after it), `show [--machine | --project
 //! <repo>]` (one coordinator's autopilot as it stands now: what a coordinator reads first in each wake), `on [--machine |
 //! --project <repo>] [--goal "<words>"] [--autopilot.<name> <value> …]` and `off [--machine | --project <repo> | --all]`.
 //! The coordinator is named as the `coordinator` commands name it: no flag for the main Coordinator.
@@ -68,6 +68,6 @@ pub fn autopilot_command(pos: &[String], flags: &Obj) -> Res<(Value, String)> {
             let said = off(&co)?;
             Ok((json!({ "coordinator": key_of(&co), "on": false }), said))
         }
-        _ => crate::fail!("autopilot takes: show [--machine | --project <repo>], on [--machine | --project <repo>] [--goal \"<words>\"] [--autopilot.<name> <value>], off [--machine | --project <repo> | --all], or nothing to list them. Try: herdr-projects help"),
+        _ => crate::fail!("autopilot takes: show [--machine | --project <repo>], on [--machine | --project <repo>] [--goal \"<words>\"] [--autopilot.<name> <value>], off [--machine | --project <repo> | --all], or nothing to list them. Try: omh help"),
     }
 }

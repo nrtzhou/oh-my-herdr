@@ -20,5 +20,5 @@ pub fn add(key: &str) -> Result<(), String> {
 }
 /// Neither Warren nor Will in the account, and Warren could not be added (`why`): how to give the call a voice.
 pub fn missing(why: &str) -> String {
-    format!("The call's built-in voice, {NAME} from ElevenLabs' Voice Library, is not in your ElevenLabs account, and it could not be added: {}. Add it yourself (https://elevenlabs.io/app/voice-library, search Warren, add it to My Voices), give your API key the Voices permission set to Write as well, or pick a voice of your own: herdr-projects set voice.voice <voice id>.", crate::text::cut(why, 300))
+    format!("The call's built-in voice, {NAME} from ElevenLabs' Voice Library, is not in your ElevenLabs account, and it could not be added: {}. Add it yourself (https://elevenlabs.io/app/voice-library, search Warren, add it to My Voices), give your API key the Voices permission set to Write as well, or pick a voice of your own: omh set voice.voice <voice id>.", crate::text::cut(why, 300))
 }

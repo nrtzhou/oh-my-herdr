@@ -13,7 +13,7 @@ use sw::store::settings::{change::set_value, lookup::Scope};
 const PLAN: &str = "# Plan\n\n1. Add f.txt with one line.\n2. Run the check.\n";
 fn plan_world(settings: Value, sandbox: &str) -> World {
     let w = world_with(Opts { repo: true, settings, ..Default::default() });
-    unsafe { std::env::set_var("HERDR_PROJECTS_SANDBOX", sandbox) };
+    unsafe { std::env::set_var("OMH_SANDBOX", sandbox) };
     w.patch(|s| s["pids"] = json!(true));
     w
 }
@@ -81,7 +81,7 @@ fn without_a_read_only_mount_no_plan_is_written_in_a_repo_and_a_plan_said_not_sa
     assert_eq!(t.s("stage"), "working", "{}", t.at("failure"));
     assert!(t.at("plan").is_null());
     // With the mount: a revised plan said, not saved.
-    unsafe { std::env::set_var("HERDR_PROJECTS_SANDBOX", "bwrap") };
+    unsafe { std::env::set_var("OMH_SANDBOX", "bwrap") };
     w.script(json!({ "worker": [{ "note": "# First plan\nAdd two files." }, { "note": "# Revised plan\nAdd only one file." }, { "note": "" }] }));
     let id = w.add("Work");
     delegate(&id);
@@ -110,7 +110,7 @@ fn a_plan_review_that_cannot_start_leaves_the_plan_for_your_yes_and_the_yes_buil
     assert_eq!(settle(&id).s("stage"), "plan");
     // The reviewer is asked for now, and its read-only mount cannot be made (macOS: a sandbox inside another).
     set_value("plan.approve", &json!("reviewer"), &Scope::task(&task(&id))).unwrap();
-    unsafe { std::env::set_var("HERDR_PROJECTS_SANDBOX", "none") };
+    unsafe { std::env::set_var("OMH_SANDBOX", "none") };
     tell(&id, "Once more.");
     let t = settle(&id);
     assert_eq!((t.s("stage"), t.s("kind")), ("plan", "permission"), "{}", t.at("failure"));

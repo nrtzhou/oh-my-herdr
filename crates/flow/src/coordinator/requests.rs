@@ -23,7 +23,7 @@ pub fn context(cwd: &Path, delegate: bool, about: &str) -> Res<Value> {
 }
 /// Of the messages dealt with, the last few stay; one not dealt with yet is never dropped.
 const KEPT: usize = 5;
-pub fn rest_ms() -> i64 { std::env::var("HERDR_PROJECTS_HANDLED_MS").ok().and_then(|v| v.parse().ok()).unwrap_or(15000) }
+pub fn rest_ms() -> i64 { std::env::var("OMH_HANDLED_MS").ok().and_then(|v| v.parse().ok()).unwrap_or(15000) }
 pub fn trimmed(list: &[Value]) -> Vec<Value> { let cut = list.len().saturating_sub(KEPT); list.iter().enumerate().filter(|(i, x)| *i >= cut || !x.b("handled")).map(|(_, x)| x.clone()).collect() }
 pub fn where_text(co: impl Into<Co>) -> String {
     let list = get(co).map(|c| c.arr("where").to_vec()).unwrap_or_default();
@@ -87,7 +87,7 @@ pub fn send_as(cwd: &Path, text: &str, delegate: bool, about: &str, co: impl Int
 }
 /// What `tell` says when herdr cannot be found from here: the message is queued, not delivered, and why.
 pub fn not_delivered(name: &str) -> String {
-    format!("Queued for the {name}, but not delivered: the herdr program was not found here (not on PATH, not in {}, not on a login shell's PATH). The message waits in the queue and goes in once herdr-projects runs where herdr is found (the board and its keeper, in herdr). To deliver from here, set HERDR_BIN_PATH to herdr's full path.", crate::herdr::find::SPOTS.join(", "))
+    format!("Queued for the {name}, but not delivered: the herdr program was not found here (not on PATH, not in {}, not on a login shell's PATH). The message waits in the queue and goes in once omh runs where herdr is found (the board and its keeper, in herdr). To deliver from here, set HERDR_BIN_PATH to herdr's full path.", crate::herdr::find::SPOTS.join(", "))
 }
 /// A project coordinator's repo, which must be one this machine knows: it works in its folder.
 fn known(co: &Co) -> Res<Option<std::path::PathBuf>> {

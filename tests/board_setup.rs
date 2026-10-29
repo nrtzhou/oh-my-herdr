@@ -23,7 +23,7 @@ fn the_first_run_is_one_screen_with_both_choices_answered_with_single_keys() {
     let w = world();
     let mut s = start(&w, Some(("prefix+a", "")), true);
     let t = s.text();
-    assert!(t.contains("herdr-projects · first run") && !t.contains("question 1 of"), "{t}");
+    assert!(t.contains("omh · first run") && !t.contains("question 1 of"), "{t}");
     assert!(t.contains("1  [x] Open this board with prefix+a, from anywhere in herdr") && t.contains("2  [x] Show each task's stage"), "{t}");
     assert!(t.contains("1 2 on or off · enter save · esc ask me next time"), "{t}");
     s.press(&["2"]); assert!(s.text().contains("2  [ ] Show each task's stage"));
@@ -52,7 +52,7 @@ fn after_an_update_the_board_loads_its_new_version_by_itself_once_nothing_is_hal
     s.typed("a draft");
     let fx = update(&mut s.s, Event::Stamp("new".into())); assert!(!fx.contains(&Effect::Reload));
     let fx = update(&mut s.s, Event::Stamp("new".into())); assert!(!fx.contains(&Effect::Reload), "never under a draft");
-    assert!(s.text().contains("herdr-projects was updated: the new version loads when nothing is half typed."));
+    assert!(s.text().contains("omh was updated: the new version loads when nothing is half typed."));
     s.press(&["esc"]);
     let fx = update(&mut s.s, Event::Stamp("new".into()));
     assert!(fx.contains(&Effect::Reload));
@@ -100,7 +100,7 @@ fn the_key_that_opens_the_board_is_found_in_any_spelling() {
     let w = world();
     let file = sw::extras::herdr_config();
     std::fs::create_dir_all(file.parent().unwrap()).unwrap();
-    let open = "command = \"herdr-projects.open\"";
+    let open = "command = \"omh.open\"";
     for (how, text) in [
         ("an array table", format!("[[keys.command]]\nkey = \"prefix+w\"\ntype = \"plugin_action\"\n{open}\n")),
         ("an inline array under [keys]", format!("[keys]\ncommand = [{{ key = \"prefix+w\", type = \"plugin_action\", {open} }}]\n")),

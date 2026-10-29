@@ -1,15 +1,15 @@
 # The home folder
 
-**Everything the board keeps for you is in one folder, `~/.herdr-projects/`, the same on every machine.**
+**Everything the board keeps for you is in one folder, `~/.omh/`, the same on every machine.**
 
 ```
-~/.herdr-projects/
+~/.omh/
   settings/     config.json: your own preferences (docs/settings.md)
   data/         everything the board writes while it runs
     tasks/<repo>/<n>/        one folder per task: task.json, inbox.jsonl, closing-note.md, artifacts/
     coordinator/<session>/   the Coordinator's saved state, and chat/, the folder it starts in
     automations/             the automations, their firings, the board events counted already (docs/automations.md)
-    bin/herdr-projects      the command agents are handed, by its full path
+    bin/omh      the command agents are handed, by its full path
     conflicts.jsonl          one line per conflict with main, once repaired (docs/how-work-gets-done.md)
     locks/ stamps/ *.json *.log   the board's own bookkeeping
   reports/      pages and reports an agent made for you that belong in no repo, one folder per task
@@ -22,14 +22,14 @@
 
 | To move | Set |
 |---|---|
-| the whole folder | `HERDR_PROJECTS_HOME` |
-| only the data | `HERDR_PROJECTS_DATA_DIR` |
-| only the settings | `HERDR_PROJECTS_CONFIG_DIR` |
-| only the reports | `HERDR_PROJECTS_REPORTS_DIR` |
-| only the folder the Coordinator starts in | `HERDR_PROJECTS_COORDINATOR_DIR` |
+| the whole folder | `OMH_HOME` |
+| only the data | `OMH_DATA_DIR` |
+| only the settings | `OMH_CONFIG_DIR` |
+| only the reports | `OMH_REPORTS_DIR` |
+| only the folder the Coordinator starts in | `OMH_COORDINATOR_DIR` |
 
-What the board starts (an agent's tab, a reviewer's, the command agents are handed) is given `HERDR_PROJECTS_HOME`, and
-a part's own variable only for a part kept somewhere else than its place in the home folder. So `HERDR_PROJECTS_HOME`
+What the board starts (an agent's tab, a reviewer's, the command agents are handed) is given `OMH_HOME`, and
+a part's own variable only for a part kept somewhere else than its place in the home folder. So `OMH_HOME`
 set to a scratch folder in front of a command there moves all of it: none of the real board is reached.
 
 The `XDG_*` variables (`XDG_STATE_HOME`, `XDG_CONFIG_HOME`, `XDG_DATA_HOME`) no longer choose a place. They are read for
@@ -43,12 +43,12 @@ What an agent writes for the board goes in its task's own folder, `data/tasks/<r
 - while a review runs, the reviewer's verdict and evidence (`review/`, moved to `artifacts/` when the review ends).
 
 The agent is told the full path. So no repo or worktree gets a folder of the board's, and a task that works in your
-home folder writes nothing into `~/.herdr-projects/` itself.
+home folder writes nothing into `~/.omh/` itself.
 
 The closing note is removed when its task is cleaned up (after a merge, a task that ended with nothing to merge, or
 `clear`). The whole task folder goes when the task is cleared away.
 
-`.herdr-projects.json` (a repo's own settings) is a different file.
+`.omh.json` (a repo's own settings) is a different file.
 
 ### Leftovers from older versions
 
@@ -67,30 +67,30 @@ a `closing-1.md` beside `data` and `settings` comes from. Now:
 
 ## What stays outside it
 
-- **The how-to file** in each agent program's own skills folder (`~/.claude/skills/herdr-projects` and the others), and
+- **The how-to file** in each agent program's own skills folder (`~/.claude/skills/omh` and the others), and
   **the marked blocks** in Herdr's `config.toml`. They have to be where those programs read them.
-  `herdr-projects remove-extras` takes them out ([installing](install.md)).
+  `omh remove-extras` takes them out ([installing](install.md)).
 - **The web UI's shared link.** With the web UI (Ovis) installed, and only after a yes: where that web UI's shared link
-  (`tailscale serve`) points, so the Board shows in it. `herdr-projects web-ui unlink` and `remove-extras` point it back
+  (`tailscale serve`) points, so the Board shows in it. `omh web-ui unlink` and `remove-extras` point it back
   ([the board in the web UI (Ovis)](web-ui.md)).
 - **The trust mark for a repo**, in the agent program's own settings (`~/.claude.json`, `~/.codex/config.toml`; pi's
   for each task's worktree in `~/.pi/agent/trust.json`).
-- **This repo's own test runner** keeps what already passed in `~/.cache/herdr-projects-check` ([testing](testing.md)).
+- **This repo's own test runner** keeps what already passed in `~/.cache/omh-check` ([testing](testing.md)).
   That is a cache of a tool for working on this code, not something the board keeps for you: delete it any time.
 
-## Coming from herdr-superwork or herdr-projects 0.2
+## Coming from herdr-superwork or omh 0.2
 
-`~/.herdr-superwork` becomes this folder. The old herdr-projects 0.2's projects, which it kept under this very name, are
-set aside to `~/.herdr-projects-legacy` first: [older installs](old-installs.md).
+`~/.herdr-superwork` becomes this folder. The old omh 0.2's projects, which it kept under this very name, are
+set aside to `~/.omh-legacy` first: [older installs](old-installs.md).
 
 ## Coming from an older version: the one-time move
 
 Older versions kept the data in `~/.local/state/herdr-superwork`, the settings in `~/.config/herdr-superwork`, and
 agents' reports in `~/.local/share/herdr-superwork-reports`. **The first run of a new version moves all three into
-`~/.herdr-projects/` by itself**: any run, whether the board, a command, or the hook Herdr calls. It then says so once,
+`~/.omh/` by itself**: any run, whether the board, a command, or the hook Herdr calls. It then says so once,
 in one line, the first time you would see it (on the board when it opens, or after a command you typed):
 
-    Moved the board's files into ~/.herdr-projects: data (from ~/.local/state/herdr-superwork), settings (from
+    Moved the board's files into ~/.omh: data (from ~/.local/state/herdr-superwork), settings (from
     ~/.config/herdr-superwork), reports (from ~/.local/share/herdr-superwork-reports). The old places are links to
     the new ones, so whatever is running carries on.
 
@@ -124,7 +124,7 @@ in one line, the first time you would see it (on the board when it opens, or aft
 - **If two paths cannot change places in one step** (a system without that call), **or the old place is on another
   disk**, the folder stays where it is and the new place becomes a link to it. Still one folder, still no moment without
   the old path, and the line says so.
-- **A folder you named yourself stays.** With `HERDR_PROJECTS_DATA_DIR` (or the settings or reports one) set to a place
+- **A folder you named yourself stays.** With `OMH_DATA_DIR` (or the settings or reports one) set to a place
   of your own, that part is not moved.
 - **Only the copy the board runs from moves anything.** A second checkout of this code (a git worktree an agent works
   in, a copy under test) leaves the files alone and works on the board where it is.

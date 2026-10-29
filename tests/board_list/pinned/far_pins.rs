@@ -66,7 +66,7 @@ fn another_machines_pins_come_with_its_tasks_and_its_rows_pin_there() {
     far.ends("vm-b", "do.pin-machine", "{\"ok\":false,\"msg\":\"No task \\\"\\\".\"}\n", "", 0);
     s.s.pending.clear();
     s.press(&["ctrl+p"]);
-    assert!(s.s.msg.contains("older version of herdr-projects that cannot pin"), "{}", s.s.msg);
+    assert!(s.s.msg.contains("older version of omh that cannot pin"), "{}", s.s.msg);
 }
 
 #[test]

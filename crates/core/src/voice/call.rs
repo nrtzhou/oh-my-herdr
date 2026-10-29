@@ -25,7 +25,7 @@ pub fn dir() -> PathBuf { data_dir().join("voice") }
 pub fn file() -> PathBuf { dir().join("call.json") }
 fn hash(secret: &str) -> String { key_hash(secret) }
 /// How a secret of a call is kept: never itself.
-pub fn key_hash(secret: &str) -> String { sha1_smol::Sha1::from(format!("herdr-projects-call:{secret}")).digest().to_string() }
+pub fn key_hash(secret: &str) -> String { sha1_smol::Sha1::from(format!("omh-call:{secret}")).digest().to_string() }
 /// A secret for a page: 24 random bytes, written as letters a URL keeps whole.
 pub fn secret() -> String { crate::util::random_hex(24) }
 
@@ -130,7 +130,7 @@ pub fn target(c: &Obj) -> Target { Target::of(c.at("target")) }
 pub fn set_target(t: &Target) { change(|c| if target(c) != *t { c.put("target", t.value()); }); }
 /// A switch asked for by voice, for the board that owns the call to make, as its own switch: `to` as said.
 pub fn ask_switch(to: &str) -> i64 { change(|c| { let n = c.at("switch").i("n") + 1; c.put("switch", json!({ "to": to, "n": n, "at": now() })); n }).unwrap_or(0) }
-/// How the call page heard the call (hear.js): kept with the call, also after it ended, for `herdr-projects voice`.
+/// How the call page heard the call (hear.js): kept with the call, also after it ended, for `omh voice`.
 pub fn heard_audio(a: &Value) {
     let keep = ["elements", "playing", "peak", "ctx", "blocked", "via", "activated", "agent", "aec", "how", "mic", "secs"];
     let o: Obj = keep.iter().filter_map(|k| a.as_object()?.get(*k).map(|v| (k.to_string(), if v.is_string() { json!(crate::text::cut(v.as_str().unwrap_or(""), 200)) } else { v.clone() }))).collect();

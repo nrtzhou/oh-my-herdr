@@ -1,7 +1,7 @@
 //! Older installs found on this machine, their files taken over by the first run (flow/take_over.rs does the rest):
-//! the old herdr-projects 0.2 kept its projects in ~/.herdr-projects, which is this version's home folder now, so they
+//! the old omh 0.2 kept its projects in ~/.omh, which is this version's home folder now, so they
 //! are set aside whole (old_installs/legacy.rs); and herdr-superwork, this version's working title, kept everything in
-//! ~/.herdr-superwork, which becomes ~/.herdr-projects (old_installs/superwork.rs). docs/old-installs.md has the story.
+//! ~/.herdr-superwork, which becomes ~/.omh (old_installs/superwork.rs). docs/old-installs.md has the story.
 pub mod legacy;
 pub mod superwork;
 
@@ -11,7 +11,7 @@ use serde_json::Value;
 use std::path::{Path, PathBuf};
 
 /// The plugin's id in herdr, and the one herdr-superwork had.
-pub const ID: &str = "herdr-projects";
+pub const ID: &str = "omh";
 pub const OLD_ID: &str = "herdr-superwork";
 
 /// Where everything is, for one home folder and one environment (the tests give their own).
@@ -19,11 +19,11 @@ pub const OLD_ID: &str = "herdr-superwork";
 pub struct Places {
     /// The user's home folder.
     pub home: PathBuf,
-    /// This version's home folder: ~/.herdr-projects.
+    /// This version's home folder: ~/.omh.
     pub to: PathBuf,
     /// herdr-superwork's: ~/.herdr-superwork.
     pub superwork: PathBuf,
-    /// The old herdr-projects 0.2's own settings: ~/.config/herdr-projects (it never followed XDG_CONFIG_HOME).
+    /// The old omh 0.2's own settings: ~/.config/omh (it never followed XDG_CONFIG_HOME).
     pub old_config: PathBuf,
     /// herdr's config.toml, and the folders herdr keeps each plugin's config and state in.
     pub herdr_config: PathBuf,

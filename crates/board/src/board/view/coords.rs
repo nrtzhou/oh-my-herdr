@@ -1,5 +1,5 @@
 //! The chat with a heading's coordinator (update/coords.rs), drawn as the Coordinator's is but under its own name
-//! ("vm-str coordinator", "herdr-projects coordinator") and in its own colour: this machine's as read here,
+//! ("vm-str coordinator", "omh coordinator") and in its own colour: this machine's as read here,
 //! another machine's as that machine sent it with its tasks (coordinator/far.rs).
 use super::chat::{coord_who, parts_text, Who};
 use super::talk::{with_mine, Part};
@@ -51,11 +51,11 @@ pub fn sub_who(s: &mut State, t: &Theme, target: &Target) -> Who {
     }
     let Some(m) = s.remotes.get(&target.host) else { return muted(t, target, format!("{} is not on this board", target.host), vec![]) };
     // An older version there sends nothing of its coordinator at all.
-    if m.ok && target.to.is_empty() && m.coord.is_null() { return muted(t, target, format!("what you type goes to {}", target.host), vec![Part { text: format!("{} runs an older herdr-projects, which does not send what its Coordinator says: update it there.", target.host), note: "old".into(), ..Default::default() }]); }
+    if m.ok && target.to.is_empty() && m.coord.is_null() { return muted(t, target, format!("what you type goes to {}", target.host), vec![Part { text: format!("{} runs an older omh, which does not send what its Coordinator says: update it there.", target.host), note: "old".into(), ..Default::default() }]); }
     if m.coord.b("off") { return muted(t, target, "no coordinator there: coordinator.agent is none on that machine".into(), vec![]); }
     // An older version there has no coordinators but its top-level one.
     if m.ok && !m.coords.is_object() && !target.to.is_empty() {
-        return muted(t, target, format!("what you type goes to {}", target.host), vec![Part { text: format!("{} runs an older herdr-projects, which has no machine or project coordinators: update it there.", target.host), note: "old".into(), ..Default::default() }]);
+        return muted(t, target, format!("what you type goes to {}", target.host), vec![Part { text: format!("{} runs an older omh, which has no machine or project coordinators: update it there.", target.host), note: "old".into(), ..Default::default() }]);
     }
     let v = crate::coordinator::far::read(if target.to.is_empty() { &m.coord } else { m.coords.at(&target.to) }).unwrap_or_else(none);
     let turn = v.talk.last().map(|x| x.text.clone()).unwrap_or_default();

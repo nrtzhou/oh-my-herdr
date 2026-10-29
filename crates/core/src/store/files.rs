@@ -23,16 +23,16 @@ pub const KINDS: &[&str] = &["permission", "question", "auth"];
 /// The version of this program: what the marks and the keeper compare.
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
-// Everything the board keeps for a user is in one folder, the same on every machine: ~/.herdr-projects, with a
-// sub-folder for each kind of thing (docs/home-folder.md). HERDR_PROJECTS_HOME names another one; each sub-folder
+// Everything the board keeps for a user is in one folder, the same on every machine: ~/.omh, with a
+// sub-folder for each kind of thing (docs/home-folder.md). OMH_HOME names another one; each sub-folder
 // has a variable of its own too. The XDG_* variables only say where an older version kept things (move_home.rs).
 // Under the tests none of them may be the real one (never_real.rs).
-pub const HOME_NAME: &str = ".herdr-projects";
+pub const HOME_NAME: &str = ".omh";
 fn env(k: &str) -> Option<String> { std::env::var(k).ok().filter(|v| !v.is_empty()) }
 pub fn user_home() -> PathBuf { env("HOME").map(PathBuf::from).unwrap_or_else(|| PathBuf::from("/")) }
-pub fn home_dir() -> PathBuf { env("HERDR_PROJECTS_HOME").map(PathBuf::from).unwrap_or_else(|| user_home().join(HOME_NAME)) }
+pub fn home_dir() -> PathBuf { env("OMH_HOME").map(PathBuf::from).unwrap_or_else(|| user_home().join(HOME_NAME)) }
 /// Each part of the home folder: its own variable, else its place in the home folder.
-const PARTS: [(&str, &str); 3] = [("HERDR_PROJECTS_DATA_DIR", "data"), ("HERDR_PROJECTS_CONFIG_DIR", "settings"), ("HERDR_PROJECTS_REPORTS_DIR", "reports")];
+const PARTS: [(&str, &str); 3] = [("OMH_DATA_DIR", "data"), ("OMH_CONFIG_DIR", "settings"), ("OMH_REPORTS_DIR", "reports")];
 fn part((k, name): (&str, &str)) -> PathBuf { super::never_real::guard(env(k).map(PathBuf::from).unwrap_or_else(|| home_dir().join(name))) }
 pub fn data_dir() -> PathBuf { part(PARTS[0]) }
 pub fn config_dir() -> PathBuf { part(PARTS[1]) }
@@ -40,11 +40,11 @@ pub fn config_dir() -> PathBuf { part(PARTS[1]) }
 pub fn reports_dir() -> PathBuf { part(PARTS[2]) }
 /// The board's own folders as resolved here, for a process started somewhere that does not inherit this
 /// environment (an agent's herdr space): the home folder, and a part's own variable only for a part kept elsewhere.
-/// So HERDR_PROJECTS_HOME set to a scratch folder in front of a command there moves all of it: a part's variable
+/// So OMH_HOME set to a scratch folder in front of a command there moves all of it: a part's variable
 /// handed on would have kept that part in the real board (HP-172).
 pub fn board_env() -> Vec<(String, String)> {
     let home = absolute(&home_dir());
-    let mut out = vec![("HERDR_PROJECTS_HOME".to_string(), home.display().to_string())];
+    let mut out = vec![("OMH_HOME".to_string(), home.display().to_string())];
     for (k, name) in PARTS {
         let p = absolute(&part((k, name)));
         if p != home.join(name) { out.push((k.to_string(), p.display().to_string())); }
@@ -60,7 +60,7 @@ pub fn artifacts_dir(id: &str) -> PathBuf { dir_of(id).join("artifacts") }
 /// from: the path is the one without it, where the new program is.
 pub fn bin() -> PathBuf {
     use std::os::unix::ffi::OsStrExt;
-    let Ok(p) = std::env::current_exe() else { return PathBuf::from("herdr-projects") };
+    let Ok(p) = std::env::current_exe() else { return PathBuf::from("omh") };
     match p.as_os_str().as_bytes().strip_suffix(b" (deleted)") { Some(b) => PathBuf::from(std::ffi::OsStr::from_bytes(b)), None => p }
 }
 pub fn absolute(p: &Path) -> PathBuf { if p.is_absolute() { p.to_path_buf() } else { std::env::current_dir().map(|d| d.join(p)).unwrap_or_else(|_| p.to_path_buf()) } }

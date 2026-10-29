@@ -1,4 +1,4 @@
-//! `herdr-projects doctor` (HP-32), on what each area found: the program and its launcher, herdr's plugin, the agent
+//! `omh doctor` (HP-32), on what each area found: the program and its launcher, herdr's plugin, the agent
 //! programs, other machines and the disks; each problem one line with what to do, and the count at the end.
 use crate::common;
 use common::*;
@@ -7,15 +7,15 @@ use std::path::{Path, PathBuf};
 use sw::doctor::{agents, disk, machines, plugin, program, problems, say, Found};
 
 fn program_file(p: &Path) { std::fs::create_dir_all(p.parent().unwrap()).unwrap(); std::fs::write(p, "#!/bin/sh\n").unwrap(); use std::os::unix::fs::PermissionsExt; std::fs::set_permissions(p, std::fs::Permissions::from_mode(0o755)).unwrap(); }
-fn launcher_for(p: &Path) -> String { format!("#!/bin/sh\nexport HERDR_PROJECTS_DATA_DIR='/d'\nexec {} \"$@\"\n", sw::util::shq(&p.display().to_string())) }
+fn launcher_for(p: &Path) -> String { format!("#!/bin/sh\nexport OMH_DATA_DIR='/d'\nexec {} \"$@\"\n", sw::util::shq(&p.display().to_string())) }
 /// A plugin folder with its downloaded program, the launcher beside the data, and a PATH folder.
 struct Setup { root: PathBuf, prog: PathBuf, launcher: PathBuf, path: PathBuf }
 fn setup(w: &World) -> Setup {
     let root = w.base.join("plugin");
     let prog = root.join("bin").join(sw::install::asset_name(sw::install::platform().unwrap()));
     program_file(&prog);
-    std::fs::write(root.join("Cargo.toml"), "[package]\nname = \"herdr-projects\"\nversion = \"1.1.0\"\n").unwrap();
-    let launcher = w.base.join("data/bin/herdr-projects");
+    std::fs::write(root.join("Cargo.toml"), "[package]\nname = \"omh\"\nversion = \"1.1.0\"\n").unwrap();
+    let launcher = w.base.join("data/bin/omh");
     let path = w.base.join("path");
     std::fs::create_dir_all(&path).unwrap();
     Setup { root, prog, launcher, path }
@@ -32,9 +32,9 @@ fn each_problem_is_one_line_with_what_to_do_and_the_count_ends_it() {
     assert_eq!(problems(&all), 1);
     assert!(say(&[Found::ok("fine")]).ends_with("No problems."));
     // Older installs: a line that goes on from the one before is said with it; only what is left to do is a problem.
-    let old = sw::doctor::old_installs(vec![("Old herdr-projects (0.2): its projects are in ~/x.".into(), false), ("  The old version finds them with HERDR_PROJECTS_ROOT=~/x.".into(), false), ("HERDR_PROJECTS_ROOT is set.".into(), true)]);
+    let old = sw::doctor::old_installs(vec![("Old omh (0.2): its projects are in ~/x.".into(), false), ("  The old version finds them with OMH_ROOT=~/x.".into(), false), ("OMH_ROOT is set.".into(), true)]);
     assert_eq!(old.len(), 2);
-    assert!(old[0].what.ends_with("projects are in ~/x. The old version finds them with HERDR_PROJECTS_ROOT=~/x."), "{:?}", old[0]);
+    assert!(old[0].what.ends_with("projects are in ~/x. The old version finds them with OMH_ROOT=~/x."), "{:?}", old[0]);
     assert!(old[1].problem);
 }
 
@@ -42,23 +42,23 @@ fn each_problem_is_one_line_with_what_to_do_and_the_count_ends_it() {
 fn the_launcher_must_name_the_plugin_s_own_program() {
     let w = world();
     let s = setup(&w);
-    assert_eq!(program::launcher_target(&launcher_for(Path::new("/a/it's/herdr-projects"))), Some(PathBuf::from("/a/it's/herdr-projects")));
+    assert_eq!(program::launcher_target(&launcher_for(Path::new("/a/it's/omh"))), Some(PathBuf::from("/a/it's/omh")));
     // Missing: what to run names the plugin's own run.sh.
     let f = program::check(&here(&s, None, true));
-    assert!(f[0].what.starts_with("herdr-projects 1.1.0, downloaded: "), "{:?}", f[0]);
+    assert!(f[0].what.starts_with("omh 1.1.0, downloaded: "), "{:?}", f[0]);
     assert!(bad(&f)[0].contains("is missing") && bad(&f)[0].contains("/plugin/bin/run.sh install"), "{:?}", bad(&f));
     // A program that is not there.
-    let gone = s.root.join("old/herdr-projects");
+    let gone = s.root.join("old/omh");
     assert!(bad(&program::check(&here(&s, Some(launcher_for(&gone)), true)))[0].contains("which is not there"));
     // Another program than the plugin's.
-    let other = w.base.join("elsewhere/herdr-projects");
+    let other = w.base.join("elsewhere/omh");
     program_file(&other);
     let f = bad(&program::check(&here(&s, Some(launcher_for(&other)), true)));
     assert!(f[0].contains("not the plugin's program in"), "{f:?}");
     // Without herdr's word on the plugin, any program that is there will do.
     assert!(!bad(&program::check(&here(&s, Some(launcher_for(&other)), false)))[0].contains("plugin's program"));
     // The plugin's own program, built in its folder, is right too.
-    let built = s.root.join("target/release/herdr-projects");
+    let built = s.root.join("target/release/omh");
     program_file(&built);
     assert!(!bad(&program::check(&here(&s, Some(launcher_for(&built)), true))).iter().any(|l| l.contains("launcher")));
 }
@@ -72,9 +72,9 @@ fn a_shell_must_find_the_launcher_on_the_path() {
     std::fs::write(&s.launcher, launcher_for(&s.prog)).unwrap();
     let f = bad(&program::check(&here(&s, Some(launcher_for(&s.prog)), true)));
     assert_eq!(f.len(), 1, "{f:?}");
-    assert!(f[0].starts_with("herdr-projects is not on your PATH → To type herdr-projects in any shell"), "{f:?}");
-    // A link to the launcher (~/.local/bin/herdr-projects) is the launcher.
-    std::os::unix::fs::symlink(&s.launcher, s.path.join("herdr-projects")).unwrap();
+    assert!(f[0].starts_with("omh is not on your PATH → To type omh in any shell"), "{f:?}");
+    // A link to the launcher (~/.local/bin/omh) is the launcher.
+    std::os::unix::fs::symlink(&s.launcher, s.path.join("omh")).unwrap();
     let f = program::check(&here(&s, Some(launcher_for(&s.prog)), true));
     assert_eq!(bad(&f), Vec::<String>::new());
     assert!(f[1].what.ends_with("and a shell finds it on the PATH"), "{:?}", f[1]);
@@ -86,8 +86,8 @@ fn a_shell_must_find_the_launcher_on_the_path() {
     assert!(f[0].contains("cannot be run: it is not executable → Run: sh "), "{f:?}");
     std::fs::set_permissions(&s.launcher, std::fs::Permissions::from_mode(0o755)).unwrap();
     // Something else of that name first.
-    std::fs::remove_file(s.path.join("herdr-projects")).unwrap();
-    program_file(&s.path.join("herdr-projects"));
+    std::fs::remove_file(s.path.join("omh")).unwrap();
+    program_file(&s.path.join("omh"));
     assert!(bad(&program::check(&here(&s, Some(launcher_for(&s.prog)), true)))[0].contains("comes first on your PATH"));
 }
 
@@ -97,21 +97,21 @@ fn a_program_older_than_its_plugin_is_to_be_updated() {
     let s = setup(&w);
     std::fs::write(s.root.join("Cargo.toml"), "[package]\nversion = \"1.2.0\"\n").unwrap();
     let f = bad(&program::check(&here(&s, Some(launcher_for(&s.prog)), true)));
-    assert!(f.iter().any(|l| l == "This program is 1.1.0, older than the plugin's 1.2.0 → Run: herdr-projects update 1.2.0"), "{f:?}");
+    assert!(f.iter().any(|l| l == "This program is 1.1.0, older than the plugin's 1.2.0 → Run: omh update 1.2.0"), "{f:?}");
 }
 
 fn ours(enabled: bool, root: &Path, local: bool) -> serde_json::Value {
-    json!({ "plugin_id": "herdr-projects", "enabled": enabled, "plugin_root": root.display().to_string(), "version": "1.1.0", "min_herdr_version": "0.9.3", "source": { "kind": if local { "local" } else { "github" } } })
+    json!({ "plugin_id": "omh", "enabled": enabled, "plugin_root": root.display().to_string(), "version": "1.1.0", "min_herdr_version": "0.9.3", "source": { "kind": if local { "local" } else { "github" } } })
 }
 #[test]
 fn herdr_must_run_the_plugin_enabled_from_a_folder_that_is_there() {
     let w = world();
     let s = setup(&w);
-    std::fs::write(s.root.join("herdr-plugin.toml"), "id = \"herdr-projects\"\n").unwrap();
+    std::fs::write(s.root.join("herdr-plugin.toml"), "id = \"omh\"\n").unwrap();
     let h = |v: Option<&str>, list: Vec<serde_json::Value>| plugin::Herdr { version: v.map(String::from), plugins: Ok(list) };
     assert!(bad(&plugin::check(&h(None, vec![])))[0].starts_with("herdr does not run here"));
-    assert!(bad(&plugin::check(&h(Some("0.9.3"), vec![])))[0].ends_with("→ Run: herdr plugin install eliasstravik/herdr-projects"));
-    assert!(bad(&plugin::check(&h(Some("0.9.3"), vec![ours(false, &s.root, true)])))[0].ends_with("but turned off → Run: herdr plugin enable herdr-projects"));
+    assert!(bad(&plugin::check(&h(Some("0.9.3"), vec![])))[0].ends_with("→ Run: herdr plugin install eliasstravik/omh"));
+    assert!(bad(&plugin::check(&h(Some("0.9.3"), vec![ours(false, &s.root, true)])))[0].ends_with("but turned off → Run: herdr plugin enable omh"));
     assert!(bad(&plugin::check(&h(Some("0.9.3"), vec![ours(true, &w.base.join("gone"), true)])))[0].contains("which is gone"));
     assert!(bad(&plugin::check(&h(Some("0.9.1"), vec![ours(true, &s.root, true)])))[0].starts_with("herdr 0.9.1 is older than 0.9.3"));
     let f = plugin::check(&h(Some("0.9.4"), vec![ours(true, &s.root, true)]));
@@ -129,7 +129,7 @@ fn each_program_must_be_installed_new_enough_and_signed_in() {
     let p = |k: &str, found: bool, v: &str, sign: Sign| agents::Prog { kind: k.into(), named_by: vec!["worker.agent".into()], found, version: v.into(), sign, ..Default::default() };
     let f = agents::check(&[p("claude", true, "2.1.301", Sign::In), p("pi", true, "1.1.0", Sign::Unknown)]);
     assert_eq!(f.iter().map(|f| f.what.as_str()).collect::<Vec<_>>(), ["claude 2.1.301, signed in (worker.agent)", "pi 1.1.0 (worker.agent)"]);
-    assert_eq!(bad(&agents::check(&[p("codex", false, "", Sign::Unknown)])), ["codex is not installed here (worker.agent) → Install codex, or choose another program: herdr-projects set worker.agent <program>"]);
+    assert_eq!(bad(&agents::check(&[p("codex", false, "", Sign::Unknown)])), ["codex is not installed here (worker.agent) → Install codex, or choose another program: omh set worker.agent <program>"]);
     assert_eq!(bad(&agents::check(&[p("codex", true, "0.162.1", Sign::Out)])), ["codex is not signed in (worker.agent) → Run `codex login` in a terminal here."]);
     assert!(bad(&agents::check(&[p("claude", true, "2.1.100", Sign::In)]))[0].starts_with("claude 2.1.100 is older than 2.1.296"));
     let mut m = p("mastracode", true, "1.0.0", Sign::Unknown);
@@ -140,7 +140,7 @@ fn each_program_must_be_installed_new_enough_and_signed_in() {
     // A program not installed for a repo's or a task's setting is set there.
     let mut q = p("codex", false, "", Sign::Unknown);
     q.named_by = vec!["reviewer.agent for proj".into()];
-    assert!(bad(&agents::check(&[q]))[0].ends_with("herdr-projects set reviewer.agent <program> --repo proj"));
+    assert!(bad(&agents::check(&[q]))[0].ends_with("omh set reviewer.agent <program> --repo proj"));
     // What a status command says: it failed, or it says it is signed out (cursor-agent exits 0 either way).
     assert!(agents::signed_out(1, "{\"loggedIn\": false}"));
     assert!(agents::signed_out(0, "Not logged in"));
@@ -164,17 +164,17 @@ fn a_version_command_that_hangs_is_said_and_never_asked_again_at_once() {
 fn other_machines_must_answer_and_be_able_to_ask_this_one() {
     let _w = world();
     assert_eq!(machines::check(None)[0], Found::ok("No other machines to reach"));
-    let r = json!({ "here": { "label": "me", "here": true, "ok": false, "why": { "line": "a login shell does not find herdr-projects", "detail": ["Put it on the PATH in ~/.profile."] } },
+    let r = json!({ "here": { "label": "me", "here": true, "ok": false, "why": { "line": "a login shell does not find omh", "detail": ["Put it on the PATH in ~/.profile."] } },
         "machines": [
             { "label": "vm-a", "target": "a.ts.net", "ok": true, "version": "1.1.0", "tasks": 1 },
             { "label": "vm-b", "target": "b.ts.net", "ok": false, "why": { "line": "ssh could not connect", "detail": ["", "Check that it is on: ssh b.ts.net"] } },
             { "label": "vm-c", "target": "c.ts.net", "ok": true, "version": "", "tasks": 0 }] });
     let f = machines::check(Some(&r));
     assert_eq!(bad(&f), [
-        "Other machines cannot ask this one: a login shell does not find herdr-projects → Put it on the PATH in ~/.profile.",
+        "Other machines cannot ask this one: a login shell does not find omh → Put it on the PATH in ~/.profile.",
         "vm-b (b.ts.net) does not answer: ssh could not connect → Check that it is on: ssh b.ts.net",
-        "vm-c answers, but runs an older herdr-projects → Run herdr-projects update on vm-c."]);
-    assert!(f.contains(&Found::ok("vm-a answers: herdr-projects 1.1.0, 1 task")));
+        "vm-c answers, but runs an older omh → Run omh update on vm-c."]);
+    assert!(f.contains(&Found::ok("vm-a answers: omh 1.1.0, 1 task")));
 }
 
 #[test]

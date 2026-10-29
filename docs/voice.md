@@ -76,7 +76,7 @@ sometimes on the same one. Either way the call's sound is the computer you sit a
 helper** there holds the call right in the terminal's computer, with its microphone and speaker. No browser, no link,
 no window.
 
-- The helper is part of herdr-projects. It runs by itself on a computer where herdr-projects is installed and herdr has
+- The helper is part of omh. It runs by itself on a computer where omh is installed and herdr has
   saved machines (the ones in herdr's sidebar), and listens on each of them over SSH, as the board reaches other
   machines ([other machines](other-machines.md)), and on this computer itself. `voice.helper none` turns it off.
 - **Which computer takes it.** A board whose herdr window is on the same computer (herdr's Local, in use: on macOS
@@ -97,7 +97,7 @@ no window.
 - **Headphones** are needed where nothing cancels the echo (no `pactl` on Linux, voice processing not available on
   macOS): the chat says so on the call's line (`on laptop · headphones needed: no echo cancelling there`). So does a
   microphone that stayed near silent for ten seconds (`your microphone is very quiet: the voice may not hear you`).
-- `herdr-projects voice test`, on the computer you sit at, tries its sound for a call: it plays a short tone, listens
+- `omh voice test`, on the computer you sit at, tries its sound for a call: it plays a short tone, listens
   to the microphone for a moment, and says whether the echo is cancelled.
 - **No helper picked it up** after a few seconds: the chat says so. A call the helper could not hold (no sound tools,
   no connection) ends, and the board says why.
@@ -108,10 +108,10 @@ no window.
   (https://elevenlabs.io/app/developers/api-keys), with the **ElevenAgents** permission set to **Write**: it makes the
   voice agent and its tools, and starts each call. Give it the **Voices** permission set to **Write** as well, so the
   call's voice can be added to your account (below). Then put it in one of two places, looked in this order:
-  - the `ELEVENLABS_API_KEY` environment variable, where herdr-projects runs;
-  - `~/.herdr-projects/settings/elevenlabs.json`, as `{"api_key": "…"}` (readable by you alone: `chmod 600`).
+  - the `ELEVENLABS_API_KEY` environment variable, where omh runs;
+  - `~/.omh/settings/elevenlabs.json`, as `{"api_key": "…"}` (readable by you alone: `chmod 600`).
 
-  A call without a key says this, and so does `herdr-projects voice`.
+  A call without a key says this, and so does `omh voice`.
 - **The voice** is Warren ("Effortless and Cool", `7QN34D2r3hCNwbOYIeK0`) from ElevenLabs' Voice Library, the voice
   ElevenLabs names in place of its default voice Will, which it retires at the end of 2026 (and which accounts made
   since March 2026 never had). An agent can speak only with a voice in your account, so the first call adds Warren to
@@ -121,10 +121,10 @@ no window.
   API use Voice Library voices: pick one of your own voices then. Nothing else is set up by hand: the voice agent,
   its prompt and its tools are made in your ElevenLabs account before the first call and kept in step with this
   program after that.
-- **The terminal board's calls** need herdr-projects on the computer you sit at (its call helper), and SSH from there
-  to the board's machine with `herdr-projects` on its path, as other machines need.
-- `herdr-projects voice` says how it stands: where the key was found (never the key), the helper, how the last call
-  sounded, a call that is on. `herdr-projects voice end` hangs up.
+- **The terminal board's calls** need omh on the computer you sit at (its call helper), and SSH from there
+  to the board's machine with `omh` on its path, as other machines need.
+- `omh voice` says how it stands: where the key was found (never the key), the helper, how the last call
+  sounded, a call that is on. `omh voice end` hangs up.
 
 | Setting | What it does |
 |---|---|
@@ -136,7 +136,7 @@ no window.
 
 ## Turning calls off
 
-`herdr-projects set voice.calls off` turns voice calls off on this machine, for when you cannot or will not use them.
+`omh set voice.calls off` turns voice calls off on this machine, for when you cannot or will not use them.
 Off, voice is gone, not just broken:
 
 - the web board has no Call button, and its page is not allowed to reach ElevenLabs;
@@ -148,8 +148,8 @@ Off, voice is gone, not just broken:
 - a call that is on when you turn them off ends within seconds, on either board, and lets go of the microphone and
   of ElevenLabs.
 
-`herdr-projects voice` says that calls are off and how to turn them on again: `herdr-projects set voice.calls on`
-(or `herdr-projects unset voice.calls`). Dictation into the chat's text box is not a call and has its own switch:
+`omh voice` says that calls are off and how to turn them on again: `omh set voice.calls on`
+(or `omh unset voice.calls`). Dictation into the chat's text box is not a call and has its own switch:
 the web UI's (Ovis's) Settings, Voice input.
 
 ## How it fits together
@@ -157,11 +157,11 @@ the web UI's (Ovis's) Settings, Voice input.
 - **The web board's page** holds its call: the ElevenLabs client in the browser over WebRTC, built into the program
   (`crates/web/src/webui/page/vendor/`, made by `scripts/voice-sdk.sh`), with its own audio worklet so the web UI's
   rules on scripts stay as they are. The web UI's page may connect to ElevenLabs' call servers and nothing else new.
-- **The front door** (`/herdr-projects/api/voice/`) starts the web board's call (a token for a page the web UI lets
+- **The front door** (`/omh/api/voice/`) starts the web board's call (a token for a page the web UI lets
   drive), runs the voice agent's tools on the board the call belongs to, and says what to read back. The terminal
-  board's call runs the same code in the listener on the board's machine (`herdr-projects voice listen`, which the
+  board's call runs the same code in the listener on the board's machine (`omh voice listen`, which the
   helper starts over SSH): it starts the call with its one-time ticket and keeps the call's key.
-- **The helper** (`herdr-projects voice helper`) holds the terminal board's call: its sound, its WebSocket to
+- **The helper** (`omh voice helper`) holds the terminal board's call: its sound, its WebSocket to
   ElevenLabs (TLS in Rust, nothing to install), its requests to the board.
 - **The call record** (`data/voice/call.json`): one call at a time on a machine, who it talks to, what was said. Its
   ticket and its key are kept only as hashes.

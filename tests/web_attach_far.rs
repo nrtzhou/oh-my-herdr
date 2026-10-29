@@ -71,7 +71,7 @@ impl Upstream for Up { fn to(&self) -> Option<(String, u16)> { Some(("127.0.0.1"
 fn through_door(up: &Up, path: &str, body: &str) -> (u16, String) {
     let l = TcpListener::bind("127.0.0.1:0").unwrap();
     let port = l.local_addr().unwrap().port();
-    let req = format!("POST {path} HTTP/1.1\r\nhost: 127.0.0.1\r\ncookie: token=good\r\ncontent-type: application/json\r\nx-herdr-projects: 1\r\nsec-fetch-site: same-origin\r\ncontent-length: {}\r\n\r\n{body}", body.len());
+    let req = format!("POST {path} HTTP/1.1\r\nhost: 127.0.0.1\r\ncookie: token=good\r\ncontent-type: application/json\r\nx-omh: 1\r\nsec-fetch-site: same-origin\r\ncontent-length: {}\r\n\r\n{body}", body.len());
     let client = std::thread::spawn(move || { let mut s = TcpStream::connect(("127.0.0.1", port)).unwrap(); s.write_all(req.as_bytes()).unwrap(); let mut out = vec![]; let _ = s.read_to_end(&mut out); String::from_utf8_lossy(&out).into_owned() });
     let (c, _) = l.accept().unwrap();
     handle(c, up);
@@ -86,7 +86,7 @@ fn a_file_for_another_machines_agent_goes_through_the_web_ui_to_its_pane_there_w
     every_machine("door");
     let seen = Arc::new(Mutex::new(vec![]));
     let up = Up(fake_ui(seen.clone()));
-    let (status, body) = through_door(&up, "/herdr-projects/api/attach?client=door", &file(json!({ "id": "vm-a:far/1", "reply": true, "scope": "*" })).to_string());
+    let (status, body) = through_door(&up, "/omh/api/attach?client=door", &file(json!({ "id": "vm-a:far/1", "reply": true, "scope": "*" })).to_string());
     let out: Value = serde_json::from_str(&body).unwrap();
     assert_eq!((status, out.s("path")), (200, THERE), "the path on that machine, for the box to name: {body}");
     let seen = seen.lock().unwrap().clone();
@@ -115,7 +115,7 @@ fn a_file_for_another_machines_coordinator_by_its_heading_or_by_its_board_goes_b
 #[test]
 fn where_the_web_ui_cannot_the_file_goes_over_the_boards_own_link_or_why_it_could_not_is_said() {
     let (_w, far) = far_world();
-    far.answers("vm-a", "keep", &json!({ "ok": true, "path": "/home/me/far/.herdr-projects/files/paste-2.png" }));
+    far.answers("vm-a", "keep", &json!({ "ok": true, "path": "/home/me/far/.omh/files/paste-2.png" }));
     every_machine("t");
     let task = json!({ "id": "vm-a:far/1", "reply": true, "scope": "*" });
     // the web UI has no PC for vm-a, has it but not connected, or could not say: no file goes to the web UI
@@ -141,7 +141,7 @@ fn where_the_web_ui_cannot_the_file_goes_over_the_boards_own_link_or_why_it_coul
 fn over_ssh(far: &Far, out: Result<Value, String>, id: &str, web: &str) {
     match out {
         Ok(v) => {
-            assert_eq!(v.s("path"), "/home/me/far/.herdr-projects/files/paste-2.png");
+            assert_eq!(v.s("path"), "/home/me/far/.omh/files/paste-2.png");
             let k = far.asked().into_iter().filter(|a| a.1 == "keep").last().expect("asked to keep it");
             assert_eq!((k.0.as_str(), k.2.s("id")), ("vm-a", id));
         }

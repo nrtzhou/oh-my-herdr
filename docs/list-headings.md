@@ -11,7 +11,7 @@ machine**, its repos (or status groups) under it, and their tasks under those.
 ```
 ▾ All machines  2 machines · 4 tasks
   ▾ vm-str
-    ▾ herdr-projects · HSW
+    ▾ omh · HSW
       ◐ HSW-151 Rewrite the board in Rust on Ratatui       47%   3h
       ○ HSW-179 Remove the "To: Coordinator" label      1h ago
     ▾ open-crm · CRM
@@ -45,7 +45,7 @@ opens on it. The archive has none.
 - **A row never names its machine.** Its tag is the one it has on its own machine's board: the repo's key and number
   (`HSW-151`, [task numbers](task-numbers.md)). The heading above says whose it is.
 - **A repo's heading** is its name in normal weight, in the base colour of the task titles under it, one step in, with its key beside it,
-  dimmed (`herdr-projects · HSW`), never `vm-str:herdr-projects`. It is never quieter than its tasks, in any theme, so
+  dimmed (`omh · HSW`), never `vm-str:omh`. It is never quieter than its tasks, in any theme, so
   a list of several repos reads as several blocks. It has no rule: the rule is a machine's. On each machine, the repo the board is in comes first.
 - **On one machine** (this machine's board, or one other machine by itself) the machine's row is the top row.
 

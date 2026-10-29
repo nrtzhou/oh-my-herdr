@@ -9,7 +9,7 @@ use std::path::PathBuf;
 /// by another user, or open to others).
 pub fn control_path() -> String {
     use std::os::unix::fs::{DirBuilderExt, MetadataExt};
-    let base = std::env::var("HERDR_PROJECTS_TMP").ok().filter(|v| !v.is_empty()).map(PathBuf::from).unwrap_or_else(|| PathBuf::from("/tmp"));
+    let base = std::env::var("OMH_TMP").ok().filter(|v| !v.is_empty()).map(PathBuf::from).unwrap_or_else(|| PathBuf::from("/tmp"));
     let d = base.join(format!("hp-{}", uid())).join("ssh");
     let _ = std::fs::DirBuilder::new().recursive(true).mode(0o700).create(&d);
     let mine = |p: &std::path::Path| std::fs::symlink_metadata(p).map(|m| m.is_dir() && m.uid() == uid() && m.mode() & 0o022 == 0).unwrap_or(false);

@@ -20,7 +20,7 @@ While it waits, the row never says `working` or `finishing`.
 
 - **Look at its pane in the error.** The error's detail ends with the last lines of the agent's terminal, read when the
   board gave up: the text still in the box, an empty box, or whatever the program shows instead.
-- **Retry**: the "yes" key on the board, or `herdr-projects retry <id>`. It ends the agent's program, starts it again in
+- **Retry**: the "yes" key on the board, or `omh retry <id>`. It ends the agent's program, starts it again in
   the same pane and hands it the same text, word for word. The program is ended first because its box may still hold
   the old text, and typing on top would send it twice.
 - **Or go into the agent and press enter yourself.** The board sees it start, and the error goes away.
@@ -89,9 +89,9 @@ on the message is delivered: the turn's end, however much later, is the answer t
 
 | Variable | Default | What |
 |---|---|---|
-| `HERDR_PROJECTS_READY_MS` | 60000 | the longest the board waits for a started program to draw its screen; 0 types at once |
-| `HERDR_PROJECTS_SUBMIT_MS` | 5000 | the wait before the first extra enter; each later wait is twice the one before |
-| `HERDR_PROJECTS_CONFIRM_MS` | 180000 | how long counters that moved without a sign of work wait for a proof that the agent took the text |
+| `OMH_READY_MS` | 60000 | the longest the board waits for a started program to draw its screen; 0 types at once |
+| `OMH_SUBMIT_MS` | 5000 | the wait before the first extra enter; each later wait is twice the one before |
+| `OMH_CONFIRM_MS` | 180000 | how long counters that moved without a sign of work wait for a proof that the agent took the text |
 
 Very long text is handed over in a file instead: [when an agent could not start](could-not-start.md#long-rules-and-long-messages).
 

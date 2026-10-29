@@ -44,7 +44,7 @@ pub fn prompt_tail(t: &Task) -> String {
 }
 pub fn with_tail(t: &Task, text: &str) -> String { [text.to_string(), prompt_tail(t)].into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join("\n\n") }
 /// Where the launcher is, without writing it (`doctor` looks at it as it is).
-pub fn launcher_file() -> PathBuf { data_dir().join("bin").join("herdr-projects") }
+pub fn launcher_file() -> PathBuf { data_dir().join("bin").join("omh") }
 /// The absolute path of the command, kept in the data folder, so agents and hooks find it without anything on their
 /// PATH. It names its own board: herdr cannot hand a worktree's space any environment.
 pub fn shim() -> PathBuf {
@@ -58,7 +58,7 @@ pub fn shim() -> PathBuf {
     if have.as_deref() != Some(text.as_str()) && crate::herdr::cli::fake().is_none() {
         use std::os::unix::fs::OpenOptionsExt;
         let _ = std::fs::create_dir_all(&dir);
-        let tmp = dir.join(format!("herdr-projects.{}", std::process::id()));
+        let tmp = dir.join(format!("omh.{}", std::process::id()));
         let ok = std::fs::OpenOptions::new().write(true).create(true).truncate(true).mode(0o755).open(&tmp).and_then(|mut f| std::io::Write::write_all(&mut f, text.as_bytes())).is_ok();
         if ok { let _ = std::fs::rename(&tmp, &file); }
     }

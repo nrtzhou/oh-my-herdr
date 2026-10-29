@@ -12,8 +12,8 @@ the safe ones without asking and stops the risky ones. It sits between the two v
 `full` and `ask` are as they always were, and `full` stays the built-in value.
 
 The same value is there for every role that has an access: `worker.access`, `reviewer.access` and `coordinator.access`.
-A research task is a worker's, and takes `worker.access`. Set it as any setting: `herdr-projects set worker.access auto`,
-for one task `herdr-projects delegate <id> --worker.access auto`, or on the task panel's settings page, where the access
+A research task is a worker's, and takes `worker.access`. Set it as any setting: `omh set worker.access auto`,
+for one task `omh delegate <id> --worker.access auto`, or on the task panel's settings page, where the access
 row goes `full`, `ask`, `auto` in turn. The task panel says `auto mode` under the agent.
 
 ## Which programs have one
@@ -46,7 +46,7 @@ Every other program has no such mode, and `auto` is refused for it, never made `
   effort or an `ask` that does not fit (which fall to the next place down), because the next place down could be
   `full`. The task panel says `no auto mode in pi: it will not start`, the agent is not started, and the task says why:
   `pi cannot be started with access "auto": it has no auto mode (…). Set the role's access to full or ask, or choose
-  another program.` `herdr-projects doctor` names every such setting.
+  another program.` `omh doctor` names every such setting.
 - **On the task panel's settings page** the access row passes over a value its program cannot do: for OpenCode it goes
   `full`, `ask`, `full`; for pi, which can do neither, it stays `full`.
 - **A fallback agent** without one is passed over while the access is `auto`, as one that cannot ask is while it is
@@ -62,7 +62,7 @@ and starts nothing in auto mode on a version older than the first that has it. T
 claude cannot be started with access "auto": claude 2.1.70 has no auto mode: it came in claude 2.1.111. Update claude, or set the role's access to full or ask.
 ```
 
-`herdr-projects doctor` says the same before any task starts. A version that cannot be read is taken to be new: the
+`omh doctor` says the same before any task starts. A version that cannot be read is taken to be new: the
 program then says itself what it does not know.
 
 ## When the agent stops for you

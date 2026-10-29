@@ -189,8 +189,8 @@ fn the_agent_is_made_once_and_updated_only_when_it_changed() {
     })));
     std::fs::write(sw::store::files::config_dir().join("config.json"), json!({ "voice.voice": "XYZ", "coordinator.agent": "none", "watcher.agent": "none" }).to_string()).unwrap();
     let e = sw::voice::eleven::ensure_agent("sk_test").unwrap_err();
-    assert!(e.starts_with("ElevenLabs refused the voice XYZ (the one voice.voice names) for the call's agent: it has live moderation, which agents may not use. Pick another: herdr-projects set voice.voice <voice id>"), "{e}");
-    assert!(e.contains("herdr-projects set voice.voice none") && e.contains("voice_live_moderated_not_allowed"));
+    assert!(e.starts_with("ElevenLabs refused the voice XYZ (the one voice.voice names) for the call's agent: it has live moderation, which agents may not use. Pick another: omh set voice.voice <voice id>"), "{e}");
+    assert!(e.contains("omh set voice.voice none") && e.contains("voice_live_moderated_not_allowed"));
     assert_eq!(n, log.borrow().len(), "the logging fake was swapped out");
     // other refusals are said as they came; the built-in voice is one agents may use
     assert_eq!(sw::voice::eleven::refused("ElevenLabs answered 500 to POST /x: oops", &sw::voice::agent::made()), "ElevenLabs answered 500 to POST /x: oops");

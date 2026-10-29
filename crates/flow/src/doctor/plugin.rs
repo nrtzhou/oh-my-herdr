@@ -19,7 +19,7 @@ pub fn ask() -> Herdr {
         .map(|j| if j.at("result").at("plugins").is_array() { j.at("result").arr("plugins").to_vec() } else { j.arr("plugins").to_vec() });
     Herdr { version, plugins }
 }
-pub const ID: &str = "herdr-projects";
+pub const ID: &str = "omh";
 /// The oldest herdr the plugin works with, where herdr does not say it (herdr-plugin.toml `min_herdr_version`).
 pub const MIN_HERDR: &str = "0.9.3";
 fn ours(h: &Herdr) -> Option<&Value> { h.plugins.as_ref().ok()?.iter().find(|p| p.s("plugin_id") == ID) }

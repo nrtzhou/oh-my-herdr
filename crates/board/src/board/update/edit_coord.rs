@@ -10,7 +10,7 @@ use crate::json::*;
 /// The page a coordinator's row opens, if the selected row is one: Err for another machine's.
 pub fn whose_of(s: &State) -> Option<Result<Whose, String>> {
     let t = of_head(s, &s.sel)?;
-    if !t.host.is_empty() { return Some(Err(format!("The {}'s settings are changed on {}: herdr-projects set <name> <value> {} there.", t.name, t.host, crate::board::view::panel::coord::flag(&t)))); }
+    if !t.host.is_empty() { return Some(Err(format!("The {}'s settings are changed on {}: omh set <name> <value> {} there.", t.name, t.host, crate::board::view::panel::coord::flag(&t)))); }
     let key = if t.to.is_empty() { "main".to_string() } else { t.to.clone() };
     let then = match t.to.strip_prefix("project:") { Some(r) if s.data.repos.iter().any(|x| x == r) => format!("repo:{r}"), Some(_) => String::new(), None if t.to == "machine" => "you".into(), None => String::new() };
     Some(Ok(Whose::Coord(key, then)))

@@ -7,7 +7,7 @@
 // Whether the voice agent can be heard is hear.js's: it is reported to the board with each fifth question.
 /* global window, document, navigator, fetch, performance */
 import * as hear from "./hear.js";
-const API = "/herdr-projects/api/voice";
+const API = "/omh/api/voice";
 const TOOLS = ["send_message", "switch_to", "board_status", "latest_reply", "quiet", "end_call"];
 // A pause: nobody spoke for this long (you, by the voice service's own speech detector; the voice agent, by its mode).
 const QUIET_MS = 1400, FEED_MS = 1500, VOICE = 0.5;
@@ -45,7 +45,7 @@ const say = (by, text) => set({ lines: [...st.lines, { by, text: by === "voice" 
 
 async function send(what, body, method = "POST", k = key) {
   try {
-    const r = await fetch(`${API}/${what}`, { method, credentials: "same-origin", cache: "no-store", keepalive: what === "end", headers: { "content-type": "application/json", "x-herdr-projects": "1", "x-herdr-projects-call": k }, body: method === "POST" ? JSON.stringify(body || {}) : undefined });
+    const r = await fetch(`${API}/${what}`, { method, credentials: "same-origin", cache: "no-store", keepalive: what === "end", headers: { "content-type": "application/json", "x-omh": "1", "x-omh-call": k }, body: method === "POST" ? JSON.stringify(body || {}) : undefined });
     const j = await r.json().catch(() => ({}));
     return { ...j, ok: r.ok && j.ok !== false, status: r.status };
   } catch { return { ok: false, status: 0, msg: "No connection." }; }
@@ -70,7 +70,7 @@ export async function start(how) {
     for (const t of mic.getTracks()) t.stop();
     if (stop()) return;
     set({ note: "Connecting…" });
-    const r = await fetch(`${API}/start`, { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json", "x-herdr-projects": "1" }, body: JSON.stringify(how) });
+    const r = await fetch(`${API}/start`, { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json", "x-omh": "1" }, body: JSON.stringify(how) });
     const out = await r.json().catch(() => ({}));
     if (!r.ok || !out.token) throw new Error(out.msg || "The call could not start.");
     key = out.key;

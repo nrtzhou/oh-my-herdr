@@ -11,8 +11,8 @@ use std::io::Write;
 use std::rc::Rc;
 
 const API: &str = "https://api.elevenlabs.io";
-/// Where the API is: ElevenLabs, or a stand-in (`HERDR_PROJECTS_ELEVENLABS_API`, for a scripted call in a browser).
-fn api() -> String { std::env::var("HERDR_PROJECTS_ELEVENLABS_API").ok().filter(|x| !x.is_empty()).unwrap_or_else(|| API.into()) }
+/// Where the API is: ElevenLabs, or a stand-in (`OMH_ELEVENLABS_API`, for a scripted call in a browser).
+fn api() -> String { std::env::var("OMH_ELEVENLABS_API").ok().filter(|x| !x.is_empty()).unwrap_or_else(|| API.into()) }
 /// A test's ElevenLabs: (method, path, body) → (status, body).
 pub type Fake = dyn Fn(&str, &str, &Value) -> (u16, Value);
 thread_local! { static FAKE: RefCell<Option<Rc<Fake>>> = const { RefCell::new(None) }; }
@@ -46,7 +46,7 @@ pub fn agent_body(m: &Made, tool_ids: &[String]) -> Value {
     let mut presets = json!({});
     if m.language == "auto" { presets = Value::Object(agent::LANGUAGES.iter().filter(|l| **l != "en").map(|l| (l.to_string(), json!({ "overrides": { "agent": { "language": l } } }))).collect()); }
     json!({
-        "name": agent::NAME, "tags": ["herdr-projects"],
+        "name": agent::NAME, "tags": ["omh"],
         "conversation_config": {
             "agent": { "first_message": agent::first_message(lang), "language": lang, "dynamic_variables": { "dynamic_variable_placeholders": { "target": "the Coordinator" } },
                 "prompt": { "prompt": agent::PROMPT, "llm": m.llm, "temperature": 0.4, "tool_ids": tool_ids,
@@ -113,12 +113,12 @@ pub fn refused(e: &str, m: &Made) -> String {
     let low = e.to_lowercase();
     if low.contains("llm") && (low.contains(" 400 ") || low.contains(" 422 ")) {
         let ours = if m.llm == agent::LLM { "the built-in one" } else { "the one voice.llm names" };
-        return format!("ElevenLabs refused the model {} ({ours}) for the call's agent. Pick another: herdr-projects set voice.llm <model id> (one of the LLMs ElevenLabs lists for agents), or herdr-projects set voice.llm none for the built-in one. ElevenLabs said: {}", m.llm, crate::text::cut(e, 300));
+        return format!("ElevenLabs refused the model {} ({ours}) for the call's agent. Pick another: omh set voice.llm <model id> (one of the LLMs ElevenLabs lists for agents), or omh set voice.llm none for the built-in one. ElevenLabs said: {}", m.llm, crate::text::cut(e, 300));
     }
     if !(low.contains("voice") && (low.contains(" 400 ") || low.contains(" 403 ") || low.contains(" 404 ") || low.contains(" 422 "))) { return e.into(); }
     let why = if low.contains("moderat") { "it has live moderation, which agents may not use" } else if low.contains("not_found") || low.contains("not found") || low.contains(" 404 ") { "it is not in your ElevenLabs account" } else { "agents may not use it" };
     let ours = if m.voice == agent::VOICE { "the built-in one" } else { "the one voice.voice names" };
-    format!("ElevenLabs refused the voice {} ({ours}) for the call's agent: {why}. Pick another: herdr-projects set voice.voice <voice id> (one from your ElevenLabs account, Voices, that agents can use and that speaks your call's language), or herdr-projects set voice.voice none for the built-in one. ElevenLabs said: {}", m.voice, crate::text::cut(e, 300))
+    format!("ElevenLabs refused the voice {} ({ours}) for the call's agent: {why}. Pick another: omh set voice.voice <voice id> (one from your ElevenLabs account, Voices, that agents can use and that speaks your call's language), or omh set voice.voice none for the built-in one. ElevenLabs said: {}", m.voice, crate::text::cut(e, 300))
 }
 /// A signed address for one call over ElevenLabs' WebSocket (the terminal board's call, which the helper on your
 /// computer holds): good for a quarter of an hour to start with, and all the helper gets.

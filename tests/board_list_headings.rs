@@ -40,7 +40,7 @@ fn every_machine_a_heading_its_repos_under_it_and_rows_with_the_number_alone() {
     let t = s.screen(100).join("\n");
     let here = sw::shown::words::clean(&sw::remote::check::hostname());
     // Under All machines on top: each machine a step in, its projects a step further, their tasks one more.
-    assert!(t.starts_with(" herdr-projects") && has(&t, r"\n ▾ All machines  2 machines · 5 tasks *\n"), "{t}");
+    assert!(t.starts_with(" omh") && has(&t, r"\n ▾ All machines  2 machines · 5 tasks *\n"), "{t}");
     assert!(has(&t, &format!(r"{}     ▾ proj · PRJ *\n[ ▌] {{6}}○ PRJ-\d+ +Mine", head(&regex::escape(&here)))), "this machine first, under its own name, its project a step in, its tasks a step further: {t}");
     // The repo the board is in comes first on every machine, as on one.
     assert!(has(&t, &format!(r"{}     (○ |  )?▾ proj *\n[ ▌] {{6}}○ #151 +Theirs in proj[^\n]*\n     (○ |  )?▾ crm *\n[ ▌] {{6}}○ #4 +Theirs in crm", head("otherbox"))), "{t}");

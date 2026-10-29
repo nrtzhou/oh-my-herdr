@@ -74,7 +74,7 @@ uncounted.
 
 - **A ladder** in its top edge, from the top row down (`All machines › vm-str › gtm › GTM-14`), the current step lit,
   and after it, dimmed, the kind of agent you talk to: `HP-145 · Agent`, `HP-145 · Reviewer` while its reviewer talks,
-  `herdr-projects · Project coordinator`, `vm-str · Machine coordinator`, `All machines · Machines
+  `omh · Project coordinator`, `vm-str · Machine coordinator`, `All machines · Machines
   coordinator`. The empty box says the same: `Send message to the agent`, `Send message to the project coordinator`.
 - **Its edge in the status colour of whoever it talks to**, as their mark: base idle or never started, amber working,
   red when it needs you or failed ([colours](colours.md#the-box-says-who-you-type-to)).
@@ -93,13 +93,13 @@ uncounted.
   of its own (below). Everything you say is one conversation, kept: if its
   program exits or Herdr restarts, your next message starts it again in the same conversation.
 - **A machine coordinator** is about that machine as a whole: its repos and folders, the tasks and agents on it. It runs
-  in a folder of its own (`~/.herdr-projects/data/coordinator/<session>/machine/chat`), with its rules in `AGENTS.md`
+  in a folder of its own (`~/.omh/data/coordinator/<session>/machine/chat`), with its rules in `AGENTS.md`
   there, as the coordinator of all machines' are.
 - **A project coordinator** is about one repo. It runs in the repo's own folder, at its main level: your checkout. It
   reads it freely and changes nothing there unless you ask it to; work goes on the board as tasks of that repo. Its tab
   goes in the repo's space (the one Herdr labels after the repo); with none open, one is made there. Since the repo's
   `AGENTS.md` is yours, its rules are a file beside its state
-  (`~/.herdr-projects/data/coordinator/<session>/projects/<repo>/rules.md`), passed when it starts, as a working agent's
+  (`~/.omh/data/coordinator/<session>/projects/<repo>/rules.md`), passed when it starts, as a working agent's
   are.
   **It stays in its own repo.** A task it adds goes there, unless the message it acts on names another place ("in the
   other repo"). It may read other repos to answer you (their tasks, reports, closing notes), and acts on none of it:
@@ -111,8 +111,8 @@ uncounted.
 - **Another machine's** coordinators run on that machine. Its board sends what they said with its tasks, and what you
   type goes there. A machine on an older version has none: the chat says to update it there.
 - **Herdr's sidebar** names each as the board does, with where it stands and its last message.
-- **A task says which coordinator added it.** `details <id>` has `addedBy`: `the herdr-projects coordinator, asked by
-  the human` for one added from that coordinator's pane, `the herdr-projects coordinator's autopilot` for one its
+- **A task says which coordinator added it.** `details <id>` has `addedBy`: `the omh coordinator, asked by
+  the human` for one added from that coordinator's pane, `the omh coordinator's autopilot` for one its
   autopilot added, else `the human` or the automation's name. Autopilot's history in `list` says the same.
 
 ## Its row's keys
@@ -136,9 +136,9 @@ As a task's row stands for the task:
 wins over it. `coordinator.instructions` add up: yours, then the coordinator's own.
 
 ```
-herdr-projects set coordinator.effort high --machine-coordinator
-herdr-projects set coordinator.agent codex --project-coordinator herdr-projects
-herdr-projects show --project-coordinator herdr-projects
+omh set coordinator.effort high --machine-coordinator
+omh set coordinator.agent codex --project-coordinator omh
+omh show --project-coordinator omh
 ```
 
 ## From a shell
@@ -146,8 +146,8 @@ herdr-projects show --project-coordinator herdr-projects
 Every `coordinator` command takes `--machine` or `--project <repo>`:
 
 ```
-herdr-projects coordinator --machine                    how it stands
-herdr-projects coordinator --machine tell <text>        send it a message
-herdr-projects coordinator --project herdr-projects tell <text> [--delegate]
-herdr-projects coordinator --project <repo> restart | new | stop
+omh coordinator --machine                    how it stands
+omh coordinator --machine tell <text>        send it a message
+omh coordinator --project omh tell <text> [--delegate]
+omh coordinator --project <repo> restart | new | stop
 ```

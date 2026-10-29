@@ -9,13 +9,13 @@ it waits for you. Nothing is merged. Both are `none` until you set them, so a bo
 | `limit.tokens` | a count (`2m`, `500k`, `1.5m`) or `none` | the most tokens a task may use, in all |
 
 ```
-herdr-projects set limit.time 2h                      # for every task of yours
-herdr-projects set limit.tokens 2m --repo my-app      # for one repo
-herdr-projects set limit.time 45m --task my-app/12    # for one task, also while it is under way
-herdr-projects delegate 12 --limit.time 2h --limit.tokens 5m
-herdr-projects add "Tidy the docs" --limit.time 1h     # with or without --delegate
-herdr-projects set limit.tokens 1m --automation "Nightly look"
-herdr-projects unset limit.time --task my-app/12
+omh set limit.time 2h                      # for every task of yours
+omh set limit.tokens 2m --repo my-app      # for one repo
+omh set limit.time 45m --task my-app/12    # for one task, also while it is under way
+omh delegate 12 --limit.time 2h --limit.tokens 5m
+omh add "Tidy the docs" --limit.time 1h     # with or without --delegate
+omh set limit.tokens 1m --automation "Nightly look"
+omh unset limit.time --task my-app/12
 ```
 
 Or tell the Coordinator: "never more than two hours on this one", "at most two million tokens a task".
@@ -26,7 +26,7 @@ They are settings like every other ([settings](settings.md)):
 - listed by `show` and `show <id>` with where the value came from, and on the settings page of a task and of an
   automation;
 - a refused value changes nothing and names the nearest right one (`2 hours`: "Did you mean 2h?");
-- **a repo's own `.herdr-projects.json` cannot hold them**, so code an agent writes can neither set a limit nor lift one.
+- **a repo's own `.omh.json` cannot hold them**, so code an agent writes can neither set a limit nor lift one.
 
 ## What happens at a limit
 
@@ -55,9 +55,9 @@ Where the tokens run out decides what stops:
 
 | You want | Do |
 |---|---|
-| it to continue | `Ctrl+R` on the task, or `herdr-projects retry <id>`, or reply to its agent with your own words |
-| to give it more | set a higher limit (or `none`): `herdr-projects set limit.time 4h --task <id>` |
-| to take the work as it is | `Ctrl+L`, or `herdr-projects finish <id>` |
+| it to continue | `Ctrl+R` on the task, or `omh retry <id>`, or reply to its agent with your own words |
+| to give it more | set a higher limit (or `none`): `omh set limit.time 4h --task <id>` |
+| to take the work as it is | `Ctrl+L`, or `omh finish <id>` |
 
 - **Continue** is your word, so the task has its limit once more. The stopped agent is told to carry on where it left
   off; its run starts at zero, and the tokens count on from where they stood. A review that was stopped is done again. A
@@ -69,7 +69,7 @@ Where the tokens run out decides what stops:
 - **As it is** sends the stopped agent's work through the check and review like any finished turn. From there it is an
   ordinary task: `merge.by` decides how it lands.
 
-Stopping the task yourself (`Ctrl+X`, `herdr-projects stop <id>`) takes the limit's mark off: it is then simply stopped.
+Stopping the task yourself (`Ctrl+X`, `omh stop <id>`) takes the limit's mark off: it is then simply stopped.
 
 ## What the board shows
 
@@ -142,7 +142,7 @@ Choose the count with that in mind (`show <id>` and the task panel say what a ta
 - **[The fallback agent](fallback.md)**: a stop at a limit is the board's ordinary stop with a mark on it (`limitStop`).
   A task stopped at its limit is not handed over: it waits for you.
 
-These settings come from the research of task herdr-projects/154.
+These settings come from the research of task omh/154.
 
 ## Where it is
 

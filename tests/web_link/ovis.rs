@@ -1,6 +1,6 @@
 //! The web UI found under its new name, Ovis (`devswha.ovis`), and under its name before (`devswha.herdr-web-ui`):
 //! which of the two herdr lists wins, the port a start of it settled on read from the state folder of the id it was
-//! found under, and what `herdr-projects web-ui` says about it (its lines about links ask Tailscale: web_link.rs).
+//! found under, and what `omh web-ui` says about it (its lines about links ask Tailscale: web_link.rs).
 use crate::common;
 use common::*;
 use serde_json::{json, Value};

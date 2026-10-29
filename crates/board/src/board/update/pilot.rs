@@ -47,14 +47,14 @@ pub fn main(s: &State) -> Option<Target> { super::top::top(s) }
 /// Already on: it says so; at `needs you`: it resumes.
 pub fn turn_on(s: &mut State, t: &Target, fx: &mut Vec<Effect>) {
     let v = view(s, t);
-    if v.is_null() && !t.host.is_empty() { return s.flash(format!("{} runs an older version that has no autopilot: update herdr-projects there first.", t.host), Ink::Yellow); }
+    if v.is_null() && !t.host.is_empty() { return s.flash(format!("{} runs an older version that has no autopilot: update omh there first.", t.host), Ink::Yellow); }
     if v.b("on") && !["needs you", "could not start"].contains(&v.s("state")) { return s.flash(format!("{} is on autopilot already: {}.", super::top::sentence(&t.name), v.s("line")), Ink::Muted); }
     fx.push(job(s, t, true));
 }
 /// `Ctrl+X` on a coordinator's row: autopilot off. Off already: it says so.
 pub fn turn_off(s: &mut State, t: &Target, fx: &mut Vec<Effect>) {
     let v = view(s, t);
-    if v.is_null() && !t.host.is_empty() { return s.flash(format!("{} runs an older version that has no autopilot: update herdr-projects there first.", t.host), Ink::Yellow); }
+    if v.is_null() && !t.host.is_empty() { return s.flash(format!("{} runs an older version that has no autopilot: update omh there first.", t.host), Ink::Yellow); }
     if !v.b("on") { return s.flash(format!("{} is not on autopilot. {} turns it on.", super::top::sentence(&t.name), crate::board::keys::key_name("autopilot")), Ink::Muted); }
     fx.push(job(s, t, false));
 }

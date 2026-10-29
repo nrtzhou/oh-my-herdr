@@ -1,6 +1,6 @@
 //! Model names (HP-16): a model a program does not take is refused when a setting names it, with the names it does
 //! take, read from the program's own list (codex's for its sign-in, pi, cursor, opencode) or its own rule (claude); a
-//! program with neither, or pointed at a provider of its own, is not checked; `herdr-projects models` lists them.
+//! program with neither, or pointed at a provider of its own, is not checked; `omh models` lists them.
 use crate::common;
 use common::*;
 use serde_json::json;
@@ -79,7 +79,7 @@ fn a_model_the_program_does_not_take_is_refused_with_the_ones_it_does() {
 fn claude_s_names_follow_its_own_rule_and_a_program_without_a_list_is_not_checked() {
     let _w = world();
     for m in ["opus", "sonnet", "haiku", "fable", "opusplan", "default", "opus[1m]", "claude-opus-5-5", "claude-opus-5-5[1m]", "claude-sonnet-4-5-20250929"] { taken("worker.agent", &format!("claude/{m}")); }
-    refused("worker.agent", "claude/gpt-5", r#"^worker\.agent: claude has no model "gpt-5"\. It takes .*opus.*claude-opus-5-5.*, and \d+ more: `herdr-projects models claude` lists them all \(its short names, each the newest of its kind, and its full names\)\."#);
+    refused("worker.agent", "claude/gpt-5", r#"^worker\.agent: claude has no model "gpt-5"\. It takes .*opus.*claude-opus-5-5.*, and \d+ more: `omh models claude` lists them all \(its short names, each the newest of its kind, and its full names\)\."#);
     // Invented and mistyped names (the review of HP-16): refused, with the nearest real one.
     refused("worker.agent", "claude/claude-opus-this-model-does-not-exist", r#"claude has no model "claude-opus-this-model-does-not-exist"\. It takes claude-opus-5-5, claude-opus-5, .*Write it after the program: claude/claude-opus-5-5\.$"#);
     refused("worker.agent", "claude/typo-claude-anything", r"claude has no model");
@@ -101,7 +101,7 @@ fn claude_s_names_follow_its_own_rule_and_a_program_without_a_list_is_not_checke
     // Codex on a provider of its own: its catalog says nothing of that provider's names.
     lists(json!({ "codex": { "taken": ["gpt-6.1-sol"], "shown": ["gpt-6.1-sol"] } }));
     refused("worker.agent", "codex/llama3", r"codex has no model");
-    std::fs::write(std::env::var("HERDR_PROJECTS_CODEX_TOML").unwrap(), "model_provider = \"ollama\"\n\n[model_providers.ollama]\nname = \"Ollama\"\n").unwrap();
+    std::fs::write(std::env::var("OMH_CODEX_TOML").unwrap(), "model_provider = \"ollama\"\n\n[model_providers.ollama]\nname = \"Ollama\"\n").unwrap();
     taken("worker.agent", "codex/llama3");
 }
 
@@ -114,7 +114,7 @@ fn the_models_command_names_what_each_program_takes_as_a_setting_writes_it() {
     assert!(text.contains("worker.agent codex/gpt-6.1-sol:\n\ncodex/gpt-6.1-sol\ncodex/gpt-6-luna\n\nEffort"), "{text}");
     let (_, all) = models_command("").unwrap();
     assert!(has(&all, r"(?m)^codex +codex/gpt-6\.1-sol, codex/gpt-6-luna$"), "{all}");
-    assert!(has(&all, r"(?m)^claude +\d+ names, such as claude/default, claude/fable, claude/opus, claude/sonnet: herdr-projects models claude lists them all$"), "{all}");
+    assert!(has(&all, r"(?m)^claude +\d+ names, such as claude/default, claude/fable, claude/opus, claude/sonnet: omh models claude lists them all$"), "{all}");
     assert!(models_command("claude").unwrap().1.contains("\nclaude/claude-opus-5-5\n"));
     assert!(has(&all, r"(?m)^droid +droid takes no model when the board starts it"), "{all}");
     assert!(has(&all, r"(?m)^agy +any name agy takes \(not checked"), "{all}");
@@ -133,8 +133,8 @@ fn real_programs_the_list_is_asked_of_the_program_and_kept() {
     std::fs::write(bin.join("codex"), format!("#!/bin/sh\necho \"$1\" >> {}\nif [ \"$1\" = app-server ]; then\n  while read l; do case \"$l\" in *'\"model/list\"'*) printf '%s\\n' '{page}';; *'\"account/read\"'*) printf '%s\\n' '{account}';; esac; done\n  exit 0\nfi\nprintf '%s' '{CODEX}'\n", count.display())).unwrap();
     use std::os::unix::fs::PermissionsExt;
     std::fs::set_permissions(bin.join("codex"), std::fs::Permissions::from_mode(0o755)).unwrap();
-    let run = |args: &[&str]| { let o = std::process::Command::new(env!("CARGO_BIN_EXE_herdr-projects")).args(args).current_dir(&w.root)
-        .env("PATH", format!("{}:/usr/bin:/bin", bin.display())).env_remove("HERDR_PROJECTS_NO_MODEL_LIST").env("HERDR_SOCKET_PATH", "/nonexistent").env("HERDR_BIN_PATH", "/bin/false").output().unwrap();
+    let run = |args: &[&str]| { let o = std::process::Command::new(env!("CARGO_BIN_EXE_omh")).args(args).current_dir(&w.root)
+        .env("PATH", format!("{}:/usr/bin:/bin", bin.display())).env_remove("OMH_NO_MODEL_LIST").env("HERDR_SOCKET_PATH", "/nonexistent").env("HERDR_BIN_PATH", "/bin/false").output().unwrap();
         (o.status.code().unwrap_or(-1), String::from_utf8_lossy(&o.stdout).into_owned(), String::from_utf8_lossy(&o.stderr).into_owned()) };
     let asked = || std::fs::read_to_string(&count).unwrap_or_default().lines().count();
     let (code, _, err) = run(&["set", "worker.agent", "codex/gpt-5.5"]);

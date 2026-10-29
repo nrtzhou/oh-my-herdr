@@ -13,7 +13,7 @@ pub fn pilot_world_with(settings: Value) -> World {
     let w = world_with(Opts { repo: true, settings: s, ..Default::default() });
     let home = w.base.join("home-coord");
     std::fs::create_dir_all(&home).unwrap();
-    unsafe { std::env::set_var("HERDR_PROJECTS_COORDINATOR_DIR", &home) };
+    unsafe { std::env::set_var("OMH_COORDINATOR_DIR", &home) };
     sw::store::repos::repo_of(&w.root).unwrap(); // the board knows the repo
     sw::clock::set(Some(1_800_000_000_000));
     // Every program still counts as installed however far the test moves its clock (its record is dated far ahead:

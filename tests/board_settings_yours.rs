@@ -1,6 +1,6 @@
 //! Your own settings on the board: the settings key on this machine's heading opens the settings page for yours (what
 //! every task starts from), on a repo's heading for your entry for that repo (each under the heading's coordinator's
-//! own rows, as a heading stands for its coordinator), and on a task still for that task; the ? menu has them too. A change there is the one `herdr-projects set` makes, put back the one `unset` makes; another
+//! own rows, as a heading stands for its coordinator), and on a task still for that task; the ? menu has them too. A change there is the one `omh set` makes, put back the one `unset` makes; another
 //! machine's are changed on that machine.
 use crate::common;
 use common::board::{open, Board};
@@ -24,7 +24,7 @@ fn whose(b: &Board) -> Option<Whose> { b.s.editing.as_ref().map(|e| e.whose.clon
 fn every_machine() -> (World, Board, String) {
     // A coordinator can run here: a machine's and a repo's row are their coordinators'.
     let w = world_with(Opts { repo: true, settings: json!({ "board.machines": "otherbox", "coordinator.agent": "claude" }), ..Default::default() });
-    let home = w.base.join("home-coord"); std::fs::create_dir_all(&home).unwrap(); unsafe { std::env::set_var("HERDR_PROJECTS_COORDINATOR_DIR", &home) };
+    let home = w.base.join("home-coord"); std::fs::create_dir_all(&home).unwrap(); unsafe { std::env::set_var("OMH_COORDINATOR_DIR", &home) };
     let id = w.add("Mine");
     let mut b = open(&w.root, 120); b.s.side = false;
     update(&mut b.s, Event::Machines(sw::remote::machines()));
@@ -103,7 +103,7 @@ fn on_a_repos_heading_it_is_your_entry_for_that_repo_on_a_task_the_tasks_own_and
     assert!(b.s.editing.is_none());
     let said = b.text().replace("\n  ", " ");
     // otherbox sends no coordinators of its own (an older version): its row is its top-level coordinator's
-    assert!(said.contains("settings are changed on otherbox: herdr-projects set <name> <value> --main-coordinator there"), "{said}");
+    assert!(said.contains("settings are changed on otherbox: omh set <name> <value> --main-coordinator there"), "{said}");
     assert!(b.s.full, "its coordinator shown whole, read-only, in the page's place");
 }
 

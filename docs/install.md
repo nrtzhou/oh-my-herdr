@@ -4,7 +4,7 @@
 has the details. Something not working: [troubleshooting](troubleshooting.md).
 
 ```sh
-herdr plugin install eliasstravik/herdr-projects
+herdr plugin install eliasstravik/omh
 ```
 
 ## What you need
@@ -25,14 +25,14 @@ build step there, which downloads the program. `--ref v1.2.27` takes a given rel
 To keep a checkout of your own instead:
 
 ```sh
-git clone https://github.com/eliasstravik/herdr-projects && cd herdr-projects
+git clone https://github.com/eliasstravik/omh && cd omh
 herdr plugin link "$PWD"          # hooks, the board's tab and the actions
 sh bin/run.sh install             # gets the program, writes its launcher, says how to put it on your PATH
 ```
 
 ## The first run
 
-Open the board: the plugin's action "Open the work board", or type `herdr-projects` in any pane. The first time it
+Open the board: the plugin's action "Open the work board", or type `omh` in any pane. The first time it
 opens inside Herdr, it shows one screen with two things it can add to your Herdr `config.toml`. Each is your choice:
 
 | Key | Does |
@@ -54,7 +54,7 @@ The file is backed up first, each block sits between two marker lines, and a cha
 - A key already set up for the board is left as it is, however your config writes it (`[[keys.command]]`, or
   `command = [{…}]` under `[keys]`).
 - The key opens the board in a tab of its own. To open it as a popup over Herdr's window instead (and close it again
-  with the same key): `herdr-projects set board.open popup` ([the board](board.md)). The key itself stays.
+  with the same key): `omh set board.open popup` ([the board](board.md)). The key itself stays.
 
 **2. Sidebar rows**, so an agent's entry in Herdr's sidebar is a small copy of its task's row on the board
 ([Herdr's sidebar](sidebar.md)):
@@ -78,7 +78,7 @@ Nothing else is needed: no Herdr integration, no hooks in your own agent setting
 [[keys.command]]
 key = "prefix+a"
 type = "plugin_action"
-command = "herdr-projects.open"
+command = "omh.open"
 
 [ui.sidebar.agents]
 rows = [["state_icon", "machine", "workspace", { token = "tab", rules = [{ equals = "Agent", hide = true }, { starts_with = "Reviewer #", hide = true }] }], ["agent"], [{ token = "$summary", dim = true }, "$progress"]]
@@ -93,32 +93,32 @@ took away Herdr's workspace picker.) `herdr --default-config` lists most of the 
 `prefix+[`, nor swapping panes, `prefix+shift+h` `j` `k` `l`). To move the board's key, change the `key` line and run
 `herdr server reload-config`.
 
-Optionally bind `herdr-projects.approve-current` too. For the task that owns the focused pane, it opens the board on
+Optionally bind `omh.approve-current` too. For the task that owns the focused pane, it opens the board on
 that task with the merge question up (`y` = yes, `n` or `esc` = no). Anywhere else it does nothing.
 
 ## The command on your PATH
 
-Agents and hooks are handed the launcher `~/.herdr-projects/data/bin/herdr-projects`, which runs the program.
+Agents and hooks are handed the launcher `~/.omh/data/bin/omh`, which runs the program.
 
 - The board writes it when it opens. With `herdr plugin install`, open the board first, with the plugin's action "Open
   the work board".
-- `herdr-projects install` writes it again, and says if something else named `herdr-projects` comes first on your PATH.
-- To type `herdr-projects` in a shell, put that folder on your PATH (in `~/.profile` or your shell's start-up file).
+- `omh install` writes it again, and says if something else named `omh` comes first on your PATH.
+- To type `omh` in a shell, put that folder on your PATH (in `~/.profile` or your shell's start-up file).
 
-**On a machine other machines will ask for its tasks** ([other machines](other-machines.md)), `herdr-projects` must be
+**On a machine other machines will ask for its tasks** ([other machines](other-machines.md)), `omh` must be
 found by a login shell that nobody types into, which is what SSH starts. A PATH set only in `~/.bashrc` is often not
-enough. `herdr-projects machines` checks it on the machine itself and says how to fix it. From the other machine, the
+enough. `omh machines` checks it on the machine itself and says how to fix it. From the other machine, the
 test is this; it ends with a line of JSON when all is well:
 
 ```sh
-ssh <machine> 'exec $SHELL -lc "herdr-projects remote list"' | tail -c 200
+ssh <machine> 'exec $SHELL -lc "omh remote list"' | tail -c 200
 ```
 
 ## Updating
 
 ```sh
-herdr-projects update           # the newest release
-herdr-projects update 0.3.1     # a given version
+omh update           # the newest release
+omh update 0.3.1     # a given version
 ```
 
 - It puts the release in place of the downloaded program, in one step.
@@ -138,32 +138,32 @@ are picked up the same way.
 
 ## Coming from an older version
 
-- **From herdr-superwork or the old herdr-projects 0.2:** the first run takes them over by itself (their data moved or
+- **From herdr-superwork or the old omh 0.2:** the first run takes them over by itself (their data moved or
   set aside, their extras in Herdr's config, the agents' settings and skills folders made right, their processes
-  replaced) and says so. `herdr-projects doctor` looks again and says where things stand ([older installs](old-installs.md)).
-- **From the older Node version:** `npm unlink -g herdr-projects` takes the Node program off your PATH. The first run of
-  this version keeps a copy of the data folder as it was (`~/.herdr-projects/data-0.2.0`) before it changes anything.
+  replaced) and says so. `omh doctor` looks again and says where things stand ([older installs](old-installs.md)).
+- **From the older Node version:** `npm unlink -g omh` takes the Node program off your PATH. The first run of
+  this version keeps a copy of the data folder as it was (`~/.omh/data-0.2.0`) before it changes anything.
   The data's form is the same, so nothing is converted.
 - **From a version that kept its files in `~/.local/state`, `~/.config` and `~/.local/share`:** nothing to do. The first
   run moves them and says so in one line.
 
-Everything the board keeps for you is in one folder, `~/.herdr-projects/`: [the home folder](home-folder.md).
+Everything the board keeps for you is in one folder, `~/.omh/`: [the home folder](home-folder.md).
 
 ## Taking it out again
 
-**Before unlinking the plugin, run `herdr-projects remove-extras`.** Herdr gives a plugin no uninstall hook, so this is
+**Before unlinking the plugin, run `omh remove-extras`.** Herdr gives a plugin no uninstall hook, so this is
 what takes the marked blocks out of `config.toml` and removes the how-to files ([roles and commands](roles-and-commands.md)).
 With the web UI (Ovis) installed, it also points the web UI's shared link back at the web UI and stops the board's
 front door ([the board in the web UI (Ovis)](web-ui.md)).
 
 ## Details: which program runs
 
-The program is one file per platform: `herdr-projects-linux-x86_64`, `-linux-aarch64`, `-macos-x86_64`,
+The program is one file per platform: `omh-linux-x86_64`, `-linux-aarch64`, `-macos-x86_64`,
 `-macos-aarch64`. The Linux ones run on any Linux.
 
 Every command Herdr runs for the plugin goes through `bin/run.sh`, which runs the first of these it finds:
 
-1. a program built in this checkout (`target/release/herdr-projects`) that no source file is newer than;
+1. a program built in this checkout (`target/release/omh`) that no source file is newer than;
 2. the downloaded one in `bin/`, when it is this checkout's version (`Cargo.toml`) or newer;
 3. that file, downloaded now from the project's GitHub release of this checkout's version: its checksum checked, put in
    place in one step, one download at a time;
@@ -174,5 +174,5 @@ With none, it says what to do and stops at once, so Herdr is never held up.
 
 - The plugin's build step (`sh bin/run.sh --fetch`) only gets the program, and builds it from source when it cannot
   download it.
-- `HERDR_PROJECTS_RELEASES` names another place for the releases (a fork, a mirror, a folder as `file:///…`).
+- `OMH_RELEASES` names another place for the releases (a fork, a mirror, a folder as `file:///…`).
 - The release files are built for every version tag by `.github/workflows/release.yml`.

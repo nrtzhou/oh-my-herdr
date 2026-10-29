@@ -1,9 +1,9 @@
 //! What older installs left in herdr's config.toml, made right as text (every other line stays as it was):
-//!   - the old herdr-projects 0.2 wrote no marked blocks: it changed herdr's own entries. Its key (the
-//!     `herdr-projects.open-popup` action), its line in the tab bar (`… needs-you --line`) and its sidebar rows (the
+//!   - the old omh 0.2 wrote no marked blocks: it changed herdr's own entries. Its key (the
+//!     `omh.open-popup` action), its line in the tab bar (`… needs-you --line`) and its sidebar rows (the
 //!     `$hp_…` tokens and the two "cards") are taken out, and herdr's built-in rows come back where it had replaced them;
 //!   - herdr-superwork's marked blocks (`# >>> herdr-superwork key`, `… sidebar`) become this version's, with the same
-//!     key, and a binding of a `herdr-superwork.<action>` names `herdr-projects.<action>`, the same action now.
+//!     key, and a binding of a `herdr-superwork.<action>` names `omh.<action>`, the same action now.
 use super::toml_text::{parse, sections, splice, write};
 use crate::extras::block_text;
 use toml::Value;
@@ -36,14 +36,14 @@ fn rows_without(rows: &Value, spaces: Option<bool>) -> Option<Option<Value>> {
     let gone = out.is_empty() || spaces.map(|sp| out == built_in(sp)).unwrap_or(false);
     Some(if gone { None } else { Some(Value::Array(out)) })
 }
-/// The old herdr-projects 0.2's entries taken out. Returns the new text and what was taken out.
+/// The old omh 0.2's entries taken out. Returns the new text and what was taken out.
 pub fn undo_legacy(text: &str) -> (String, Vec<&'static str>) {
     let mut edits = vec![];
     let mut said = vec![];
     for s in sections(text) {
         let entry = |k: &str| s.entries.iter().find(|e| e.key == k);
         if s.array && s.name == "keys.command" {
-            if entry("command").and_then(|e| parse(&e.value)).and_then(|v| v.as_str().map(String::from)).as_deref() == Some("herdr-projects.open-popup") { edits.push((s.start, s.end, String::new())); said.push("key"); }
+            if entry("command").and_then(|e| parse(&e.value)).and_then(|v| v.as_str().map(String::from)).as_deref() == Some("omh.open-popup") { edits.push((s.start, s.end, String::new())); said.push("key"); }
             continue;
         }
         let mut left = s.entries.len();
@@ -52,7 +52,7 @@ pub fn undo_legacy(text: &str) -> (String, Vec<&'static str>) {
             let next = match (s.name.as_str(), e.key.as_str()) {
                 ("ui", "tab_bar_right") => parse(&e.value).and_then(|v| {
                     let a = v.as_array()?.clone();
-                    let keep: Vec<Value> = a.iter().filter(|x| !x.get("command").and_then(|c| c.as_str()).map(|c| c.contains("herdr-projects") && c.contains("needs-you --line")).unwrap_or(false)).cloned().collect();
+                    let keep: Vec<Value> = a.iter().filter(|x| !x.get("command").and_then(|c| c.as_str()).map(|c| c.contains("omh") && c.contains("needs-you --line")).unwrap_or(false)).cloned().collect();
                     (keep.len() != a.len()).then(|| { said.push("tab bar"); (!keep.is_empty()).then_some(Value::Array(keep)) })
                 }),
                 ("ui.sidebar.agents", "rows") => parse(&e.value).and_then(|v| rows_without(&v, Some(false))),
@@ -75,12 +75,12 @@ pub fn take_superwork(text: &str) -> (String, bool) {
     let blocks = regex::Regex::new(r"(?ms)^# >>> herdr-superwork (\S+)[^\n]*\n(.*?)^# <<< herdr-superwork \S+[^\n]*(\n|\z)").unwrap();
     let mut next = blocks.replace_all(text, |c: &regex::Captures| {
         let what = &c[1];
-        if text.contains(&format!("# >>> herdr-projects {what}")) || !["key", "sidebar"].contains(&what) { return String::new(); } // one of each; the pop-ups are no more
+        if text.contains(&format!("# >>> omh {what}")) || !["key", "sidebar"].contains(&what) { return String::new(); } // one of each; the pop-ups are no more
         let key = crate::re!(r#"(?m)^\s*key\s*=\s*"([^"]+)""#).captures(&c[2]).map(|k| k[1].to_string()).unwrap_or_default();
         if what == "key" && key.is_empty() { return String::new(); }
         format!("{}\n", block_text(what, &key))
     }).to_string();
-    next = crate::re!(r#"(?m)^(\s*command\s*=\s*["'])herdr-superwork\."#).replace_all(&next, "${1}herdr-projects.").to_string();
+    next = crate::re!(r#"(?m)^(\s*command\s*=\s*["'])herdr-superwork\."#).replace_all(&next, "${1}omh.").to_string();
     let next = if next == text { next } else { tidy(&next) };
     let changed = next != text;
     (next, changed)

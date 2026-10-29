@@ -115,7 +115,7 @@ impl Engine {
     }
     /// The updates waiting for a pause.
     pub fn queued(&self) -> usize { self.queue.len() }
-    /// How the sound stood, for the board (`herdr-projects voice`).
+    /// How the sound stood, for the board (`omh voice`).
     /// `mic`: the loudest speech of yours so far (0 to 1), and for how long the call has run (`secs`).
     pub fn report(&self) -> Value { json!({ "via": "native", "aec": self.audio.aec(), "how": self.audio.how(), "peak": (self.peak as f64 / 32768.0 * 1000.0).round() / 1000.0, "mic": (self.gain.loudest / 32768.0 * 1000.0).round() / 1000.0, "secs": (now() - self.started) / 1000, "elements": 1, "playing": 1, "agent": crate::remote::check::hostname() }) }
     /// Run until the call ends; answers why.

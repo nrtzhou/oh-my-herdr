@@ -26,7 +26,7 @@ pub fn approval_message_with(t: &Obj, note: &str) -> String {
         format!(" {}{}.", w[..1].to_uppercase(), &w[1..])
     } _ => String::new() };
     let summary = first_line(t.s("summary"));
-    let held = if crate::autopilot::care::held_for_you(t) { " It changes the repo's .herdr-projects.json, so it waits for your own yes (autopilot.repoFileWaits)." } else { "" };
+    let held = if crate::autopilot::care::held_for_you(t) { " It changes the repo's .omh.json, so it waits for your own yes (autopilot.repoFileWaits)." } else { "" };
     format!("Approve to merge?{}{kept} {}{held}{note}", rv.map(|r| format!(" {}", gate::sentence(r, "merge"))).unwrap_or_default(), if summary.is_empty() { "The work is finished.".into() } else { summary })
 }
 #[derive(Default)]

@@ -67,7 +67,7 @@ fn a_request_passed_through_is_one_exchange_and_the_next_comes_to_the_door_again
         s.write_all(get("/app.js").as_bytes()).unwrap();
         let (first, ended) = read_out(s);
         // the same connection again, as a proxy that keeps it would: it is closed, nothing goes on
-        let _ = s.write_all(get("/herdr-projects/page/start.js").as_bytes());
+        let _ = s.write_all(get("/omh/page/start.js").as_bytes());
         let (second, _) = read_out(s);
         (first, ended, second)
     });
@@ -82,10 +82,10 @@ fn a_request_passed_through_is_one_exchange_and_the_next_comes_to_the_door_again
     assert_eq!(seen.len(), 1, "the second request never reached the web UI: {seen:?}");
     assert!(seen[0].starts_with("GET /app.js") && seen[0].to_lowercase().contains("connection: close"));
     // a new connection is the door's again: its own script, as JavaScript, and the page with the line in it
-    let (out, ended) = through(&up, |s| { s.write_all(get("/herdr-projects/page/start.js").as_bytes()).unwrap(); read_out(s) });
+    let (out, ended) = through(&up, |s| { s.write_all(get("/omh/page/start.js").as_bytes()).unwrap(); read_out(s) });
     assert!(ended && out.starts_with("HTTP/1.1 200") && out.contains("content-type: text/javascript"), "{}", &out[..out.len().min(300)]);
     let (out, ended) = through(&up, |s| { s.write_all(get("/").as_bytes()).unwrap(); read_out(s) });
-    assert!(ended && out.contains("<script type=\"module\" src=\"/herdr-projects/page/start.js\"></script></body>"), "{out}");
+    assert!(ended && out.contains("<script type=\"module\" src=\"/omh/page/start.js\"></script></body>"), "{out}");
     assert!(!seen_any(&seen, "start.js"));
 }
 fn seen_any(seen: &[String], what: &str) -> bool { seen.iter().any(|r| r.contains(what)) }

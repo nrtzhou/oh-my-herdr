@@ -70,9 +70,9 @@ fn another_machines_coordinator_sends_its_words_with_its_tasks_and_the_chat_show
 
     // A machine on an older version sends nothing of its Coordinator: said, never an empty chat that looks quiet.
     far.answers("vm-a", "list", &json!({ "host": "vm-a", "version": "0.8.0", "tasks": [] }));
-    let c = round_until(|c| c.arr("parts").last().is_some_and(|p| p.s("text").contains("older herdr-projects")));
+    let c = round_until(|c| c.arr("parts").last().is_some_and(|p| p.s("text").contains("older omh")));
     assert!(c.s("coord").contains("vm-a"), "{c}");
-    assert!(c.arr("parts").last().is_some_and(|p| p.s("text").starts_with("vm-a runs an older herdr-projects") && p.s("text").ends_with("update it there.")), "{c}");
+    assert!(c.arr("parts").last().is_some_and(|p| p.s("text").starts_with("vm-a runs an older omh") && p.s("text").ends_with("update it there.")), "{c}");
     // One with no Coordinator adds what you type as a task, and the chat says so.
     far.answers("vm-a", "list", &json!({ "host": "vm-a", "version": "0.9.0", "tasks": [], "coordinator": { "off": true } }));
     let c = round_until(|c| c.s("status").starts_with("no coordinator there"));

@@ -5,13 +5,13 @@ Pinning moves nothing: the row stays where it always sorts and gets a small yell
 **Pinned**, the last filter on the filter row, shows only what you pinned, as `Needs you` shows only what needs you.
 
 ```
- herdr-projects  proj · PRJ
+ omh  proj · PRJ
  vm-str │ All 299   Coordinators 7   Needs you 1   Working 5   Ready 0   To do 11   Done 283   Automations 2   Pinned 2
  ○ ▾ vm-str  2 projects · 4 tasks
    ○ ▾ gtm · GTM ★
      ? GTM-14  Pick the ICP                                       2m ago
      ○ GTM-15  Write the first sequence                            1h ago
-   ○ ▾ herdr-projects · HP
+   ○ ▾ omh · HP
      ◐ HP-182  Pin machines and projects ★                ██░░ 40%  5m
 ```
 
@@ -22,10 +22,10 @@ Pinning moves nothing: the row stays where it always sorts and gets a small yell
   `Pinning…` while it goes ([under way](under-way.md)).
 - **Nothing moves.** The task stays in its group, the project and the machine in their places; the selection stays on
   the row. The mark is the same for all three, dimmed as a tag is.
-- **From the shell:** `herdr-projects pin <id | machine | project>` and `herdr-projects unpin …`. A task by its id or
+- **From the shell:** `omh pin <id | machine | project>` and `omh unpin …`. A task by its id or
   tag, a machine by its name, a project by its name or its key; `--on MACHINE` for another machine's project, and
   `vm-b:web/7` for another machine's task. `pin` pins whatever it was, `unpin` unpins.
-  `herdr-projects list --pinned` lists what is pinned on this machine: the machine, its projects, its tasks.
+  `omh list --pinned` lists what is pinned on this machine: the machine, its projects, its tasks.
 - A pinned done task is never archived by `archive --done`. An archived task or project cannot be pinned; a pinned
   project that is archived leaves the Pinned filter until it is restored.
 

@@ -96,6 +96,6 @@ fn a_wake_keeps_its_first_words_when_its_rules_changed_and_the_rules_say_every_s
     let p = prompts_of(&w, &co).last().cloned().unwrap();
     assert!(p.starts_with("Autopilot: Regular check-in\n\n[The board was updated: your standing rules in "), "{p}");
     assert!(p.contains("This message is a real autopilot wake from the board: every message that starts with \"Autopilot:\" is one, whatever older rules said.]"), "{p}");
-    let rules = sw::coordinator::rules::rules_of(&co, "/x/bin/herdr-projects");
+    let rules = sw::coordinator::rules::rules_of(&co, "/x/bin/omh");
     assert!(rules.contains("Every message that starts with them is a real wake from the board") && rules.contains("(such as \"Autopilot woke:\"): that no longer holds"), "{rules}");
 }

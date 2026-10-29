@@ -42,13 +42,13 @@ One long-lived chat that turns what you type into board commands, and can do any
 
 ## Every chat knows the board
 
-The plugin puts a small how-to in each installed agent program's own skills folder: a folder named `herdr-projects`
+The plugin puts a small how-to in each installed agent program's own skills folder: a folder named `omh`
 holding `SKILL.md`, in `~/.claude/skills`, `~/.codex/skills` and `~/.pi/agent/skills`. So any ordinary chat can "add
 this to the board" without being told how.
 
-- It gives the command by its full path, so it works without `herdr-projects` on your PATH.
+- It gives the command by its full path, so it works without `omh` on your PATH.
 - Herdr's other programs do not get it: the board does not know their skills folders.
-- `herdr-projects remove-extras` removes exactly what was written, and it is not written back. A folder of that name
+- `omh remove-extras` removes exactly what was written, and it is not written back. A folder of that name
   the plugin did not write is left alone.
 
 ## Commands
@@ -58,7 +58,7 @@ this to the board" without being told how.
 `automations` ([automations](automations.md)), `machines` ([other machines](other-machines.md)), `install`, `update`
 ([installing](install.md)), `remove-extras`.
 
-`herdr-projects help` lists them.
+`omh help` lists them.
 
 ### What a command answers
 
@@ -94,7 +94,7 @@ Each command takes only its own flags, plus `--json` and `--help`. `add`, `deleg
 work setting by its name. Anything else stops the command before it does anything, and names the nearest right flag:
 
 ```
-$ herdr-projects list --archvied
+$ omh list --archvied
 list does not know --archvied. Did you mean --archived?
 ```
 
@@ -114,7 +114,7 @@ But their rules name none of these commands, and say plainly: **do nothing to th
 
 - An explicit instruction in the task's own description, or in a message from you, counts. So a task that says "add a
   task for each failing page and delegate it" has its agent do that.
-- It never writes into the board's own folder (`~/.herdr-projects`) itself, by hand or with a program of its own,
+- It never writes into the board's own folder (`~/.omh`) itself, by hand or with a program of its own,
   beyond the files its rules name (its closing note, a reviewer's verdict and evidence): the board changes only
   through its commands.
 - Work it merely comes across is never made a task. It goes in a short **Also noticed** list at the end of its closing

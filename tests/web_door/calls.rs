@@ -12,8 +12,8 @@ use sw::webui::door::{CHANGES, LOOKS};
 
 /// One call of the board's through the door, as the page makes it, from a device that drives (`good`) or watches.
 fn through(up: &Up, method: &str, call: &str, token: &str, body: &str) -> (u16, Value) {
-    let page = format!("cookie: token={token}\r\ncontent-type: application/json\r\nx-herdr-projects: 1\r\nsec-fetch-site: same-origin\r\n");
-    let path = format!("/herdr-projects/api/{call}");
+    let page = format!("cookie: token={token}\r\ncontent-type: application/json\r\nx-omh: 1\r\nsec-fetch-site: same-origin\r\n");
+    let path = format!("/omh/api/{call}");
     let (st, _, out) = ask(up, if method == "GET" { get(&path, &page) } else { post(&path, &page, body) });
     (st, serde_json::from_str(&out).unwrap_or(Value::Null))
 }

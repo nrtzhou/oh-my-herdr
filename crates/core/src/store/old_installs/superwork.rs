@@ -1,5 +1,5 @@
 //! herdr-superwork's home folder, taken over: ~/.herdr-superwork (its data, settings, reports, the Coordinator's chat,
-//! the copies an older version kept) becomes ~/.herdr-projects in the three whole steps of the one-time move
+//! the copies an older version kept) becomes ~/.omh in the three whole steps of the one-time move
 //! (move_home.rs: no moment without either path, a cut-off run finished by the next), and ~/.herdr-superwork is left a
 //! link to it, so an agent or a process that still holds an old path carries on. Then the paths written inside the
 //! board's own files are made the new ones, and so is the command agents were handed.
@@ -24,7 +24,7 @@ pub struct Took { pub how: Option<String>, pub busy: bool }
 pub fn take_home(p: &Places, swap: &dyn Fn(&Path, &Path) -> bool) -> Took {
     if !due(p) { return Took::default(); }
     if !old_entries(&p.to).is_empty() { return Took { busy: true, ..Default::default() }; } // never mixed with them
-    let part = Part { what: "home", from: p.superwork.clone(), to: p.to.clone(), key: "HERDR_PROJECTS_HOME" };
+    let part = Part { what: "home", from: p.superwork.clone(), to: p.to.clone(), key: "OMH_HOME" };
     let file = p.superwork.join("moved.json");
     let mut rec = read_obj(&file).unwrap_or_default();
     let how = move_one(&part, &mut rec, &file, &p.superwork.join("set-aside"), swap).ok().flatten();
@@ -45,8 +45,8 @@ pub fn take_home(p: &Places, swap: &dyn Fn(&Path, &Path) -> bool) -> Took {
 pub fn fix_text(text: &str, p: &Places) -> String {
     let (from, to) = (p.superwork.display().to_string(), p.to.display().to_string());
     let tilde = |x: &Path| x.strip_prefix(&p.home).ok().map(|r| format!("~/{}", r.display()));
-    let mut pairs = vec![(format!("{from}/data/bin/herdr-superwork"), format!("{to}/data/bin/herdr-projects")), (from.clone(), to.clone())];
-    if let (Some(f), Some(t)) = (tilde(&p.superwork), tilde(&p.to)) { pairs.push((format!("{f}/data/bin/herdr-superwork"), format!("{t}/data/bin/herdr-projects"))); pairs.push((f, t)); }
+    let mut pairs = vec![(format!("{from}/data/bin/herdr-superwork"), format!("{to}/data/bin/omh")), (from.clone(), to.clone())];
+    if let (Some(f), Some(t)) = (tilde(&p.superwork), tilde(&p.to)) { pairs.push((format!("{f}/data/bin/herdr-superwork"), format!("{t}/data/bin/omh"))); pairs.push((f, t)); }
     let mut out = text.to_string();
     for (a, b) in pairs { out = replace_whole(&out, &a, &b); }
     out
@@ -90,7 +90,7 @@ pub fn fix_paths(p: &Places) -> usize {
     for d in ["data", "settings"] { walk(&p.to.join(d), p, &mut n); } // not moved.json: its old moves stay as they were
     n
 }
-/// herdr's config and state folders for herdr-superwork, taken over into herdr-projects': each thing in them that the
+/// herdr's config and state folders for herdr-superwork, taken over into omh': each thing in them that the
 /// new one does not have goes there. An emptied old folder goes. Returns what moved.
 pub fn take_plugin_dirs(p: &Places) -> Vec<String> {
     let mut moved = vec![];

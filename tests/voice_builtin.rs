@@ -74,7 +74,7 @@ fn a_key_that_may_not_add_voices_speaks_with_will_while_the_account_has_it_and_t
     account(&[], no);
     let e = eleven::ensure_agent("sk_test").unwrap_err();
     assert!(e.starts_with("The call's built-in voice, Warren - Effortless and Cool from ElevenLabs' Voice Library, is not in your ElevenLabs account, and it could not be added: ElevenLabs answered 401"), "{e}");
-    assert!(e.contains("voices_write") && e.contains("Voices permission set to Write") && e.contains("herdr-projects set voice.voice <voice id>"), "{e}");
+    assert!(e.contains("voices_write") && e.contains("Voices permission set to Write") && e.contains("omh set voice.voice <voice id>"), "{e}");
     // a voice of your own that is not in the account is said as ever, and nothing is added for it
     std::fs::write(sw::store::files::config_dir().join("config.json"), json!({ "voice.voice": "mine", "coordinator.agent": "none", "watcher.agent": "none" }).to_string()).unwrap();
     let log = account(&[], (200, json!({})));

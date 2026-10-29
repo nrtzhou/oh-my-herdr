@@ -41,7 +41,7 @@ fn the_call_key_rings_the_computer_you_sit_at_and_the_call_follows_the_chat() {
     sw::clock::advance(sw::board::view::chat_call::LINK_AFTER_MS);
     s.load();
     let t = s.text();
-    assert!(t.contains("No call helper picked it up: the computer you sit at needs herdr-projects running") && !t.contains("Ctrl-click"), "{t}");
+    assert!(t.contains("No call helper picked it up: the computer you sit at needs omh running") && !t.contains("Ctrl-click"), "{t}");
     // the helper's listener starts it with the ticket (in its process, no web UI): a signed address for the WebSocket
     let (st, out) = sw::webui::voice::api::local("start", &json!({ "ticket": ticket, "ws": true }), "");
     assert_eq!(st, 200, "{out}");

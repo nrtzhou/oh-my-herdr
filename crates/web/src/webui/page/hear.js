@@ -3,7 +3,7 @@
 // to play, measures the sound that arrives on their track, and says when the page is not allowed to play sound
 // (`blocked`: a tap fixes it, `unlock`). `webAudio` plays the same sound through the page's own audio context instead,
 // a second way out of the browser for one where the element stays silent. What it saw is reported to the board
-// (`report`), so `herdr-projects voice` can say why a call was silent.
+// (`report`), so `omh voice` can say why a call was silent.
 /* global document, window, AudioContext, MutationObserver, MediaStream, navigator */
 let ctx = null, observer = null, timer = null, via = "element";
 const seen = new Map(); // element → { analyser, peak }

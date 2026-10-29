@@ -106,7 +106,7 @@ fn a_machine_that_cannot_be_reached_changes_nothing_and_says_so() {
     // A machine on an older program cannot do it: it says so.
     far.answers("vm-b", "do", &json!({ "ok": false, "msg": "No task " }));
     s.press(&["esc", "ctrl+a"]);
-    assert!(s.s.msg.contains("vm-b runs an older version of herdr-projects that cannot archive a project"), "{}", s.s.msg);
+    assert!(s.s.msg.contains("vm-b runs an older version of omh that cannot archive a project"), "{}", s.s.msg);
     // One that stopped answering: its project's key says it cannot be reached, and asks nothing.
     let n = far.asked().len();
     { let m = s.s.remotes.get_mut("vm-b").unwrap(); m.ok = false; }

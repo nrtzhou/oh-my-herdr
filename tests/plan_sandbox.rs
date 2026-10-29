@@ -71,7 +71,7 @@ fn each_platform_names_its_own_tool_and_a_program_s_own_sandbox_is_off_inside_se
 #[test]
 fn a_plan_step_on_macos_starts_its_writer_under_sandbox_exec_with_the_worktree_and_its_git_folder_guarded() {
     let w = world_with(Opts { repo: true, settings: json!({ "plan.approve": "you", "worker.agent": "codex", "review.when": "never" }), ..Default::default() });
-    unsafe { std::env::set_var("HERDR_PROJECTS_SANDBOX", "sandbox-exec") };
+    unsafe { std::env::set_var("OMH_SANDBOX", "sandbox-exec") };
     w.patch(|s| s["pids"] = json!(true));
     w.script(json!({ "worker": [{ "plan": PLAN, "note": "Written." }] }));
     let id = w.add("Work");
@@ -84,11 +84,11 @@ fn a_plan_step_on_macos_starts_its_writer_under_sandbox_exec_with_the_worktree_a
     let git = sw::plan::lock::git_dir_of(&tree).unwrap();
     let want = format!("sandbox-exec -p '(version 1)(allow default)(deny file-write* (subpath \"{}\") (subpath \"{}\"))' codex", real(&tree), real(&git));
     let full = boxed_command(&t, "x", "codex", &["--dangerously-bypass-approvals-and-sandbox".into()]);
-    assert!(full.starts_with("env HERDR_PROJECTS_AGENT=x ") && full.contains(&want) && full.ends_with("codex --dangerously-bypass-approvals-and-sandbox"), "{full}");
+    assert!(full.starts_with("env OMH_AGENT=x ") && full.contains(&want) && full.ends_with("codex --dangerously-bypass-approvals-and-sandbox"), "{full}");
     assert!(boxed_command(&t, "x", "codex", &["--no-daemon".into()]).ends_with("codex --no-daemon -c 'sandbox_mode=\"danger-full-access\"'"));
     assert!(boxed_command(&t, "x", "claude", &[]).ends_with("claude --settings '{\"sandbox\":{\"enabled\":false}}'"));
     // Where it cannot be used, the task says so in macOS's words.
-    unsafe { std::env::set_var("HERDR_PROJECTS_SANDBOX", "none") };
+    unsafe { std::env::set_var("OMH_SANDBOX", "none") };
     assert!(sw::plan::sandbox::no_mount("proj/1", "writer").contains(if cfg!(target_os = "macos") { "sandbox-exec" } else { "bubblewrap" }));
 }
 

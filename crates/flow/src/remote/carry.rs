@@ -1,6 +1,6 @@
 //! Files that go with words to another machine: a file of this machine that the words name (`@<path>`, as an attached
 //! file is named, or a path dropped in the terminal) is sent over the board's own SSH link into the folder its reader
-//! there reads (`herdr-projects remote keep`, the file on its stdin), and the words name it where it landed. A file
+//! there reads (`omh remote keep`, the file on its stdin), and the words name it where it landed. A file
 //! that could not be sent stops the words: never a path the reader cannot open. That machine's side is `kept`.
 use super::why::{read_answer, unanswered, why_not, Ended};
 use super::{b64, ssh_command, Machine};
@@ -21,14 +21,14 @@ const SEND_MS: u64 = 60_000;
 pub fn send_bytes(m: &Machine, name: &str, kind: &str, bytes: &[u8], to: &For) -> Result<String, String> {
     let mut meta = json!({ "name": name, "kind": kind, "size": bytes.len() });
     match to { For::Task(id) => meta["id"] = json!(id), For::Coordinator(level) => meta["to"] = json!(level) }
-    let (cmd, args) = ssh_command(m, &format!("herdr-projects remote keep {}", b64(&meta)), false);
+    let (cmd, args) = ssh_command(m, &format!("omh remote keep {}", b64(&meta)), false);
     let mut c = std::process::Command::new(cmd);
     c.args(args);
     let end = run_fed(c, bytes.to_vec(), SEND_MS);
     let answer = if end.timed_out || !end.error.is_empty() { None } else { read_answer(&end.stdout) };
     let Some(j) = answer else { return Err(unanswered(&m.label, &why_not(&end, &m.label, &m.target))) };
     if j.b("ok") && j.b("path") { return Ok(j.t("path")); }
-    if j.s("msg").starts_with("Unknown request") { return Err(format!("herdr-projects on {} is too old to take files: update it there", m.label)); }
+    if j.s("msg").starts_with("Unknown request") { return Err(format!("omh on {} is too old to take files: update it there", m.label)); }
     Err(if j.b("msg") { j.t("msg") } else { format!("{} answered without a path", m.label) })
 }
 /// Run a command to its end or its time with `input` on its stdin, written from a thread of its own so a command that
@@ -147,7 +147,7 @@ fn file_of(p: &str, bare: bool) -> Option<PathBuf> {
     std::fs::metadata(&path).ok().filter(|m| m.is_file()).map(|_| path)
 }
 
-/// What came on `herdr-projects remote keep`'s stdin: all of it, up to one byte more than a file may be.
+/// What came on `omh remote keep`'s stdin: all of it, up to one byte more than a file may be.
 pub fn stdin_bytes() -> Vec<u8> {
     use std::io::Read;
     let mut v = vec![];

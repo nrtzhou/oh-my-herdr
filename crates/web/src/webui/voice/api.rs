@@ -1,7 +1,7 @@
-//! The front door's voice calls, under `/herdr-projects/api/voice/`. `start` makes a call: from the web board, for a
+//! The front door's voice calls, under `/omh/api/voice/`. `start` makes a call: from the web board, for a
 //! page the web UI lets drive; from the terminal board, for a page that brings the call's ticket (once, for two
 //! minutes). It answers a short-lived ElevenLabs token and the call's key; the API key stays here. With that key in
-//! `x-herdr-projects-call`, the page then says what was heard (`heard`), runs the voice agent's tools (`tool`), asks
+//! `x-omh-call`, the page then says what was heard (`heard`), runs the voice agent's tools (`tool`), asks
 //! what to read back (`feed`) and hangs up (`end`). Every call that changes something comes from the board's own page.
 //! The terminal board's call runs the same calls in-process (`local`), for its helper. With `voice.calls off` every one
 //! but `end` is refused, and nothing reaches ElevenLabs.
@@ -12,7 +12,7 @@ use crate::webui::door::{json_out, same_origin, who, Upstream, OUR_HEADER};
 use crate::webui::proxy::Head;
 use std::net::TcpStream;
 
-pub const KEY_HEADER: &str = "x-herdr-projects-call";
+pub const KEY_HEADER: &str = "x-omh-call";
 fn body(client: &mut TcpStream, head: &Head, rest: Vec<u8>) -> Option<Value> {
     let len: usize = head.header("content-length").and_then(|v| v.parse().ok()).unwrap_or(0);
     if len > 256 * 1024 { return None; }
@@ -52,7 +52,7 @@ pub fn route(mut client: TcpStream, head: &Head, rest: Vec<u8>, up: &dyn Upstrea
     json_out(&mut client, 200, &out)
 }
 /// The answer while voice calls are off, and how to turn them on.
-fn off() -> Value { json!({ "ok": false, "off": true, "msg": format!("{}: `herdr-projects set voice.calls on` turns them on.", crate::voice::OFF) }) }
+fn off() -> Value { json!({ "ok": false, "off": true, "msg": format!("{}: `omh set voice.calls on` turns them on.", crate::voice::OFF) }) }
 /// Calls are off: the call this key holds (one started before) ends, and its page or helper is told it ended (410),
 /// so that it lets go of the microphone and of ElevenLabs; without a call, a plain no.
 fn off_now(key: &str) -> (u16, Value) {
@@ -94,7 +94,7 @@ pub fn start(args: &Value, role: impl FnOnce() -> Result<String, String>) -> (u1
     let target = call::target(&c).name;
     let target = if target.is_empty() { "the Coordinator".to_string() } else { target };
     if ws { return (200, json!({ "ok": true, "url": token, "call": c.s("id"), "key": key_secret, "language": m.language, "target": target })); }
-    (200, json!({ "ok": true, "token": token, "call": c.s("id"), "key": key_secret, "language": m.language, "target": target, "worklet": "/herdr-projects/page/vendor/rawAudioProcessor.js" }))
+    (200, json!({ "ok": true, "token": token, "call": c.s("id"), "key": key_secret, "language": m.language, "target": target, "worklet": "/omh/page/vendor/rawAudioProcessor.js" }))
 }
 /// The same calls, in this process and with no HTTP, for the terminal board's call (its helper's listener: calls/listen.rs
 /// runs them for the helper over SSH, or in the helper itself for a board of its own computer). `start` takes the

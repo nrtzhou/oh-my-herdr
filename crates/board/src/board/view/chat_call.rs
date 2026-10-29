@@ -31,13 +31,13 @@ pub fn lines(s: &State) -> Vec<Inked> {
     let offered = c.b("offered");
     let late = s.call_link.as_ref().map(|(id, at)| *id == c.s("id") && s.now - at >= LINK_AFTER_MS).unwrap_or(false);
     if ringing && offered { out.push(Inked::of(format!("   {} picks it up…", c.s("offered")), Ink::Muted)); }
-    else if ringing && late { out.push(Inked::of("   No call helper picked it up: the computer you sit at needs herdr-projects running (herdr-projects voice says how it stands there).", Ink::Yellow)); }
+    else if ringing && late { out.push(Inked::of("   No call helper picked it up: the computer you sit at needs omh running (omh voice says how it stands there).", Ink::Yellow)); }
     // headphones where nothing cancels the echo; a microphone too quiet to be heard
     if !ringing && a.s("via") == "native" {
         let quiet = a.i("secs") >= QUIET_AFTER_S && a.f("mic") < QUIET_MIC;
         let mut warn = vec![];
         if !a.b("aec") { warn.push("headphones needed: no echo cancelling there".to_string()); }
-        if quiet { warn.push("your microphone is very quiet: the voice may not hear you (herdr-projects voice test there)".to_string()); }
+        if quiet { warn.push("your microphone is very quiet: the voice may not hear you (omh voice test there)".to_string()); }
         if !warn.is_empty() { out.push(Inked::of(format!("   {}", warn.join(" · ")), Ink::Yellow)); }
     }
     if let Some(l) = c.arr("lines").last() {

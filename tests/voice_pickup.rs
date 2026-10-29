@@ -44,7 +44,7 @@ fn across_machines_the_computer_at_its_herdr_window_wins_and_an_idle_mac_does_no
     // the scores as each computer works them out: the Mac's input was ten minutes ago with a terminal in front; the
     // M1 shows the Mac mini in herdr's window, in front
     let mini_score = sw::calls::here::mac_score(Some(600.0), true);
-    let m1_score = sw::calls::here::hypr_score(Some(("mini: herdr-projects".into(), "com.mitchellh.ghostty".into())), "mini");
+    let m1_score = sw::calls::here::hypr_score(Some(("mini: omh".into(), "com.mitchellh.ghostty".into())), "mini");
     assert_eq!((mini_score, m1_score), (0, 3));
     mini.step(Some(&json!({ "bid": c.s("id"), "score": mini_score }).to_string()));
     m1.step(Some(&json!({ "bid": c.s("id"), "score": m1_score }).to_string()));
@@ -69,7 +69,7 @@ fn being_at_a_computer_is_recent_input_on_macos_and_herdrs_own_window_is_a_plain
     assert!(local_client_in(ps, "review205"));
     assert!(local_client_in("/usr/bin/herdr\n", "default") && local_client_in("herdr --session default\n", "default"));
     assert!(!local_client_in("herdr --remote vm-str\n", "default"), "a window attached to another machine is not this computer's board's");
-    assert!(!local_client_in("herdr-projects board\n", "default") && !local_client_in("herdr agent list\n", "default"));
+    assert!(!local_client_in("omh board\n", "default") && !local_client_in("herdr agent list\n", "default"));
 }
 
 #[test]
@@ -87,6 +87,6 @@ fn the_voice_agent_thinks_with_deepseek_v4_1_flash_unless_voice_llm_names_anothe
     assert_eq!((cc.at("agent").at("prompt").s("llm"), cc.at("tts").s("model_id")), ("gemini-3.8-flash", "eleven_v4_turbo"));
     // a model ElevenLabs refuses: said plainly, with how to pick another
     let e = sw::voice::eleven::refused("ElevenLabs answered 422 to PATCH /v1/convai/agents/agent_1: {\"detail\":[{\"loc\":[\"body\",\"conversation_config\",\"agent\",\"prompt\",\"llm\"],\"msg\":\"Input should be ...\"}]}", &sw::voice::agent::made());
-    assert!(e.starts_with("ElevenLabs refused the model gemini-3.8-flash (the one voice.llm names) for the call's agent. Pick another: herdr-projects set voice.llm <model id>") && e.contains("herdr-projects set voice.llm none"), "{e}");
+    assert!(e.starts_with("ElevenLabs refused the model gemini-3.8-flash (the one voice.llm names) for the call's agent. Pick another: omh set voice.llm <model id>") && e.contains("omh set voice.llm none"), "{e}");
     sw::voice::eleven::set_fake(None);
 }

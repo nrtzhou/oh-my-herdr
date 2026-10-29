@@ -21,7 +21,7 @@ pub fn launcher_target(text: &str) -> Option<PathBuf> {
 }
 /// The programs the plugin runs (bin/run.sh): the one built in its folder, or the one downloaded for this platform.
 pub fn plugin_programs(root: &Path) -> Vec<PathBuf> {
-    let mut v = vec![root.join("target/release/herdr-projects")];
+    let mut v = vec![root.join("target/release/omh")];
     v.extend(platform().map(|p| root.join("bin").join(asset_name(p))));
     v
 }
@@ -36,19 +36,19 @@ fn how(h: &Here) -> &'static str {
 fn is_program(p: &Path) -> bool { use std::os::unix::fs::PermissionsExt; std::fs::metadata(p).map(|m| m.is_file() && m.permissions().mode() & 0o111 != 0).unwrap_or(false) }
 
 pub fn check(h: &Here) -> Vec<Found> {
-    let mut out = vec![Found::ok(format!("herdr-projects {}, {}: {}", h.version, how(h), t(&h.exe)))];
+    let mut out = vec![Found::ok(format!("omh {}, {}: {}", h.version, how(h), t(&h.exe)))];
     let root = h.plugin_root.as_deref();
     // The plugin's own folder is a newer version than the program it runs.
     if let (Some(r), Some(pv)) = (root, root.and_then(plugin_version)) {
         if h.exe.starts_with(real(r)) && newer(&pv, &h.version) {
-            let fix = if built_from_source(&h.exe) { format!("Build it again: cd {} && cargo build --release", t(r)) } else { format!("Run: herdr-projects update {pv}") };
+            let fix = if built_from_source(&h.exe) { format!("Build it again: cd {} && cargo build --release", t(r)) } else { format!("Run: omh update {pv}") };
             out.push(Found::bad(format!("This program is {}, older than the plugin's {pv}", h.version), fix));
         }
     }
-    let fix = match root { Some(r) => format!("Run: sh {}/bin/run.sh install  (or open the board once from Herdr)", t(r)), None => "Open the board once from Herdr, or run: herdr-projects install".into() };
+    let fix = match root { Some(r) => format!("Run: sh {}/bin/run.sh install  (or open the board once from Herdr)", t(r)), None => "Open the board once from Herdr, or run: omh install".into() };
     let l = t(&h.launcher);
     let target = match &h.launcher_text {
-        None => { out.push(Found::bad(format!("The launcher {l} is missing: agents and hooks run herdr-projects through it"), fix)); return out; }
+        None => { out.push(Found::bad(format!("The launcher {l} is missing: agents and hooks run omh through it"), fix)); return out; }
         Some(text) => launcher_target(text),
     };
     if h.launcher.exists() && !is_program(&h.launcher) { out.push(Found::bad(format!("The launcher {l} cannot be run: it is not executable"), fix)); return out; }

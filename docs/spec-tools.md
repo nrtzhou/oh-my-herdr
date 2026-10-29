@@ -7,13 +7,13 @@ set up the same way.
 ## The settings
 
 ```sh
-herdr-projects set worker.instructions "Use OpenSpec. Write the change's proposal and specs first, under openspec/changes/. Then build it. When it is built, run openspec archive for that change." --repo my-app
-herdr-projects set check.command "openspec validate --all --strict --no-interactive" --repo my-app
+omh set worker.instructions "Use OpenSpec. Write the change's proposal and specs first, under openspec/changes/. Then build it. When it is built, run openspec archive for that change." --repo my-app
+omh set check.command "openspec validate --all --strict --no-interactive" --repo my-app
 ```
 
 - **`worker.instructions`** tells every task's agent in that repo the order of work ([settings](settings.md)).
 - **`check.command`** makes a task's work count as done only when its specs are valid. Put your tests after it with
-  `&&`. It can also go in the repo's own `.herdr-projects.json` (`check.command`).
+  `&&`. It can also go in the repo's own `.omh.json` (`check.command`).
 - **Give `validate` a target.** With none, OpenSpec asks which one, on the terminal. The board runs the check with no
   terminal to ask on, so it fails every time. `--all`, `--changes` or a change's name each work.
 - **Worktrees are fine**: `openspec/` is in the repo, so every task's branch has it.

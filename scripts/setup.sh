@@ -1,5 +1,5 @@
 #!/bin/sh
-# The workspace setup (.herdr-projects.json): run in every fresh worktree before its agent starts. It installs the
+# The workspace setup (.omh.json): run in every fresh worktree before its agent starts. It installs the
 # build cache all worktrees share (scripts/build-cache.sh) and mold, the quicker linker (scripts/linker.sh), starts
 # from the warm build of the main line (scripts/warm-start.sh), builds the program through the cache with the `quick`
 # profile on its share of the cores, counted among the checks and setups running now (scripts/share-cores.sh), keeps
@@ -16,4 +16,4 @@ trap 'sc_leave' EXIT
 ws_seed
 sc_cargo build --profile quick
 ws_keep
-./target/quick/herdr-projects docs
+./target/quick/omh docs

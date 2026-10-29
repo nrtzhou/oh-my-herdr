@@ -1,4 +1,4 @@
-//! `herdr-projects voice`: how calls stand on this machine (where the ElevenLabs key was found, never the key itself;
+//! `omh voice`: how calls stand on this machine (where the ElevenLabs key was found, never the key itself;
 //! whether this computer's call helper runs, and for which machines; how the last call sounded; a call on now), and
 //! `voice end` to hang one up, and `voice test` to try this computer's sound for a call (a short tone out, a moment of
 //! the microphone in, and whether the echo is cancelled). `voice helper` and `voice listen` are the helper's own
@@ -27,7 +27,7 @@ pub fn main(args: &[String]) -> (Value, String) {
         return (json!({ "ended": on }), if on { "The call was hung up.".into() } else { "No call was on.".into() });
     }
     if !crate::voice::calls_on() {
-        let off = format!("{}: no call rings, the call helper does not run, and nothing contacts ElevenLabs.\nTurn them on: herdr-projects set voice.calls on", crate::voice::OFF);
+        let off = format!("{}: no call rings, the call helper does not run, and nothing contacts ElevenLabs.\nTurn them on: omh set voice.calls on", crate::voice::OFF);
         return (json!({ "calls": "off" }), off);
     }
     let k = key::find();

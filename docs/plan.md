@@ -4,9 +4,9 @@
 has its yes.** A misunderstanding caught in two minutes saves a wrong build caught in forty.
 
 ```
-herdr-projects delegate 12 --plan.approve you                                    # show me the plan first
-herdr-projects delegate 12 --plan.approve you --plan.agent claude/claude-opus-5-5 # a strong model plans, the usual one builds
-herdr-projects set plan.approve reviewer --repo my-app                           # in this repo the reviewer checks every plan
+omh delegate 12 --plan.approve you                                    # show me the plan first
+omh delegate 12 --plan.approve you --plan.agent claude/claude-opus-5-5 # a strong model plans, the usual one builds
+omh set plan.approve reviewer --repo my-app                           # in this repo the reviewer checks every plan
 ```
 
 Or tell the [Coordinator](coordinator.md): "show me the plan first", "have Opus plan it".
@@ -43,9 +43,9 @@ The task panel shows the plan under **Plan**: where it stands, who wrote it, the
 the list, all of it full screen), and **`Open plan`**, a private link served the way a report's is. The web Board shows
 the same part. You do one of two things:
 
-- **Yes**: the approve key (`ctrl+l`), or `herdr-projects approve <id>`. The plan is approved as it stands and the build
+- **Yes**: the approve key (`ctrl+l`), or `omh approve <id>`. The plan is approved as it stands and the build
   starts.
-- **A reply**: `space`, then your words, or `herdr-projects tell <id> <text>`. The plan goes back to its writer with
+- **A reply**: `space`, then your words, or `omh tell <id> <text>`. The plan goes back to its writer with
   your words and is written again. The task is plan ready again when the new plan is there.
 
 ## The reviewer's look
@@ -59,7 +59,7 @@ severity. [The gate](gate.md) decides by the same rule (`review.mustFix`):
 - still failing then: the task is plan ready, with what the reviewer found in the plan's part, and the yes is yours;
 - **the review cannot run** (its reviewer cannot start, or stops without a verdict): the task is plan ready all the same,
   its row saying why (`The plan's review could not run (…): yours to judge`). Your yes (`ctrl+l`) builds the plan as
-  it stands; `herdr-projects retry <id>` has the reviewer look at it again.
+  it stands; `omh retry <id>` has the reviewer look at it again.
 
 The reviewer runs in a read-only mount of its own, made the same way as the writer's. It is always started by the board
 from outside the writer's mount: the writer's program reports the end of its turn from inside its mount, and the board
@@ -105,7 +105,7 @@ checked and what it is unsure of; and to stop.
 ### The plan file
 
 One file, `plan.md`, in the task's own folder on the board
-(`~/.herdr-projects/data/tasks/<repo>/<n>/artifacts/plan/`), never in the repo.
+(`~/.omh/data/tasks/<repo>/<n>/artifacts/plan/`), never in the repo.
 
 - An agent that stopped without saving one: its last message is the plan.
 - Nothing said either: `No plan was written`, which goes back to the agent like any failure.
@@ -129,7 +129,7 @@ The board does not only ask for it. Four things hold, from the moment the plan s
    - **Where no such mount can be made**, **no plan is written in a repo at all**. The task does not start, and says
      what is missing and the two ways on: make the mount possible (on Linux: install bubblewrap; on macOS: start Herdr
      outside any sandbox), or `set plan.approve none --task <id>`. A lesser guard is never used instead.
-     `herdr-projects doctor` says whether plan approval can run on this machine, and why not.
+     `omh doctor` says whether plan approval can run on this machine, and why not.
 2. **The worktree's files are read-only too.** Every file and folder in it loses its write permission, ignored files
    too, and so does the worktree's own git folder (its index, its `HEAD`). Whatever runs outside the mount is answered
    `Permission denied`. The permission comes back when the build starts, before its agent is started (so a start that
@@ -173,7 +173,7 @@ board's own look, and the hold on the build, are for the rest.
     in case your own settings turn its sandbox on.
   - pi has no sandbox of its own.
   After the yes the program starts again the usual way, its own sandbox as you set it.
-- `HERDR_PROJECTS_SANDBOX` picks the tool outright: `bwrap`, `sandbox-exec`, or `none` (no mount: no plan is written in
+- `OMH_SANDBOX` picks the tool outright: `bwrap`, `sandbox-exec`, or `none` (no mount: no plan is written in
   a repo). Unset, the board tries the platform's own and remembers for ten minutes whether it works. A try made from
   inside a sandbox (on macOS one always fails there) is never remembered.
 

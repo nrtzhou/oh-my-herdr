@@ -1,4 +1,4 @@
-//! On the board's machine, for one call helper on another computer: `herdr-projects voice listen --from <computer>`, run
+//! On the board's machine, for one call helper on another computer: `omh voice listen --from <computer>`, run
 //! by the helper over SSH. It says when a call rings (`{"ring": id}`); the helper answers how surely you are at that
 //! computer (`{"bid": id, "score": n}`: herdr's window in front, input a moment ago); a moment later the computer with
 //! the best answer gets the call: this listener starts it with the call's ticket and hands the helper what it needs to

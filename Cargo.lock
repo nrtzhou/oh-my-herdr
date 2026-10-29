@@ -455,21 +455,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
-name = "herdr-projects"
-version = "1.2.27"
-dependencies = [
- "chrono",
- "crossterm",
- "fancy-regex",
- "libc",
- "ratatui",
- "regex",
- "serde_json",
- "sw-web",
- "toml",
-]
-
-[[package]]
 name = "http"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -690,6 +675,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c7398b9c8b70908f6371f47ed36737907c87c52af34c268fed0bf0ceb92ead9"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "omh"
+version = "1.2.27"
+dependencies = [
+ "chrono",
+ "crossterm",
+ "fancy-regex",
+ "libc",
+ "ratatui",
+ "regex",
+ "serde_json",
+ "sw-web",
+ "toml",
 ]
 
 [[package]]

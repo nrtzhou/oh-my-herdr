@@ -7,7 +7,7 @@ changed, and one call covers every agent. That keeps it cheap.
 Change how often with `watcher.every` ([settings](settings.md)), a time with its unit, at least 5 seconds:
 
 ```
-herdr-projects set watcher.every 120s
+omh set watcher.every 120s
 ```
 
 Each look starts a whole program (`claude -p`, `codex exec`, `pi -p`, or another program's one-shot mode:

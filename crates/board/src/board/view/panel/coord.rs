@@ -56,7 +56,7 @@ pub fn coord_panel(s: &State, t: &Target, width: usize, full: bool) -> Vec<Inked
         if once { set.push(Inked::of("*", Ink::Accent).add(Kit::dim(" this time only"))); }
     }
     if full && t.host.is_empty() { set.extend(k.wrap(&format!("{} changes them", key_name("settings"))).into_iter().map(|l| l.recolor(Ink::Muted))); }
-    if full && !t.host.is_empty() { set.extend(k.wrap(&format!("Changed on {}: herdr-projects set <name> <value> {} there", t.host, flag(t))).into_iter().map(|l| l.recolor(Ink::Muted))); }
+    if full && !t.host.is_empty() { set.extend(k.wrap(&format!("Changed on {}: omh set <name> <value> {} there", t.host, flag(t))).into_iter().map(|l| l.recolor(Ink::Muted))); }
     k.part(set);
     if full && on {
         let mut w = vec![k.head("Wakes", None)];

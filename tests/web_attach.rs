@@ -50,11 +50,11 @@ fn a_file_for_the_coordinator_is_kept_in_its_own_folder() {
     g.s.data.can_dispatch = true;
     let out = sw::webui::attach::attach(&g, &file("shot.png", "image/png", PNG, json!({ "id": "", "reply": false }))).unwrap();
     let home = sw::coordinator::state::home(&sw::herdr::cli::current_socket());
-    assert!(kept(&out).starts_with(home.join(".herdr-projects").join("files")), "{}", out.s("path"));
+    assert!(kept(&out).starts_with(home.join(".omh").join("files")), "{}", out.s("path"));
     // this machine's heading, the only machine: its coordinator is the top-level one, in that one's folder
     let out = sw::webui::attach::attach(&g, &file("shot.png", "image/png", PNG, json!({ "id": "head:machine\t", "reply": true, "scope": "" }))).unwrap();
     let home = sw::coordinator::state::home(&sw::herdr::cli::current_socket());
-    assert!(kept(&out).starts_with(home.join(".herdr-projects").join("files")), "{}", out.s("path"));
+    assert!(kept(&out).starts_with(home.join(".omh").join("files")), "{}", out.s("path"));
     // where no coordinator can run, a heading's gets none: its words would not be sent either
     g.s.data.can_dispatch = false;
     let err = sw::webui::attach::attach(&g, &file("shot.png", "image/png", PNG, json!({ "id": "head:machine\t", "reply": true }))).unwrap_err();
@@ -69,9 +69,9 @@ fn a_file_for_a_tasks_agent_is_kept_in_its_working_folder_where_git_does_not_see
     delegate(&id); settle(&id);
     let p = kept(&web(&w, "attach", file("", "image/jpeg", PNG, json!({ "id": id, "reply": true }))));
     let cwd = sw::store::repos::cwd_of(&task(&id));
-    assert!(p.starts_with(cwd.join(".herdr-projects").join("files")) && p.extension().unwrap() == "jpg", "{}", p.display());
+    assert!(p.starts_with(cwd.join(".omh").join("files")) && p.extension().unwrap() == "jpg", "{}", p.display());
     let status = std::process::Command::new("git").args(["status", "--porcelain", "--untracked-files=all"]).current_dir(&cwd).output().unwrap();
-    assert!(!String::from_utf8_lossy(&status.stdout).contains(".herdr-projects"), "{}", String::from_utf8_lossy(&status.stdout));
+    assert!(!String::from_utf8_lossy(&status.stdout).contains(".omh"), "{}", String::from_utf8_lossy(&status.stdout));
 }
 
 #[test]

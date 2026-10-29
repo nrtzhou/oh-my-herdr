@@ -59,7 +59,7 @@ pub fn address_from(config_dir: &str, plugin: &str) -> WebUi {
     let saved = std::fs::read_to_string(state_dir(&vars, plugin).join("plugin-port")).ok().and_then(|s| s.trim().parse::<u16>().ok()).filter(|p| *p > 0);
     WebUi { port: saved.unwrap_or(DEFAULT_PORT), ..found }
 }
-/// A web UI named by hand (`HERDR_PROJECTS_WEBUI=17431`, or `host:port`): one herdr does not list. `off`: none.
+/// A web UI named by hand (`OMH_WEBUI=17431`, or `host:port`): one herdr does not list. `off`: none.
 fn named(v: &str) -> Option<Option<WebUi>> {
     let v = v.trim();
     if v.is_empty() { return None; }
@@ -80,7 +80,7 @@ pub fn web_ui(fresh: bool) -> Option<WebUi> {
 fn look() -> Option<WebUi> {
     // Off by the setting, or taken out with `remove-extras` (until `web-ui link` asks for it again).
     if crate::store::settings::lookup::setting("board.webUi", None) == json!("none") || crate::extras::extras().s("webUi") == "removed" { return None; }
-    if let Some(by_hand) = named(&std::env::var("HERDR_PROJECTS_WEBUI").unwrap_or_default()) { return by_hand; }
+    if let Some(by_hand) = named(&std::env::var("OMH_WEBUI").unwrap_or_default()) { return by_hand; }
     let h = Herdr::new(None);
     let plugins = h.plugins();
     let p = WEB_UI_IDS.iter().find_map(|id| plugins.iter().find(|p| p.s("plugin_id") == *id && p.at("enabled") != &json!(false)))?;

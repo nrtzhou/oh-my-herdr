@@ -1,5 +1,5 @@
-id = "herdr-projects"
-name = "Projects"
+id = "omh"
+name = "Oh My Herdr"
 version = "1.2.27"
 # The oldest herdr this plugin was actually verified on.
 min_herdr_version = "0.9.3"

@@ -23,20 +23,20 @@ Each other machine needs, once:
 
 ```sh
 # git, gh, the agent programs it will run, then:
-git clone https://github.com/eliasstravik/herdr-projects && cd herdr-projects
+git clone https://github.com/eliasstravik/omh && cd omh
 herdr plugin link "$PWD"
 sh bin/run.sh install             # gets the program and writes its launcher
 ```
 
-…and `herdr-projects` on the PATH of a login shell there (next section). How the program is fetched and updated is in
+…and `omh` on the PATH of a login shell there (next section). How the program is fetched and updated is in
 [installing](install.md).
 
 Why SSH: the plugin's commands on another machine travel over the plugin's own SSH connection, because Herdr has no
 command that runs a plugin's commands there.
 
-### `herdr-projects` must be on a login shell's PATH
+### `omh` must be on a login shell's PATH
 
-The board asks another machine with `$SHELL -lc 'herdr-projects remote list'`: a login shell that nobody types into, not
+The board asks another machine with `$SHELL -lc 'omh remote list'`: a login shell that nobody types into, not
 an interactive one. A PATH set only for interactive shells does not count. On many systems `~/.bashrc` stops at its "if
 not running interactively, return" line, so a PATH set below that line is not found.
 
@@ -45,7 +45,7 @@ Fix it either way:
 - set the PATH in the profile file: `~/.profile` or `~/.bash_profile` for bash, `~/.zprofile` for zsh,
   `~/.config/fish/config.fish` for fish (outside its `if status is-interactive` block);
 - or link the launcher into a folder a login shell already has:
-  `ln -s ~/.herdr-projects/data/bin/herdr-projects ~/.local/bin/`.
+  `ln -s ~/.omh/data/bin/omh ~/.local/bin/`.
 
 Any login shell does, fish too: the board hands it only words every shell reads alike, and lets `/bin/sh` start it
 with the command.
@@ -53,22 +53,22 @@ with the command.
 Test it from the machine the board is on. All is well when it ends with a line of JSON:
 
 ```sh
-ssh <machine> 'exec $SHELL -lc "herdr-projects remote list"' | tail -c 200
+ssh <machine> 'exec $SHELL -lc "omh remote list"' | tail -c 200
 ```
 
 Anything a shell's start-up files print around that line (a banner, a goodbye, anything on stderr) does no harm, however
 much and even if it is JSON itself: the board reads the last line that is its own answer.
 
-## Check every machine: `herdr-projects machines`
+## Check every machine: `omh machines`
 
 It lists this machine and each other one: whether it answers, its plugin version and how many tasks it has, or the
 reason and what to do. It reads the answers with the same code as the board.
 
 ```
-vm-home  this machine: a login shell (/bin/bash) finds herdr-projects 0.2.0
-vm-a     answers · herdr-projects 0.2.0 · 136 tasks  (exedev@vm-a)
-vm-b     does not answer: herdr-projects is not found there  (exedev@vm-b)
-    A login shell on vm-b does not find `herdr-projects`.
+vm-home  this machine: a login shell (/bin/bash) finds omh 0.2.0
+vm-a     answers · omh 0.2.0 · 136 tasks  (exedev@vm-a)
+vm-b     does not answer: omh is not found there  (exedev@vm-b)
+    A login shell on vm-b does not find `omh`.
     …
 ```
 
@@ -81,7 +81,7 @@ It is never shown as a machine with no tasks. Where its tasks would be, on the t
 line says so, with the reason:
 
 ```
-vm-a: its tasks cannot be read: herdr-projects is not found there.
+vm-a: its tasks cannot be read: omh is not found there.
 ```
 
 - In the every-machine view, the other machines' tasks still show under it.
@@ -94,10 +94,10 @@ vm-a: its tasks cannot be read: herdr-projects is not found there.
 | The line says | What happened | What to do |
 |---|---|---|
 | cannot connect (its name is not known, connecting timed out, it refused the connection, there is no way to it from here), ssh could not connect | SSH never reached the machine | is it on and on the network? Check its name and port in `herdr machine list` or `board.machines` |
-| its host key changed | the machine shows another key than the board saved for it | if it was set up again: `ssh-keygen -R <host> -f ~/.herdr-projects/data/known_hosts` (the board keeps its own list; with a port other than 22 the name is `'[<host>]:<port>'`, and the board's line gives it that way) |
+| its host key changed | the machine shows another key than the board saved for it | if it was set up again: `ssh-keygen -R <host> -f ~/.omh/data/known_hosts` (the board keeps its own list; with a port other than 22 the name is `'[<host>]:<port>'`, and the board's line gives it that way) |
 | it does not let the board in | no key that works, or it asks for a password: the board runs SSH in batch mode and cannot type one | `ssh-copy-id <machine>`, or load your key into the SSH agent the board runs under |
-| herdr-projects is not found there, node is not found there, its node is too old | a login shell there does not find the program (exit 127), or finds an older Node-based version of it, with no Node there or one older than 22 | fix the login shell's PATH, as above; this version needs no Node |
-| it answered something else than the board's answer, it answered nothing, it answered with an error, it answered, but not with its tasks | the command ran but did not print the board's list: an older plugin, a start-up file that prints and stops, an error | update herdr-projects there; run the test above to see all of it |
+| omh is not found there, node is not found there, its node is too old | a login shell there does not find the program (exit 127), or finds an older Node-based version of it, with no Node there or one older than 22 | fix the login shell's PATH, as above; this version needs no Node |
+| it answered something else than the board's answer, it answered nothing, it answered with an error, it answered, but not with its tasks | the command ran but did not print the board's list: an older plugin, a start-up file that prints and stops, an error | update omh there; run the test above to see all of it |
 | it took too long | no answer within 20 seconds | the board asks again by itself; look for a start-up file that waits for something |
 
 ## What you see of another machine
@@ -116,7 +116,7 @@ vm-a: its tasks cannot be read: herdr-projects is not found there.
   your words bright, its answers grey, no labels, and scrolls back through them. A machine with no Coordinator says so (what you type
   there is added as a task).
 - **A machine on an older plugin** is recognised by its missing version: its new fields stay blank and the board says
-  "update herdr-projects on <machine>". It sends no chat: its agent's last message still shows, and for a reviewer or
+  "update omh on <machine>". It sends no chat: its agent's last message still shows, and for a reviewer or
   its Coordinator the box says the machine needs the update.
 
 ## Going into another machine's agent
@@ -149,7 +149,7 @@ you dropped in the terminal (`/Users/you/Desktop/Screen\ Shot.png`, or in quotes
 box shows as `[Image 1]` ([pictures pasted](image-paste.md)). Before the words go, the board sends
 each such file over its own SSH link to that machine, and the words name it where it landed there. You copy nothing.
 
-- **Where it lands:** for a task's agent, in that task's working folder there, under `.herdr-projects/files/`. For a
+- **Where it lands:** for a task's agent, in that task's working folder there, under `.omh/files/`. For a
   Coordinator, in its own folder there, the same way. With no Coordinator there (the words become a task), in that
   machine's board folder, under `files/`. Git leaves the folder alone. A file kept there goes after 30 days.
 - **What goes:** only a file that is on this machine. A folder, a path that is no file here, and a bare path into a
@@ -157,7 +157,7 @@ each such file over its own SSH link to that machine, and the words name it wher
 - **Up to 8 MB a file.** A larger one is not sent.
 - **When a file cannot go** (too large, the machine does not answer, it refuses), the board says why and sends none of
   your words: never a path the agent there cannot open.
-- **A machine on an older version** cannot take files: the board says so. Update `herdr-projects` there.
+- **A machine on an older version** cannot take files: the board says so. Update `omh` there.
 
 ## In the web UI (Ovis)
 

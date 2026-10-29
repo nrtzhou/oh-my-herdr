@@ -16,7 +16,7 @@ fn coord_world(machines: &str) -> World {
     let w = world_with(Opts { repo: true, settings: json!({ "coordinator.agent": "claude", "review.when": "never", "board.machines": machines }), ..Default::default() });
     let home = w.base.join("home-coord");
     std::fs::create_dir_all(&home).unwrap();
-    unsafe { std::env::set_var("HERDR_PROJECTS_COORDINATOR_DIR", &home) };
+    unsafe { std::env::set_var("OMH_COORDINATOR_DIR", &home) };
     w
 }
 fn heads(s: &common::board::Board) -> Vec<String> { s.s.rows.iter().filter_map(|r| match r { Row::Head { name, .. } => Some(name.clone()), _ => None }).collect() }

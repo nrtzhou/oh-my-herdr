@@ -1,6 +1,6 @@
-//! The old herdr-projects 0.2's projects, set aside: it kept them in ~/.herdr-projects (its "projects root"), the
-//! name of this version's home folder, so the first run moves them whole to ~/.herdr-projects-legacy, as they are,
-//! and the old version's own settings (~/.config/herdr-projects) and herdr's state folder for it beside them. Nothing
+//! The old omh 0.2's projects, set aside: it kept them in ~/.omh (its "projects root"), the
+//! name of this version's home folder, so the first run moves them whole to ~/.omh-legacy, as they are,
+//! and the old version's own settings (~/.config/omh) and herdr's state folder for it beside them. Nothing
 //! in them is changed, mixed with this version's files, or deleted. Its background ticker is stopped first.
 use super::{legacy_name, Places, ID};
 use crate::json::*;

@@ -68,7 +68,7 @@ fn a_machine_that_sends_no_autopilot_at_all_still_says_to_update_it() {
     let mut b = far_board(&w, &f, json!({ "host": "vm-b", "version": "1.0.0", "tasks": their_task() }));
     b.s.sel = sw::board::update::heads::group_id(&b.s, "vm-b", "web"); b.load();
     b.press(&["ctrl+o"]);
-    assert!(b.text().contains("vm-b runs an older version that has no autopilot: update herdr-projects there first."), "{}", b.text());
+    assert!(b.text().contains("vm-b runs an older version that has no autopilot: update omh there first."), "{}", b.text());
     b.press(&["ctrl+o"]);
     assert!(b.text().contains("runs an older version"), "{}", b.text());
     assert!(f.asked().iter().all(|(_, what, _)| what != "do"), "nothing was sent");

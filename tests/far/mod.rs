@@ -1,4 +1,4 @@
-//! A stand-in for ssh, for the tests of other machines: `HERDR_PROJECTS_SSH` names a script that ends each call as
+//! A stand-in for ssh, for the tests of other machines: `OMH_SSH` names a script that ends each call as
 //! the test told that machine to (its stdout, stderr and exit code for each request, kept in a folder of files), and
 //! writes down what it was asked; and for the resolver, a file of the addresses host names stand for (`hosts`), so no
 //! real look is made. Also: a web board's answers from other machines, waited for.
@@ -13,7 +13,7 @@ D='@DIR@'
 h="${1##*@}"
 cmd="$2"
 set -- $2
-while [ $# -gt 0 ] && [ "$1" != "herdr-projects" ]; do shift; done
+while [ $# -gt 0 ] && [ "$1" != "omh" ]; do shift; done
 what="$3"; arg="$4"; act=""
 log="$D/asked"
 case "$cmd" in *"herdr machine list"*) what="herdr-machines"; log="$D/asked-herdr" ;; esac
@@ -38,8 +38,8 @@ impl Far {
         std::fs::write(&script, SCRIPT.replace("@DIR@", &dir.display().to_string())).unwrap();
         use std::os::unix::fs::PermissionsExt;
         std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755)).unwrap();
-        unsafe { std::env::set_var("HERDR_PROJECTS_SSH", &script) };
-        unsafe { std::env::set_var("HERDR_PROJECTS_HOSTS", dir.join("hosts")) };
+        unsafe { std::env::set_var("OMH_SSH", &script) };
+        unsafe { std::env::set_var("OMH_HOSTS", dir.join("hosts")) };
         Far { dir }
     }
     /// The addresses `host` stands for, as the resolver gives them (remote/lookup.rs).
@@ -72,7 +72,7 @@ impl Far {
         }).collect()
     }
 }
-impl Drop for Far { fn drop(&mut self) { unsafe { std::env::remove_var("HERDR_PROJECTS_SSH"); std::env::remove_var("HERDR_PROJECTS_HOSTS") }; } }
+impl Drop for Far { fn drop(&mut self) { unsafe { std::env::remove_var("OMH_SSH"); std::env::remove_var("OMH_HOSTS") }; } }
 
 /// A task of another machine, as its door lists it.
 pub fn theirs(n: i64) -> Value { let now = sw::clock::now(); json!({ "id": format!("far/{n}"), "title": format!("Theirs {n}"), "stage": "todo", "state": "idle", "agent": "", "app": "", "msg": "", "note": "", "at": now, "created": now, "snap": { "folder": "~/far" } }) }

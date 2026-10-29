@@ -232,7 +232,7 @@ fn run_one(job: Job) -> Done {
             Job::Setup { key, sidebar, file } => super::job_far::setup(key, sidebar, &file),
             Job::WebOpen { id, far } => super::job_far::web_open(&id, far),
             Job::WebUiLink => { let r = crate::webui::command::link_now(); Done::say(r.t("msg"), if r.b("ok") { Ink::Green } else { Ink::Red }) }
-            Job::WebUiDecline => { crate::webui::command::decline(); Done::say("Left as it is. `herdr-projects web-ui link` does it later.", Ink::Muted) }
+            Job::WebUiDecline => { crate::webui::command::decline(); Done::say("Left as it is. `omh web-ui link` does it later.", Ink::Muted) }
             Job::CallRing { owner, target, session } => match crate::calls::ring::ring(&owner, &target, &session) {
                 Ok(id) => Done::say(format!("Calling with {}…", target.name), Ink::Muted).and(Then::CallRang { id }),
                 Err(e) => Done::fail(e),

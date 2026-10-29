@@ -1,5 +1,5 @@
 //! What the tests of taking over older installs share (take_over.rs, take_over_more.rs): a machine's home folder as
-//! the old herdr-projects 0.2 left it, as herdr-superwork left it, or both; a stand-in for what is done beyond files;
+//! the old omh 0.2 left it, as herdr-superwork left it, or both; a stand-in for what is done beyond files;
 //! and the take-over run on it.
 #![allow(dead_code)]
 use std::cell::RefCell;
@@ -28,7 +28,7 @@ pub fn all(dir: &Path) -> BTreeMap<String, String> {
 /// What the stand-in was asked to do.
 #[derive(Default)]
 pub struct Fake { pub calls: RefCell<Vec<String>>, pub reject: bool, pub old_running: bool, pub plugin_on: RefCell<bool> }
-pub const LAUNCHER: &str = "#!/bin/sh\nexec '/new/herdr-projects' \"$@\"\n";
+pub const LAUNCHER: &str = "#!/bin/sh\nexec '/new/omh' \"$@\"\n";
 impl Sys for Fake {
     fn launcher(&self) -> Option<String> { Some(LAUNCHER.into()) }
     fn stop_old(&self, data: &Path) -> Vec<String> { self.calls.borrow_mut().push(format!("stop {}", data.display())); if self.old_running { vec!["keeper".into(), "page server".into()] } else { vec![] } }
@@ -56,7 +56,7 @@ pub const OLD_CONFIG: &str = r#"onboarding = false
 
 [ui]
 accent = "blue"
-tab_bar_right = [{ type = "command", command = "/h/.config/herdr/plugins/github/herdr-projects-b1278ffb803c/target/release/herdr-projects --root /h/.herdr-projects needs-you --line", interval_seconds = 15, timeout_seconds = 5 }]
+tab_bar_right = [{ type = "command", command = "/h/.config/herdr/plugins/github/omh-b1278ffb803c/target/release/omh --root /h/.omh needs-you --line", interval_seconds = 15, timeout_seconds = 5 }]
 
 [ui.sidebar.agents]
 rows = [["state_icon", { token = "agent", bold = false, dim = false, rules = [{ contains = "​", bold = true }] }, "state_text"], [{ token = "$hp_sub", dim = true }]]
@@ -67,7 +67,7 @@ rows = [["state_icon", { token = "workspace", rules = [{ contains = "⠀", bold 
 [[keys.command]]
 key = "prefix+a"
 type = "plugin_action"
-command = "herdr-projects.open-popup"
+command = "omh.open-popup"
 description = "Projects"
 
 [[keys.command]]
@@ -75,15 +75,15 @@ key = "prefix+g"
 type = "plugin_action"
 command = "other.thing"
 "#;
-pub const OLD_HOOK: &str = "/h/.config/herdr/plugins/github/herdr-projects-b1278ffb803c/target/release/herdr-projects --root /h/.herdr-projects hook --agent claude 2>/dev/null || true";
+pub const OLD_HOOK: &str = "/h/.config/herdr/plugins/github/omh-b1278ffb803c/target/release/omh --root /h/.omh hook --agent claude 2>/dev/null || true";
 impl Machine {
     pub fn run(&self, sys: &Fake) -> Report { take_over(&self.p, &self.env, sys, false, 200, &swap_now) }
     pub fn doctor(&self, sys: &Fake) -> Vec<String> { sw::take_over::look::look(&self.p, &self.env, sys) }
     pub fn at(&self, rest: &str) -> PathBuf { self.home.join(rest) }
-    /// What the old herdr-projects 0.2 left: two projects and its own files in ~/.herdr-projects, its settings, herdr's
+    /// What the old omh 0.2 left: two projects and its own files in ~/.omh, its settings, herdr's
     /// state folder for it, its entries in herdr's config, its hooks, its skill and the link on the PATH.
     pub fn old_rust(&self) {
-        let r = self.at(".herdr-projects");
+        let r = self.at(".omh");
         put(&r.join("gtm-ai/PROJECT.md"), "+++\nname = \"gtm-ai\"\n+++\n# Instructions\n");
         put(&r.join("gtm-ai/.state/project.json"), "{}");
         put(&r.join("home/PROJECT.md"), "+++\n+++\n# Instructions\n");
@@ -91,16 +91,16 @@ impl Machine {
         put(&r.join(".ticker.lock"), r#"{"version":"0.2.34","pid":1}"#);
         put(&r.join(".machines.json"), r#"{"checked":1,"machines":[]}"#);
         put(&r.join("._gtm-ai"), "apple double");
-        put(&self.at(".config/herdr-projects/config.toml"), "root = \"~/.herdr-projects\"\n");
-        put(&self.at(".config/herdr-projects/owned.json"), "{}");
-        put(&self.p.plugin_state.join("herdr-projects/handoff.json"), "{}");
+        put(&self.at(".config/omh/config.toml"), "root = \"~/.omh\"\n");
+        put(&self.at(".config/omh/owned.json"), "{}");
+        put(&self.p.plugin_state.join("omh/handoff.json"), "{}");
         put(&self.p.herdr_config, OLD_CONFIG);
         let hook = serde_json::json!({ "matcher": "*", "hooks": [{ "type": "command", "command": OLD_HOOK, "timeout": 10 }] });
         put(&self.at(".claude/settings.json"), &serde_json::to_string_pretty(&serde_json::json!({ "theme": "dark", "hooks": { "SessionStart": [hook.clone()], "PostToolUse": [hook.clone(), { "matcher": "Bash", "hooks": [{ "type": "command", "command": "my-own-hook" }] }] } })).unwrap());
         std::fs::create_dir_all(self.at(".claude/skills")).unwrap();
-        std::os::unix::fs::symlink(self.at(".config/herdr/plugins/github/herdr-projects-b1278ffb803c/skill/autoproject"), self.at(".claude/skills/autoproject")).unwrap();
+        std::os::unix::fs::symlink(self.at(".config/herdr/plugins/github/omh-b1278ffb803c/skill/autoproject"), self.at(".claude/skills/autoproject")).unwrap();
         std::fs::create_dir_all(self.at(".local/bin")).unwrap();
-        std::os::unix::fs::symlink(self.at(".config/herdr/plugins/github/herdr-projects-b1278ffb803c/target/release/herdr-projects"), self.at(".local/bin/herdr-projects")).unwrap();
+        std::os::unix::fs::symlink(self.at(".config/herdr/plugins/github/omh-b1278ffb803c/target/release/omh"), self.at(".local/bin/omh")).unwrap();
     }
     /// What herdr-superwork left: its home folder (a task, its agent's hook settings with the old launcher, the
     /// launcher, its how-to written down, its keeper's file, an artifact, an older copy, its settings and a report,

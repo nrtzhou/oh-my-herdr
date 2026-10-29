@@ -1,7 +1,7 @@
 //! The addresses a host name stands for, as this machine's resolver (DNS, Tailscale's MagicDNS, the hosts file) gives
 //! them: how a machine named only by its Tailscale name in another machine's herdr list is still found to be this one
 //! when its own host name is another (a Mac mini that calls itself `Mac`: remote/sidebar.rs). A look that does not end
-//! within a second and a half gives none. The tests stand in for the resolver with a file (`HERDR_PROJECTS_HOSTS`:
+//! within a second and a half gives none. The tests stand in for the resolver with a file (`OMH_HOSTS`:
 //! one host per line, then its addresses), and no real look is made then.
 use std::net::{IpAddr, ToSocketAddrs};
 use std::time::Duration;
@@ -18,7 +18,7 @@ pub fn addresses(hosts: &[String]) -> Vec<String> {
     out
 }
 fn look(host: &str) -> Vec<IpAddr> {
-    if let Some(file) = std::env::var_os("HERDR_PROJECTS_HOSTS") {
+    if let Some(file) = std::env::var_os("OMH_HOSTS") {
         let text = std::fs::read_to_string(file).unwrap_or_default();
         return text.lines().map(|l| l.split_whitespace().collect::<Vec<_>>()).filter(|w| w.first().map(|n| n.eq_ignore_ascii_case(host)).unwrap_or(false)).flat_map(|w| w[1..].iter().filter_map(|a| a.parse().ok()).collect::<Vec<_>>()).collect();
     }

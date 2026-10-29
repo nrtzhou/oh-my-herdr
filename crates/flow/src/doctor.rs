@@ -1,4 +1,4 @@
-//! `herdr-projects doctor`: the health check. One file in doctor/ per area (the program and its launcher, herdr's
+//! `omh doctor`: the health check. One file in doctor/ per area (the program and its launcher, herdr's
 //! plugin, the agent programs and Codex's config.toml, the model and effort settings, plan approval's read-only
 //! mount, other machines, free disk space, leftovers it could clean, messages that wait undelivered for a
 //! coordinator); older installs are take_over/look.rs. Each area hands back what it found: a fact that is fine, or a

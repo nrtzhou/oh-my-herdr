@@ -14,7 +14,7 @@ When a [fallback agent](fallback.md) takes over, the tab says which program is o
 `Reviewer #2 (claude)`.
 
 Two tabs live outside the task spaces: `Coordinator` in the home space ([the Coordinator](coordinator.md)) and
-`herdr-projects`, the board itself ([the board](board.md)).
+`omh`, the board itself ([the board](board.md)).
 
 ## When tabs open and close
 

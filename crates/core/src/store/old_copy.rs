@@ -1,5 +1,5 @@
 //! The copy of the data an older (Node) version wrote: the first run of this version keeps the data folder as it was,
-//! beside it (`~/.herdr-projects/data-0.2.0`), before anything in it is changed. The data's form is the same, so
+//! beside it (`~/.omh/data-0.2.0`), before anything in it is changed. The data's form is the same, so
 //! nothing is converted; the copy is only there to go back with. Made once: skipped when it is there. Its one line is
 //! said as the move's is (store/move_home.rs): on the terminal, or on the board when the first run was a hook.
 use super::files::*;
@@ -16,7 +16,7 @@ pub const FIRST_NATIVE: &str = "0.3.0";
 pub fn older_writer(data: &Path) -> Option<String> {
     let kept = read_obj(&data.join("keeper.json")).map(|o| o.t("version")).unwrap_or_default();
     if !kept.is_empty() && crate::util::newer(FIRST_NATIVE, &kept) { return Some(kept); }
-    let launcher = ["herdr-projects", OLD_NAME].map(|n| data.join("bin").join(n)).into_iter().find(|f| f.exists())?;
+    let launcher = ["omh", OLD_NAME].map(|n| data.join("bin").join(n)).into_iter().find(|f| f.exists())?;
     let node = read_text(&launcher).and_then(|t| t.lines().find_map(launcher_target)).map(|p| p.ends_with(".js")).unwrap_or(false);
     node.then(|| "node".to_string())
 }
@@ -55,7 +55,7 @@ pub fn keep_old_copy(data: &Path) -> Result<Option<String>, String> {
         return Err(format!("Could not keep a copy of {} before this version uses it: {e}", data.display()));
     }
     let older = if v == "node" { "the older (Node) version".to_string() } else { format!("version {v}") };
-    Ok(Some(format!("herdr-projects {VERSION} uses the data {older} kept, unchanged; a copy of it as it was is in {}.", short(&to))))
+    Ok(Some(format!("omh {VERSION} uses the data {older} kept, unchanged; a copy of it as it was is in {}.", short(&to))))
 }
 fn short(p: &Path) -> String {
     let home = user_home();
@@ -66,7 +66,7 @@ const QUIET: [&str; 8] = ["board", "hook", "turn-ended", "keeper", "keeper-work"
 /// At the start of every run, after the move into the home folder: the copy, and its one line, added to the move's
 /// own line so that the board shows it too when the first run was a hook.
 pub fn copy_at_start(cmd: &str) {
-    if std::env::var("HERDR_PROJECTS_INLINE").as_deref() == Ok("1") { return; }
+    if std::env::var("OMH_INLINE").as_deref() == Ok("1") { return; }
     let (home, env) = (user_home(), env_now());
     let line = match keep_old_copy(&data_dir()) { Ok(Some(l)) => l, Ok(None) => String::new(), Err(e) => e };
     if !line.is_empty() {

@@ -3,7 +3,7 @@
 //! with that computer's microphone and speaker and no browser (helper.rs, native/). The helper reaches the board's
 //! machine the way the board reaches other machines, over SSH to herdr's saved machines, and listens there (listen.rs);
 //! of several computers listening, the one you are at takes it (here.rs): the board's own computer, when its herdr
-//! window there is in use, and no other. `herdr-projects voice` says how it stands (command.rs).
+//! window there is in use, and no other. `omh voice` says how it stands (command.rs).
 pub mod command;
 pub mod helper;
 pub mod here;

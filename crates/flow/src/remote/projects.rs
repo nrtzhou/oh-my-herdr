@@ -22,7 +22,7 @@ pub fn ask_there(m: &Machine, archive: bool, repo: &str, seen: Option<Seen>) -> 
     match super::ask(m, "do", Some(&Value::Object(req)), 60000) {
         Err(why) => crate::fail!("{}", super::why::unanswered(&m.label, &why)),
         // Each answer of this door says it is one: an older program reads the action as a task's and cannot do it.
-        Ok(j) if !j.b("project") => crate::fail!("{} runs an older version of herdr-projects that cannot {} a project from another machine: update it there first.", m.label, if archive { "archive" } else { "restore" }),
+        Ok(j) if !j.b("project") => crate::fail!("{} runs an older version of omh that cannot {} a project from another machine: update it there first.", m.label, if archive { "archive" } else { "restore" }),
         Ok(j) if j.b("ok") => Ok(j),
         Ok(j) => crate::fail!("{}: {}", m.label, j.s("msg")),
     }

@@ -1,4 +1,4 @@
-//! A task added on another machine (`herdr-projects add … --on <machine>`): asked there through its door (`add`), where
+//! A task added on another machine (`omh add … --on <machine>`): asked there through its door (`add`), where
 //! it is added as that machine adds its own, with the asking machine's work settings carried as for a dispatch, its own
 //! settings, and, when a coordinator's autopilot added it, its autopilot record (the adding machine and the
 //! `autopilot.repoFileWaits` in force), which that machine enforces. A machine on an older version has no such door:
@@ -18,7 +18,7 @@ pub fn add_there(label: &str, title: &str, desc: &str, repo: &str, own: &[(Strin
     match super::ask(&m, "add", Some(&req), 60000) {
         Err(why) => crate::fail!("{}", super::why::unanswered(&m.label, &why)),
         Ok(j) if j.b("ok") => Ok(j),
-        Ok(j) if j.s("msg").starts_with("Unknown request") => crate::fail!("{} runs an older version of herdr-projects that cannot add a task from another machine: update it there first.", m.label),
+        Ok(j) if j.s("msg").starts_with("Unknown request") => crate::fail!("{} runs an older version of omh that cannot add a task from another machine: update it there first.", m.label),
         Ok(j) => crate::fail!("{}: {}", m.label, j.s("msg")),
     }
 }

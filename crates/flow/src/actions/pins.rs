@@ -17,7 +17,7 @@ pub fn pin_here(project: Option<&str>, on: bool) -> Res<(String, String)> {
     // A pinned repo the board no longer knows can still be unpinned, by the name it was pinned by.
     let pinned = crate::store::pins::pins().repos.into_iter().find(|r| r.eq_ignore_ascii_case(want.trim()));
     let repo = match (pinned, on) { (Some(r), false) => r, _ => repo_named(want)? };
-    if on && crate::store::archived_repos::is_archived(&repo) { crate::fail!("{} is archived: herdr-projects restore --repo {repo} brings it back, then it can be pinned.", repo_label(&repo)); }
+    if on && crate::store::archived_repos::is_archived(&repo) { crate::fail!("{} is archived: omh restore --repo {repo} brings it back, then it can be pinned.", repo_label(&repo)); }
     crate::store::pins::set(Some(&repo), on)?;
     Ok((repo.clone(), format!("{}: {word}", repo_label(&repo))))
 }

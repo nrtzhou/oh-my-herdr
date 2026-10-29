@@ -1,5 +1,5 @@
 //! Older installs on this machine, taken over by the first run of this version (any run: the board, a command, a hook)
-//! and looked at again by `herdr-projects doctor` and `install`: the old herdr-projects 0.2's projects set aside and
+//! and looked at again by `omh doctor` and `install`: the old omh 0.2's projects set aside and
 //! its entries in herdr's and the agent programs' settings taken out; herdr-superwork's home folder moved into this
 //! one, its paths fixed, its processes and its plugin replaced by this version's, its extras made this version's.
 //! The files are store/old_installs/; what else changes is here. docs/old-installs.md has the whole story.
@@ -30,19 +30,19 @@ pub struct Report { pub said: Vec<String>, pub left: Vec<String>, pub stay: Opti
 
 fn legacy_line(moved: &[(String, PathBuf, PathBuf)], home: &Path) -> String {
     let of = |w: &str| moved.iter().find(|m| m.0 == w).map(|m| short(&m.2, home));
-    let mut s = match of("projects") { Some(to) => format!("The old herdr-projects (0.2) kept its projects in {}: they are in {to} now, as they were", short(&moved[0].1, home)), None => "The old herdr-projects (0.2) was set aside".into() };
+    let mut s = match of("projects") { Some(to) => format!("The old omh (0.2) kept its projects in {}: they are in {to} now, as they were", short(&moved[0].1, home)), None => "The old omh (0.2) was set aside".into() };
     if let Some(c) = of("settings") { s.push_str(&format!(", its settings in {c}")); }
     s.push_str(". Nothing in them was changed or deleted.");
     s
 }
-fn config_said(what: &[&str]) -> String { format!("the old herdr-projects' {}", what.join(", ")) }
+fn config_said(what: &[&str]) -> String { format!("the old omh' {}", what.join(", ")) }
 
 /// Everything, in order; each step is safe to run again. `force`: look at everything (doctor, install), not only
 /// at what a move just made due.
 pub fn take_over(p: &Places, env: &Env, sys: &dyn Sys, force: bool, wait_ms: i64, swap: &dyn Fn(&Path, &Path) -> bool) -> Report {
     let mut r = Report::default();
     let (aside, took) = take_files(p, wait_ms, swap);
-    if aside.busy { r.left.push(format!("{} still holds the old herdr-projects' projects: its ticker did not stop. Run herdr-projects doctor again.", short(&p.to, &p.home))); }
+    if aside.busy { r.left.push(format!("{} still holds the old omh' projects: its ticker did not stop. Run omh doctor again.", short(&p.to, &p.home))); }
     if took.busy { r.stay = Some(p.superwork.clone()); return r; } // this run works where the folder is
     // The rest by one run at a time: another one at it (a process this one started, say) is left to it.
     let Some(_held) = Lock::beside(p, "taking-over", 0) else { return r };
@@ -58,7 +58,7 @@ pub fn take_over(p: &Places, env: &Env, sys: &dyn Sys, force: bool, wait_ms: i64
         r.said.push(legacy_line(&aside.moved, &p.home));
     }
     let home_moved = rec.at("home").s("state") == "done";
-    if took.how.is_some() { r.said.push(format!("herdr-superwork is herdr-projects now: everything in {} (tasks, settings, reports, the Coordinator's chat) moved into {}, and {} is a link to it, so whatever still runs carries on.", short(&p.superwork, &p.home), short(&p.to, &p.home), short(&p.superwork, &p.home))); }
+    if took.how.is_some() { r.said.push(format!("herdr-superwork is omh now: everything in {} (tasks, settings, reports, the Coordinator's chat) moved into {}, and {} is a link to it, so whatever still runs carries on.", short(&p.superwork, &p.home), short(&p.to, &p.home), short(&p.superwork, &p.home))); }
     // The old version's entries outside its folders.
     let mut text = std::fs::read_to_string(&p.herdr_config).unwrap_or_default();
     let mut config_what: Vec<&str> = vec![];
@@ -70,8 +70,8 @@ pub fn take_over(p: &Places, env: &Env, sys: &dyn Sys, force: bool, wait_ms: i64
         let mut gone: Vec<String> = vec![];
         if !hooks.is_empty() { gone.push(format!("its hooks in {}", hooks.iter().map(|f| short(Path::new(f), &p.home)).collect::<Vec<_>>().join(", "))); }
         if !links.is_empty() { gone.push(format!("its links {}", links.iter().map(|f| short(Path::new(f), &p.home)).collect::<Vec<_>>().join(", "))); }
-        if !gone.is_empty() { r.said.push(format!("Taken out of the old herdr-projects: {}.", gone.join("; "))); }
-        for f in unread { r.left.push(format!("{} may still hold the old herdr-projects' hooks (`… hook --agent …`): it is not plain JSON, so take them out by hand.", short(Path::new(&f), &p.home))); }
+        if !gone.is_empty() { r.said.push(format!("Taken out of the old omh: {}.", gone.join("; "))); }
+        for f in unread { r.left.push(format!("{} may still hold the old omh' hooks (`… hook --agent …`): it is not plain JSON, so take them out by hand.", short(Path::new(&f), &p.home))); }
         if t.s("legacy") == "due" { t.put("legacy", "done"); }
     }
     let (mut superwork_text, mut restart) = (false, None);
@@ -97,7 +97,7 @@ pub fn take_over(p: &Places, env: &Env, sys: &dyn Sys, force: bool, wait_ms: i64
     }
     if !config_what.is_empty() || superwork_text {
         match sys.write_config(&p.herdr_config, &text) {
-            Ok(()) => { if !config_what.is_empty() { r.said.push(format!("Taken out of herdr's config: the old herdr-projects' {} (a backup is beside it).", config_what.join(", "))); } if superwork_text { r.said.push("herdr-superwork's key and sidebar rows in herdr's config are herdr-projects' now.".into()); } }
+            Ok(()) => { if !config_what.is_empty() { r.said.push(format!("Taken out of herdr's config: the old omh' {} (a backup is beside it).", config_what.join(", "))); } if superwork_text { r.said.push("herdr-superwork's key and sidebar rows in herdr's config are omh' now.".into()); } }
             Err(why) => r.left.push(format!("{} still holds {}: {why}", short(&p.herdr_config, &p.home), if config_what.is_empty() { "herdr-superwork's key and sidebar rows".to_string() } else { config_said(&config_what) })),
         }
     }
@@ -123,5 +123,5 @@ pub fn at_start(cmd: &str) {
     let p = places(&home, &env);
     if !due(&p) { return; }
     let r = take_over(&p, &env, &live::Live, false, 3000, &swap_now);
-    if let Some(h) = r.stay { unsafe { std::env::set_var("HERDR_PROJECTS_HOME", h) }; }
+    if let Some(h) = r.stay { unsafe { std::env::set_var("OMH_HOME", h) }; }
 }

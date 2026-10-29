@@ -7,34 +7,34 @@
 
 | Command | Tells you |
 |---|---|
-| `herdr-projects doctor` | the health check: every problem below in one run, each with what to do ([the health check](#the-health-check)) |
-| `herdr-projects install` | writes the `herdr-projects` launcher again, and says if something else of that name comes first on your PATH ([installing](install.md)) |
-| `herdr-projects models [program]` | the model names each agent program takes here, or why its list cannot be read ([models](models.md)) |
-| `herdr-projects machines` | whether each other machine answers, how much disk each has free, and why not ([other machines](other-machines.md)) |
-| `herdr-projects sweep` | removes what ended tasks left behind now, and says what ([disk space](disk-space.md)) |
-| `herdr-projects show <id>` | every setting a task runs on, and where each value comes from ([settings](settings.md)) |
-| `herdr-projects details <id>` | everything about one task: reviews, hand-overs, limits, what it waits for |
+| `omh doctor` | the health check: every problem below in one run, each with what to do ([the health check](#the-health-check)) |
+| `omh install` | writes the `omh` launcher again, and says if something else of that name comes first on your PATH ([installing](install.md)) |
+| `omh models [program]` | the model names each agent program takes here, or why its list cannot be read ([models](models.md)) |
+| `omh machines` | whether each other machine answers, how much disk each has free, and why not ([other machines](other-machines.md)) |
+| `omh sweep` | removes what ended tasks left behind now, and says what ([disk space](disk-space.md)) |
+| `omh show <id>` | every setting a task runs on, and where each value comes from ([settings](settings.md)) |
+| `omh details <id>` | everything about one task: reviews, hand-overs, limits, what it waits for |
 | `herdr workspace list` | whether Herdr itself runs and answers |
 
 ## The health check
 
-`herdr-projects doctor` looks at everything below at once and takes about a second. A line with `✓` is fine. A line
+`omh doctor` looks at everything below at once and takes about a second. A line with `✓` is fine. A line
 with `✗` is a problem, with what to do under it. It exits 1 when there is a problem, so a script can run it too.
 
 | It checks | A problem it reports | What to do |
 |---|---|---|
-| this program | its version and how it was installed (downloaded, built from source); older than the plugin's own version | `herdr-projects update`, or build it again |
-| the launcher | `~/.herdr-projects/data/bin/herdr-projects` (what agents and hooks run) is missing, names a program that is gone, or not the plugin's | `sh <plugin folder>/bin/run.sh install`, or open the board once from Herdr |
-| your PATH | `herdr-projects` is not on it, or something else of that name comes first | put the launcher's folder first ([installing](install.md#the-command-on-your-path)) |
-| Herdr and the plugin | Herdr not found, older than the plugin needs, the plugin not installed, turned off, or linked to a folder that is gone | install or update Herdr; `herdr plugin enable herdr-projects`; link or install the plugin again |
+| this program | its version and how it was installed (downloaded, built from source); older than the plugin's own version | `omh update`, or build it again |
+| the launcher | `~/.omh/data/bin/omh` (what agents and hooks run) is missing, names a program that is gone, or not the plugin's | `sh <plugin folder>/bin/run.sh install`, or open the board once from Herdr |
+| your PATH | `omh` is not on it, or something else of that name comes first | put the launcher's folder first ([installing](install.md#the-command-on-your-path)) |
+| Herdr and the plugin | Herdr not found, older than the plugin needs, the plugin not installed, turned off, or linked to a folder that is gone | install or update Herdr; `herdr plugin enable omh`; link or install the plugin again |
 | each agent program your settings name | not installed, older than the board was checked on, not signed in (Claude Code, Codex and Cursor can say), missing Herdr's integration | install it or choose another; `claude auth login`, `codex login`, `cursor-agent login`; `herdr integration install <name>` |
-| model and effort settings | a model the program does not take, an effort it does not have, a program that cannot do its role, a value written by hand that does not count | `herdr-projects set <setting> …` ([models](models.md)) |
-| plan approval | a plan's writer cannot run in its read-only mount here (bubblewrap missing or user namespaces not allowed on Linux; `sandbox-exec` not usable on macOS), while your settings ask for plans (`plan.approve`). With no setting asking, it is said as a fact | install bubblewrap; on macOS start Herdr outside any sandbox; or `herdr-projects set plan.approve none` ([a plan first](plan.md)) |
-| other machines | one does not answer, runs an older version, or cannot ask this one | what `herdr-projects machines` says ([other machines](other-machines.md)) |
+| model and effort settings | a model the program does not take, an effort it does not have, a program that cannot do its role, a value written by hand that does not count | `omh set <setting> …` ([models](models.md)) |
+| plan approval | a plan's writer cannot run in its read-only mount here (bubblewrap missing or user namespaces not allowed on Linux; `sandbox-exec` not usable on macOS), while your settings ask for plans (`plan.approve`). With no setting asking, it is said as a fact | install bubblewrap; on macOS start Herdr outside any sandbox; or `omh set plan.approve none` ([a plan first](plan.md)) |
+| other machines | one does not answer, runs an older version, or cannot ask this one | what `omh machines` says ([other machines](other-machines.md)) |
 | disk space | under 10 GB free on a disk that holds the board's data, your repos, worktrees, build caches or temporary files: a task's setup may fail there | free some space, starting with the leftovers below |
-| leftovers | the worktree of a done or archived task (a clean-up keeps one with unsaved work), a worktree on a task branch no task has, one git still lists whose folder is gone, an old warm build in `~/.cache/herdr-projects` | the `git worktree remove`, `git worktree prune` or `rm -rf` it names. It never removes anything itself; `herdr-projects sweep` removes what is provably an ended task's ([disk space](disk-space.md)) |
+| leftovers | the worktree of a done or archived task (a clean-up keeps one with unsaved work), a worktree on a task branch no task has, one git still lists whose folder is gone, an old warm build in `~/.cache/omh` | the `git worktree remove`, `git worktree prune` or `rm -rf` it names. It never removes anything itself; `omh sweep` removes what is provably an ended task's ([disk space](disk-space.md)) |
 | coordinators' queues | a message waits undelivered for more than a minute, as when `coordinator tell` ran where herdr could not be found | open the board in Herdr, which delivers it; in that shell, set `HERDR_BIN_PATH` to herdr's full path ([the Coordinator](coordinator.md)) |
-| older installs | herdr-superwork or herdr-projects 0.2 still in the way | it takes over what it can, and says what is left ([older installs](old-installs.md)) |
+| older installs | herdr-superwork or omh 0.2 still in the way | it takes over what it can, and says what is left ([older installs](old-installs.md)) |
 
 Other machines are asked only when there are some, and each for at most 5 seconds. A done task's worktree is no
 leftover while its clean-up is still to come, or when `workspace.cleanup` is `false`.
@@ -52,7 +52,7 @@ setup, and trust the folder if it asks ([agent programs](agents.md#before-a-prog
 
 | You see | What it is | What to do |
 |---|---|---|
-| a task's setup or check failed with `No space left on device` | the disk filled up during its build | `herdr-projects sweep`, then `herdr-projects doctor` for what else can go; then finish or delegate it again |
+| a task's setup or check failed with `No space left on device` | the disk filled up during its build | `omh sweep`, then `omh doctor` for what else can go; then finish or delegate it again |
 | `Disk nearly full on vm-str: … free on …; this task starts once 5.0 GB is free` | the board kept the task from starting on a nearly full disk (`board.diskFree`) | the same; it starts by itself once there is room |
 
 Ended tasks clean up after themselves, and the board sweeps what they left once a day: [disk space](disk-space.md).
@@ -62,17 +62,17 @@ Ended tasks clean up after themselves, and the board sweeps what they left once 
 **A wrong name is refused when you set it**, with the names the program does take and the nearest one:
 
 ```
-$ herdr-projects set worker.agent codex/sol-6.1
+$ omh set worker.agent codex/sol-6.1
 worker.agent: codex has no model "sol-6.1" for your ChatGPT sign-in (pro plan). Did you mean gpt-6.1-sol? It takes
 gpt-6.1-sol, gpt-6-astra, gpt-6-sol, … (codex's own list for that sign-in). Write it after the program: codex/gpt-6.1-sol.
 ```
 
-- **See what a program takes:** `herdr-projects models codex`. For Codex that is what your own sign-in can use: a ChatGPT
+- **See what a program takes:** `omh models codex`. For Codex that is what your own sign-in can use: a ChatGPT
   sign-in and an API key take different names.
 - **"Its list cannot be read":** the program is installed but its list command failed (not logged in, offline). Run that
   list command in a terminal to see why, or leave the model out.
 - **A new Claude model is refused:** the board's table of Claude names is older than the model. Use the short name
-  (`claude/opus`): it always means the newest of its kind. Updating the board (`herdr-projects update`) brings the new
+  (`claude/opus`): it always means the newest of its kind. Updating the board (`omh update`) brings the new
   names.
 - **An effort is refused:** each program has its own levels. The refusal lists the ones it has.
 
@@ -82,10 +82,10 @@ Codex refused the model at the agent's first turn (`The 'sol-6.1' model is not s
 ChatGPT account`). The board catches it:
 
 - **`…: started again on codex's own default model`**: the board had given Codex that model; Codex now works on its own
-  default. Nothing to do. To choose another, `herdr-projects models codex` lists the ones your sign-in can use.
+  default. Nothing to do. To choose another, `omh models codex` lists the ones your sign-in can use.
 - **`Agent stopped: … can't be used with your ChatGPT sign-in; try gpt-6.1-sol`**: its default was refused too, or the
   board gave it no model (then the name comes from Codex's own `model` in `~/.codex/config.toml`). Choose one for the
-  task, `herdr-projects set worker.agent codex/gpt-6.1-sol --task <id>`, or fix that line, then `Ctrl+L` (retry): the
+  task, `omh set worker.agent codex/gpt-6.1-sol --task <id>`, or fix that line, then `Ctrl+L` (retry): the
   agent starts again on it.
 
 More: [models and effort](models.md).
@@ -97,15 +97,15 @@ Find what its row says:
 | The row says | What is going on | What to do |
 |---|---|---|
 | `Waiting for a free slot` (`Q#2`) | every slot of `board.agents` is taken | wait, or raise `board.agents` |
-| `queued after HSW-12` | it waits for other tasks to be done ([one task after another](after.md)) | wait, or `herdr-projects delegate <id> --now` |
+| `queued after HSW-12` | it waits for other tasks to be done ([one task after another](after.md)) | wait, or `omh delegate <id> --now` |
 | `Has not started yet: pressing enter again` | the task's text sits in the agent's box | wait a moment: the board presses enter again |
 | `Not started: its instructions sit unsent in its box` | the text never went in | `Ctrl+L` (retry), or go into the agent and press enter ([handing over](handing-over.md)) |
-| `Finishing` for a long time, with the agent at rest | the board missed the end of its turn | `Ctrl+L`, or `herdr-projects finish <id>` |
+| `Finishing` for a long time, with the agent at rest | the board missed the end of its turn | `Ctrl+L`, or `omh finish <id>` |
 | `Stopped without a summary` | the agent stopped and the board cannot tell if it finished | `Ctrl+R` tells it to go on; `Ctrl+L` takes the work as it is |
 | `Agent's connection dropped, trying again in 2m` | the provider cut the turn off | nothing: the board retries by itself ([a turn cut off by the provider](provider-errors.md)) |
 | `Agent stopped` | an error waiting cannot fix: a usage limit, a refusal | read the reason in the panel; reply, or `Ctrl+R` |
 | `Agent stopped: … can't be used with your ChatGPT sign-in` | its program refused its model | choose a model, then `Ctrl+L` ([above](#cant-be-used-with-your-chatgpt-sign-in-while-the-agent-works)) |
-| `Plan ready` · `The plan's review could not run (…): yours to judge` | the reviewer of a plan (`plan.approve reviewer`) could not start or gave no verdict | read the plan; `Ctrl+L` builds it, a reply sends it back, `herdr-projects retry <id>` has the reviewer look again ([a plan first](plan.md#the-reviewers-look)) |
+| `Plan ready` · `The plan's review could not run (…): yours to judge` | the reviewer of a plan (`plan.approve reviewer`) could not start or gave no verdict | read the plan; `Ctrl+L` builds it, a reply sends it back, `omh retry <id>` has the reviewer look again ([a plan first](plan.md#the-reviewers-look)) |
 | `Needs a login` | the agent's program is logged out | log in (go into the agent with `Enter`), then reply or `Ctrl+R` |
 | `stopped at its 2h limit` | it reached `limit.time` or `limit.tokens` | `Ctrl+R` to continue, a higher limit, or `Ctrl+L` to take it as it is ([limits](limits.md)) |
 | `resolving a conflict with main` | main changed under it; its agent is fixing that | wait |
@@ -142,11 +142,11 @@ task panel ends in `Kept:` and says why:
   closed`, or `cannot be looked at` (the system does not say). A process under the agent in a group of its own (a dev
   server it started) `runs in a group of its own` (one wired to the agent, or under a helper, is its own, and keeps nothing); one its
   pane's shell runs `runs in the background of its shell`.
-- **`; and 2 more`**: the line names the first thing only. `herdr-projects details <id>` lists every one, under `inUse`.
+- **`; and 2 more`**: the line names the first thing only. `omh details <id>` lists every one, under `inUse`.
 - **It names one of the agent's own helpers** (an MCP server, a language server): that is a bug. Please open an issue
-  with the `Kept:` line and the `inUse` list of `herdr-projects details <id>`.
-- **Nothing says `Kept:`, and the space still stays**: `herdr-projects show <id>` tells whether `workspace.cleanup` was
-  turned off, and where. `herdr-projects set workspace.cleanup true` turns it on again.
+  with the `Kept:` line and the `inUse` list of `omh details <id>`.
+- **Nothing says `Kept:`, and the space still stays**: `omh show <id>` tells whether `workspace.cleanup` was
+  turned off, and where. `omh set workspace.cleanup true` turns it on again.
 - **An agent with MCP servers used to stay `in use` for good**: its servers counted as a command still running. Since
   this was fixed, the next pass closes those spaces by itself.
 - **To close one at once**: archive the task (`Ctrl+A`); what is kept on disk stays, and the task says where.
@@ -180,7 +180,7 @@ fetched counts. A remote whose main is not called `main` and was never named in 
 
 ## Where the logs are
 
-All in the board's data folder, `~/.herdr-projects/data/` ([the home folder](home-folder.md)):
+All in the board's data folder, `~/.omh/data/` ([the home folder](home-folder.md)):
 
 | File | Holds |
 |---|---|
@@ -191,13 +191,13 @@ All in the board's data folder, `~/.herdr-projects/data/` ([the home folder](hom
 | `jobs.log` | background jobs that belong to no single task |
 | `tasks/<repo>/<n>/closing-note.md` | what the agent said when it stopped |
 
-The task panel shows most of this already. `herdr-projects details <id>` prints the rest.
+The task panel shows most of this already. `omh details <id>` prints the rest.
 
 ## The board itself
 
-- **`herdr-projects` is not found**: open the board once from Herdr (the plugin's action "Open the work board"), then add
-  `~/.herdr-projects/data/bin` to your PATH ([installing](install.md#the-command-on-your-path)).
-- **`herdr` is not found although it is installed**: a command run over plain SSH (`ssh host herdr-projects …`) gets
+- **`omh` is not found**: open the board once from Herdr (the plugin's action "Open the work board"), then add
+  `~/.omh/data/bin` to your PATH ([installing](install.md#the-command-on-your-path)).
+- **`herdr` is not found although it is installed**: a command run over plain SSH (`ssh host omh …`) gets
   no login shell, so its PATH often lacks `~/.local/bin`. When PATH has no `herdr`, the board looks in
   `~/.local/bin`, `~/.cargo/bin`, `~/bin`, `/usr/local/bin` and `/opt/homebrew/bin`, then in a login shell's PATH. Herdr
   somewhere else: set `HERDR_BIN_PATH` to its full path.
@@ -206,5 +206,5 @@ The task panel shows most of this already. `herdr-projects details <id>` prints 
 - **The board looks cut off or half empty**: another Herdr window on the same session (a second device, a browser tab)
   has the size. Type a key in this window ([the board's size](board-size.md)).
 - **Herdr refuses the plugin**: your running Herdr server must be 0.9.3 or newer. Restart it after updating Herdr.
-- **Another machine's tasks do not show**: run `herdr-projects machines`, and see
+- **Another machine's tasks do not show**: run `omh machines`, and see
   [when a machine does not answer](other-machines.md#when-a-machine-does-not-answer).

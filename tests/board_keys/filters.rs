@@ -16,7 +16,7 @@ fn coord_world(machines: &str) -> World {
     let w = world_with(Opts { repo: true, settings: json!({ "coordinator.agent": "claude", "review.when": "never", "board.machines": machines }), ..Default::default() });
     let home = w.base.join("home-coord");
     std::fs::create_dir_all(&home).unwrap();
-    unsafe { std::env::set_var("HERDR_PROJECTS_COORDINATOR_DIR", &home) };
+    unsafe { std::env::set_var("OMH_COORDINATOR_DIR", &home) };
     w
 }
 fn drain() { flush(); sw::runner::drain_jobs(&|job, id, extra| { sw::jobs::run_job(job, id, extra); flush(); }); }
@@ -38,7 +38,7 @@ fn tab_goes_round_the_filters_lit_in_their_own_colours_and_the_list_shows_only_t
     for n in 0..7 { let id = w.add(&format!("Done {n}")); sw::store::tasks::update(&id, |t| { t.put("stage", "done"); Ok(sw::store::tasks::Change::Write) }).unwrap(); }
     let mut s = open(&w.root, 40); s.s.side = false;
     let l = s.screen(120);
-    assert_eq!(l[0], " herdr-projects  proj · PRJ");
+    assert_eq!(l[0], " omh  proj · PRJ");
     assert!(regex::Regex::new(r"^ +All 9 +Coordinators 0   Needs you 1   Working 0   Ready 0   To do 1   Done 7   Automations 0   Pinned 0$").unwrap().is_match(&l[1]), "{l:?}");
     assert!(!l.iter().any(|x| x.starts_with(" ") && x.contains("──")), "no heading has a rule: {l:?}");
     // All is lit in the plain text colour, reversed

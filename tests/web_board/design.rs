@@ -14,7 +14,7 @@ fn coord_world() -> World {
     let w = world_with(Opts { repo: true, settings: json!({ "coordinator.agent": "claude", "review.when": "never" }), ..Default::default() });
     let home = w.base.join("home-coord");
     std::fs::create_dir_all(&home).unwrap();
-    unsafe { std::env::set_var("HERDR_PROJECTS_COORDINATOR_DIR", &home) };
+    unsafe { std::env::set_var("OMH_COORDINATOR_DIR", &home) };
     w
 }
 fn group<'a>(s: &'a Value, f: &dyn Fn(&Value) -> bool) -> Value { s.at("list").arr("groups").iter().find(|g| f(g)).cloned().unwrap_or_else(|| panic!("{}", s.at("list"))) }

@@ -62,10 +62,10 @@ By default, finished work waits for your yes (`merge.by: you`). With `merge.by: 
 it is green.
 
 ```
-herdr-projects set merge.by itself                  every task
-herdr-projects set merge.by itself --repo <name>    one repo's tasks
-herdr-projects set merge.by itself --task <id>      one task (or: delegate <id> --merge.by itself)
-herdr-projects unset merge.by                       take the choice back
+omh set merge.by itself                  every task
+omh set merge.by itself --repo <name>    one repo's tasks
+omh set merge.by itself --task <id>      one task (or: delegate <id> --merge.by itself)
+omh unset merge.by                       take the choice back
 ```
 
 Or tell the Coordinator "auto-merge this one" or "always auto-merge". The task panel shows it as `Merge`.
@@ -136,7 +136,7 @@ Also for tasks under way.
 
 ### A repo cannot switch it on for itself
 
-A repo's own committed file cannot turn this on. `"land": "auto"` in `.herdr-projects.json` used to; that file now holds
+A repo's own committed file cannot turn this on. `"land": "auto"` in `.omh.json` used to; that file now holds
 seven facts only ([settings](settings.md)). So code an agent writes can never make its own work merge unasked. To merge
 by itself in one repo, say so yourself: `set merge.by itself --repo <name>`. `show <id>` says what a task really runs
 on, and where each value comes from.

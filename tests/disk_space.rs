@@ -22,7 +22,7 @@ fn fill(p: &Path, mb: usize) { std::fs::create_dir_all(p.parent().unwrap()).unwr
 fn claude_files(w: &World, tree: &str) -> PathBuf { w.base.join("tmp").join(format!("claude-{}", uid())).join(sw::agents::scratch::slug(Path::new(tree))) }
 /// Every disk has `free` bytes free of `size` in all.
 const GB: u64 = 1_000_000_000;
-fn disk_is(free: u64, size: u64) { unsafe { std::env::set_var("HERDR_PROJECTS_FREE", free.to_string()); std::env::set_var("HERDR_PROJECTS_SIZE", size.to_string()) } }
+fn disk_is(free: u64, size: u64) { unsafe { std::env::set_var("OMH_FREE", free.to_string()); std::env::set_var("OMH_SIZE", size.to_string()) } }
 
 #[test]
 fn the_agent_and_the_reviewer_start_with_the_task_s_own_temporary_folder_and_are_told_to_keep_temporary_things_there() {
@@ -39,12 +39,12 @@ fn the_agent_and_the_reviewer_start_with_the_task_s_own_temporary_folder_and_are
     // the task's id and its own folder among the reports
     let all = calls(&w);
     let reports = sw::research::report_folder(&t);
-    let export = all.iter().position(|c| c.starts_with("pane run") && c.contains(&format!("export TMPDIR={0} TMP={0} TEMP={0} CLAUDE_CODE_TMPDIR={0} HERDR_PROJECTS_ID=proj/1 HERDR_PROJECTS_TASK_REPORTS={1}", tmp.display(), reports.display()))).expect("the export");
+    let export = all.iter().position(|c| c.starts_with("pane run") && c.contains(&format!("export TMPDIR={0} TMP={0} TEMP={0} CLAUDE_CODE_TMPDIR={0} OMH_ID=proj/1 OMH_TASK_REPORTS={1}", tmp.display(), reports.display()))).expect("the export");
     let start = all.iter().position(|c| c.starts_with("agent start sw-proj-1 ")).unwrap();
     assert!(export < start, "{all:?}");
     // the reviewer's tab has it from the start
     let reviewer = all.iter().find(|c| c.starts_with("tab create") && c.contains(&format!("--env TMPDIR={}", tmp.display()))).unwrap_or_else(|| panic!("{all:?}"));
-    assert!(reviewer.contains("--env HERDR_PROJECTS_ID=proj/1") && reviewer.contains(&format!("--env HERDR_PROJECTS_TASK_REPORTS={}", reports.display())), "{reviewer}");
+    assert!(reviewer.contains("--env OMH_ID=proj/1") && reviewer.contains(&format!("--env OMH_TASK_REPORTS={}", reports.display())), "{reviewer}");
     let rules = sw::delegate::rules::rules(&t);
     assert!(rules.contains(&format!("in your own temporary folder, {} (your $TMPDIR), never loose in /tmp or in a home folder", tmp.display())), "{rules}");
     assert!(rules.contains("stop the servers and background processes you started, unless the human asked you to keep one running"), "{rules}");
@@ -132,7 +132,7 @@ fn a_working_task_keeps_its_temporary_files_and_nothing_the_environment_points_i
 #[test]
 fn on_a_nearly_full_disk_a_start_sweeps_then_waits_in_the_queue_with_a_plain_line_and_starts_once_there_is_room() {
     let w = world();
-    unsafe { std::env::set_var("HERDR_PROJECTS_FREE", "3100000000") };
+    unsafe { std::env::set_var("OMH_FREE", "3100000000") };
     w.script(json!({ "worker": [{ "status": "working" }] }));
     let id = w.add("Big build");
     delegate(&id);
@@ -140,31 +140,31 @@ fn on_a_nearly_full_disk_a_start_sweeps_then_waits_in_the_queue_with_a_plain_lin
     assert_eq!(t.s("stage"), "queued");
     let host = sw::remote::check::hostname();
     assert!(t.s("msg").starts_with(&format!("Disk nearly full on {host}: 3.1 GB free on ")), "{}", t.s("msg"));
-    assert!(t.s("msg").contains("this task starts once 5.0 GB is free (board.diskFree). Free some space: herdr-projects sweep"), "{}", t.s("msg"));
+    assert!(t.s("msg").contains("this task starts once 5.0 GB is free (board.diskFree). Free some space: omh sweep"), "{}", t.s("msg"));
     assert!(!t.b("worktree") && !calls(&w).iter().any(|c| c.starts_with("agent start")), "nothing was started");
     assert!(sw::store::files::data_dir().join("sweep.json").exists(), "the sweep ran first");
     // still no room: the queue starts no runner for it
     assert!(sw::actions::start::start_queued(&w.socket).is_empty());
     // room again: it starts by itself
-    unsafe { std::env::set_var("HERDR_PROJECTS_FREE", "1000000000000") };
+    unsafe { std::env::set_var("OMH_FREE", "1000000000000") };
     assert_eq!(sw::actions::start::start_queued(&w.socket), vec![id.clone()]);
     let t = settle(&id);
     assert_eq!(t.s("stage"), "working");
     assert!(!t.b("diskWait"));
     // 0: never waits
     sw::store::settings::change::set_value("board.diskFree", &json!(0), &sw::store::settings::lookup::Scope::you()).unwrap();
-    unsafe { std::env::set_var("HERDR_PROJECTS_FREE", "1") };
+    unsafe { std::env::set_var("OMH_FREE", "1") };
     assert!(sw::leftovers::room::low(&t).is_none());
 }
 
 #[test]
-fn herdr_projects_machines_says_each_machine_s_free_disk() {
+fn omh_machines_says_each_machine_s_free_disk() {
     let r = json!({ "here": { "label": "vm-str", "here": true, "ok": true, "version": "1.2.12", "shell": "/bin/bash", "free": 778_000_000u64 },
         "machines": [{ "label": "vm-a", "target": "me@vm-a", "ok": true, "version": "1.2.12", "tasks": 2, "free": 21_000_000_000u64 }, { "label": "vm-b", "target": "me@vm-b", "ok": true, "version": "1.2.0", "tasks": 1, "free": null }] });
     let said = sw::remote::check::say(&r);
-    assert!(said.contains("vm-str  this machine: a login shell (/bin/bash) finds herdr-projects 1.2.12 · 778 MB free\n"), "{said}");
-    assert!(said.contains("vm-a    answers · herdr-projects 1.2.12 · 2 tasks · 21 GB free  (me@vm-a)"), "{said}");
-    assert!(said.contains("vm-b    answers · herdr-projects 1.2.0 · 1 task  (me@vm-b)"), "an older one says nothing of it: {said}");
+    assert!(said.contains("vm-str  this machine: a login shell (/bin/bash) finds omh 1.2.12 · 778 MB free\n"), "{said}");
+    assert!(said.contains("vm-a    answers · omh 1.2.12 · 2 tasks · 21 GB free  (me@vm-a)"), "{said}");
+    assert!(said.contains("vm-b    answers · omh 1.2.0 · 1 task  (me@vm-b)"), "an older one says nothing of it: {said}");
     let w = world();
     assert_eq!(sw::remote::remote_list().at("free"), &json!(1_000_000_000_000u64));
     drop(w);
@@ -175,7 +175,7 @@ fn a_board_command_a_task_s_agent_runs_leaves_that_task_s_temporary_folder_behin
     let w = world();
     let id = w.add("Agent's own");
     let tmp = sw::temp::made(&task(&id));
-    let names = ["TMPDIR", "TMP", "TEMP", "CLAUDE_CODE_TMPDIR", "HERDR_PROJECTS_ID", "HERDR_PROJECTS_TASK_REPORTS"];
+    let names = ["TMPDIR", "TMP", "TEMP", "CLAUDE_CODE_TMPDIR", "OMH_ID", "OMH_TASK_REPORTS"];
     let had: Vec<_> = names.iter().map(|k| std::env::var_os(k)).collect();
     let env = sw::temp::env(&task(&id));
     assert_eq!(env.iter().map(|(k, _)| k.as_str()).collect::<Vec<_>>(), names);
@@ -210,7 +210,7 @@ fn a_disk_smaller_than_twice_board_disk_free_needs_half_of_itself_free_and_its_l
     assert_eq!(t.s("stage"), "queued");
     let host = sw::remote::check::hostname();
     assert!(t.s("msg").starts_with(&format!("Disk nearly full on {host}: 1.2 GB free on ")), "{}", t.s("msg"));
-    assert!(regex::Regex::new(r"; this task starts once 1\.7 GB is free \(\S+ is only 3\.4 GB in all, so it needs 1\.7 GB free, not the 5\.0 GB of board\.diskFree\)\. Free some space: herdr-projects sweep").unwrap().is_match(t.s("msg")), "{}", t.s("msg"));
+    assert!(regex::Regex::new(r"; this task starts once 1\.7 GB is free \(\S+ is only 3\.4 GB in all, so it needs 1\.7 GB free, not the 5\.0 GB of board\.diskFree\)\. Free some space: omh sweep").unwrap().is_match(t.s("msg")), "{}", t.s("msg"));
     assert!(t.at("diskWait").s("on").starts_with('/'), "the disk it waits for: {}", t.at("diskWait"));
     // A big disk still needs all of board.diskFree, and says nothing more.
     disk_is(3_100_000_000, 100 * GB);

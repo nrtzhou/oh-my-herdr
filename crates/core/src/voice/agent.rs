@@ -4,7 +4,7 @@
 use crate::json::*;
 
 pub const PROMPT: &str = include_str!("prompt.md");
-pub const NAME: &str = "herdr-projects voice";
+pub const NAME: &str = "omh voice";
 /// A small, quick model: it only talks and relays; the agents on the board do the thinking. ElevenLabs' id for
 /// DeepSeek V4.1 Flash (in its API's list of agent models); `voice.llm` puts another in its place.
 pub const LLM: &str = "deepseek-v41-flash";

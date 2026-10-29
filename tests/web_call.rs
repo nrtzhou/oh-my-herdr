@@ -28,7 +28,7 @@ fn a_call_from_the_web_board_gets_a_short_lived_token_and_never_the_key() {
     assert_eq!(api::start(&json!({ "client": "test" }), || Err("refused".to_string())).0, 401);
     let (st, out) = start_web("test");
     assert_eq!(st, 200, "{out}");
-    assert_eq!((out.s("token"), out.s("language"), out.s("worklet")), ("tok-short-lived", "auto", "/herdr-projects/page/vendor/rawAudioProcessor.js"));
+    assert_eq!((out.s("token"), out.s("language"), out.s("worklet")), ("tok-short-lived", "auto", "/omh/page/vendor/rawAudioProcessor.js"));
     assert!(!out.to_string().contains("sk_test"), "the API key never leaves the machine");
     let c = call::get().unwrap();
     assert_eq!((c.s("owner"), c.s("state")), ("web:test", "live"));
@@ -42,7 +42,7 @@ fn a_call_from_the_web_board_gets_a_short_lived_token_and_never_the_key() {
     sw::clock::advance(30_000);
     let s = web(&w, "board", json!({}));
     assert_eq!((s.at("call").i("secs"), s.at("call").s("held")), (30, ""), "{}", s.at("call"));
-    // what the page saw of the sound, kept with the call also after it ended, and said by `herdr-projects voice`
+    // what the page saw of the sound, kept with the call also after it ended, and said by `omh voice`
     call::heard_audio(&json!({ "elements": 1, "playing": 1, "peak": 0.0, "ctx": "running", "blocked": false, "via": "element", "agent": "X11; Linux aarch64 Chrome/141", "secret": "no" }));
     call::end("test");
     // an ended call leaves nothing on the page: what it says about the end is the page's own, for a few seconds
@@ -169,7 +169,7 @@ fn a_task_that_came_to_need_you_is_read_once_and_not_while_quiet_and_nothing_fro
 fn the_answer_of_whoever_the_call_talks_to_is_read_back_once_when_it_stands_still() {
     let w = world_with(Opts { repo: true, settings: json!({ "coordinator.agent": "claude", "review.when": "never" }), ..Default::default() });
     let home = w.base.join("home-coord"); std::fs::create_dir_all(&home).unwrap();
-    unsafe { std::env::set_var("HERDR_PROJECTS_COORDINATOR_DIR", &home) };
+    unsafe { std::env::set_var("OMH_COORDINATOR_DIR", &home) };
     let _log = fake_eleven(); put_key();
     w.script(json!({ "coordinator": [{ "said": "Two tasks wait for you: **PRJ-1** and PRJ-2." }, { "status": "working" }] }));
     let drain = || { flush(); sw::runner::drain_jobs(&|job, id, extra| { sw::jobs::run_job(job, id, extra); flush(); }); };

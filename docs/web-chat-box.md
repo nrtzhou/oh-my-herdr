@@ -57,7 +57,7 @@ Measured against **herdr-web-ui 0.4.8** (see [how](#how-it-was-measured)):
   - The web UI's limits: 8 MB a file (a bigger one says so in a band over the box), three on their way at a time, and as
     many at once as its Settings → Chat → Files at once says.
   - The file is kept where whoever gets the words can read it: in the Coordinator's own folder (a heading's
-    coordinator's, for words to it), in a task's working folder under `.herdr-projects/files/` (git is told to leave it
+    coordinator's, for words to it), in a task's working folder under `.omh/files/` (git is told to leave it
     alone), or, with no Coordinator, in the board's own folder (`files/` in its data folder).
   - For another machine's agent or Coordinator (a task of that machine, its heading, or its board shown) the file goes
     to that machine, and the path is where it landed there. First the web UI's own way, as its chat box sends a file

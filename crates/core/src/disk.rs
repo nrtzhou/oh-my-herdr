@@ -1,6 +1,6 @@
 //! Disk space as the board measures it: a disk's free and whole size, the space a folder takes, and a size as a person
-//! reads it (`17 GB`, `640 MB`). `HERDR_PROJECTS_FREE` (bytes) is what every disk has free, for a test, and
-//! `HERDR_PROJECTS_SIZE` (bytes) every disk's whole size: the low-disk wait (docs/disk-space.md) never depends on the
+//! reads it (`17 GB`, `640 MB`). `OMH_FREE` (bytes) is what every disk has free, for a test, and
+//! `OMH_SIZE` (bytes) every disk's whole size: the low-disk wait (docs/disk-space.md) never depends on the
 //! machine the tests run on.
 use std::path::Path;
 use std::time::Instant;
@@ -15,15 +15,15 @@ pub fn space(p: &Path) -> Option<(u64, u64)> {
 }
 /// The free bytes of the disk that holds `p` (its nearest folder that is there); None when that cannot be read.
 pub fn free_at(p: &Path) -> Option<u64> {
-    if let Some(n) = std::env::var("HERDR_PROJECTS_FREE").ok().and_then(|v| v.parse().ok()) { return Some(n); }
+    if let Some(n) = std::env::var("OMH_FREE").ok().and_then(|v| v.parse().ok()) { return Some(n); }
     let at = p.ancestors().find(|a| a.exists())?;
     space(at).map(|(free, _)| free)
 }
 /// The whole size in bytes of the disk that holds `p`; None when that cannot be read, and in a test that says only what
-/// is free (`HERDR_PROJECTS_FREE` without `HERDR_PROJECTS_SIZE`).
+/// is free (`OMH_FREE` without `OMH_SIZE`).
 pub fn total_at(p: &Path) -> Option<u64> {
-    if let Ok(v) = std::env::var("HERDR_PROJECTS_SIZE") { return v.parse().ok(); }
-    if std::env::var_os("HERDR_PROJECTS_FREE").is_some() { return None; }
+    if let Ok(v) = std::env::var("OMH_SIZE") { return v.parse().ok(); }
+    if std::env::var_os("OMH_FREE").is_some() { return None; }
     let at = p.ancestors().find(|a| a.exists())?;
     space(at).map(|(_, total)| total)
 }

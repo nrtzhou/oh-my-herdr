@@ -4,9 +4,9 @@
 into `gtm-agent`, then into the copies downstream. Each is its own task, with its own review and merge.
 
 ```sh
-herdr-projects add "Take the new skill in" --repo gtm-agent --after gtm-skills/12             # only the condition
-herdr-projects add "Take the new skill in" --repo gtm-agent --after gtm-skills/12 --delegate  # queued after it
-herdr-projects delegate gtm-agent/4 --after gtm-skills/12,gtm-skills/13
+omh add "Take the new skill in" --repo gtm-agent --after gtm-skills/12             # only the condition
+omh add "Take the new skill in" --repo gtm-agent --after gtm-skills/12 --delegate  # queued after it
+omh delegate gtm-agent/4 --after gtm-skills/12,gtm-skills/13
 ```
 
 Or tell the Coordinator: "then", "once that is merged", "after HSW-12", "after ELA-3 on vm-str" become an `--after` on
@@ -79,7 +79,7 @@ Nothing of that is final: get the other task going again, and once it is done th
 
 ## Changing it, and starting early
 
-- `herdr-projects after <id> <id>[,<id>…]` sets what a task waits for. On a waiting task, the new list counts from now
+- `omh after <id> <id>[,<id>…]` sets what a task waits for. On a waiting task, the new list counts from now
   (all done already: it starts). On one not delegated yet, it is kept for when it is.
 - `after <id>` says what it waits for.
 - `after <id> --clear` drops the wait; a task that was waiting starts at once. `delegate <id> --after none` does the same
@@ -100,8 +100,8 @@ A task can wait for tasks on any other machine the board knows (`board.machines`
 board says what a task waits for (its row, its panel, `details`, `list`, another machine's board).
 
 ```sh
-herdr-projects delegate notably/3 --after vm-str:ELA-3
-herdr-projects add "Use the new API" --after vm-str:ELA-3,HSW-12 --delegate
+omh delegate notably/3 --after vm-str:ELA-3
+omh add "Use the new API" --after vm-str:ELA-3,HSW-12 --delegate
 ```
 
 - **When you set the wait**, the board asks that machine whether the task is there. It refuses an unknown machine, a
@@ -111,7 +111,7 @@ herdr-projects add "Use the new API" --after vm-str:ELA-3,HSW-12 --delegate
   answer, or names a machine this board does not know), the wait is refused as well: an unseen circle would wait
   forever.
 - **While it waits**, this machine asks the other one about it every 15 seconds, in a job of its own (so a slow machine
-  holds nothing else up). The other machine needs only this version of herdr-projects, not an open board. An older
+  holds nothing else up). The other machine needs only this version of omh, not an open board. An older
   version cannot answer, and the board says so, with "update it there".
 - **A machine that does not answer does not end the wait.** The task keeps waiting and says so on its row:
   `queued after vm-str:ELA-3 · waiting for vm-str: not reachable since 10:42` (`details`: `after.notReachable`). Once it

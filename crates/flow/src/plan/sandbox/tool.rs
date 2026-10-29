@@ -10,7 +10,7 @@ use std::process::{Command, Stdio};
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Tool { Bwrap, SandboxExec }
 impl Tool {
-    /// Its program, and the name `HERDR_PROJECTS_SANDBOX` takes for it.
+    /// Its program, and the name `OMH_SANDBOX` takes for it.
     pub fn name(self) -> &'static str { match self { Tool::Bwrap => "bwrap", Tool::SandboxExec => "sandbox-exec" } }
     pub fn of(name: &str) -> Option<Tool> { match name { "bwrap" => Some(Tool::Bwrap), "sandbox-exec" => Some(Tool::SandboxExec), _ => None } }
     /// This platform's own.
@@ -53,10 +53,10 @@ impl Tool {
             Tool::Bwrap => ("bubblewrap (the `bwrap` program, with user namespaces allowed), which is missing or not usable on this machine", "Install it (for example: sudo apt install bubblewrap), or take"),
             Tool::SandboxExec => ("macOS's own sandbox (the `sandbox-exec` program), which could not be used here: macOS allows no sandbox inside another, so it fails when Herdr itself was started inside one", "Start Herdr outside any sandbox, or take"),
         };
-        format!("This task starts with a plan (plan.approve), and its {who} must run where the repo cannot be written: that needs {needs}. Nothing was started. {fix} the plan off for this task: herdr-projects set plan.approve none --task {id}.")
+        format!("This task starts with a plan (plan.approve), and its {who} must run where the repo cannot be written: that needs {needs}. Nothing was started. {fix} the plan off for this task: omh set plan.approve none --task {id}.")
     }
     /// A program started in the mount that herdr never found there.
-    pub fn not_started(self, kind: &str, id: &str) -> String { format!("{kind} did not start in its read-only mount ({}). Look at the pane, or take the plan off for this task: herdr-projects set plan.approve none --task {id}.", self.name()) }
+    pub fn not_started(self, kind: &str, id: &str) -> String { format!("{kind} did not start in its read-only mount ({}). Look at the pane, or take the plan off for this task: omh set plan.approve none --task {id}.", self.name()) }
     /// What doctor says to do where no mount can be made.
     pub fn fix(self) -> &'static str {
         match self { Tool::Bwrap => "Install bubblewrap (for example: sudo apt install bubblewrap) and allow user namespaces", Tool::SandboxExec => "Start Herdr outside any sandbox (macOS allows no sandbox inside another)" }

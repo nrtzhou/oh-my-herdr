@@ -11,10 +11,10 @@ Each is a list of agents, tried in order, written like `worker.agent` with comma
 **It costs nothing while all goes well**: nobody extra runs until a hand-over.
 
 ```
-herdr-projects set worker.fallback "codex, claude/claude-opus-5-5"   for every task of yours
-herdr-projects set worker.fallback codex --repo my-app               for one repo
-herdr-projects set worker.fallback none --task 12                    not for this one
-herdr-projects delegate 12 --worker.fallback pi --reviewer.fallback claude
+omh set worker.fallback "codex, claude/claude-opus-5-5"   for every task of yours
+omh set worker.fallback codex --repo my-app               for one repo
+omh set worker.fallback none --task 12                    not for this one
+omh delegate 12 --worker.fallback pi --reviewer.fallback claude
 ```
 
 ## When a task is handed over
@@ -110,7 +110,7 @@ not a hand-over: nothing says another program would do better.
 - **The task panel** keeps every hand-over under `Status`, as `Took over` (beside the list: the latest; full screen: all
   of them, each with its age). `On it` and the `Agent` row are the agent on it now. A `Takes over` row under each of the
   two is its list. Each review says who made it once a reviewer took over.
-- **The history**: `herdr-projects details <id>` lists every hand-over (who, from whom, why, when) beside every review,
+- **The history**: `omh details <id>` lists every hand-over (who, from whom, why, when) beside every review,
   and says who is on it now.
 - **Herdr**: the agent's tab is `Agent (codex)` and a reviewer's `Reviewer #2 (claude)` once one took over, and the
   sidebar names the agent: `agent codex · working`, `reviewer claude · under review`.
@@ -137,7 +137,7 @@ Both are work settings ([settings](settings.md)):
 A wrong name refuses the whole list, changes nothing and names the nearest right one. A list that only names the agent
 that is on it anyway says that it does nothing.
 
-**A repo's own file may not set them.** `.herdr-projects.json` holds its seven facts and no more, so code an agent
+**A repo's own file may not set them.** `.omh.json` holds its seven facts and no more, so code an agent
 writes cannot switch a hand-over on or off ([settings](settings.md)).
 
 ## Beside the other settings

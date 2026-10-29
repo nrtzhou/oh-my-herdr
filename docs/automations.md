@@ -8,8 +8,8 @@ The easiest way to make one is to tell the Coordinator in plain words: "every Mo
 are out of date", "after every merge, update the changelog". It runs the commands below.
 
 ```
-herdr-projects automations add "Look for old dependencies" --prompt "Check every package for a newer version" --schedule "mon 09:00"
-herdr-projects automations add "Release note after a merge" --prompt "Write the release note" --when merged --every-repo
+omh automations add "Look for old dependencies" --prompt "Check every package for a newer version" --schedule "mon 09:00"
+omh automations add "Release note after a merge" --prompt "Write the release note" --when merged --every-repo
 ```
 
 - **The task** has the automation's name as its title and the automation's prompt as its description, exactly as
@@ -67,7 +67,7 @@ looked for a while. Each thing that happened fires once.
 `--if '<field> = <pattern>'` fires the automation only for a task that is like the pattern; `!=` only for one that is not.
 
 ```
-herdr-projects automations add "Jira handoff" --prompt "Move the ticket to Done" --when merged --if 'branch = *KIC-*'
+omh automations add "Jira handoff" --prompt "Move the ticket to Done" --when merged --if 'branch = *KIC-*'
 ```
 
 - **Fields:** `branch`, `title`, `repo` of the task the event happened to.
@@ -87,20 +87,20 @@ herdr-projects automations add "Jira handoff" --prompt "Move the ticket to Done"
 ## Commands
 
 ```
-herdr-projects automations                         the list
-herdr-projects automations add "<name>" --prompt "<what each task is to do>"
+omh automations                         the list
+omh automations add "<name>" --prompt "<what each task is to do>"
                 (--schedule "<when>" | --when <event> [--every-repo] [--if '<field> = <pattern>'])
                 [--repo NAME|PATH] [--<setting> VALUE ...] [--research|--no-research] [--chat|--no-chat]
-herdr-projects automations show <name>             all of it: prompt, trigger, settings, last firings
-herdr-projects automations change <name> [--name NEW] [--prompt TEXT] [--schedule … | --when …]
+omh automations show <name>             all of it: prompt, trigger, settings, last firings
+omh automations change <name> [--name NEW] [--prompt TEXT] [--schedule … | --when …]
                 [--if '…' | --if none] [--research | --no-research] [--chat | --no-chat]
-herdr-projects automations on|off <name>
-herdr-projects automations run <name>              fire it now (through the same guards; never while it is off)
-herdr-projects automations firings <name>          when, what fired it, the task it made or why it was skipped
-herdr-projects automations remove <name>           the tasks it made stay
-herdr-projects set <setting> <value> --automation <name>
-herdr-projects unset <setting> --automation <name>
-herdr-projects show --automation <name>            every setting its next task will have, and where it comes from
+omh automations on|off <name>
+omh automations run <name>              fire it now (through the same guards; never while it is off)
+omh automations firings <name>          when, what fired it, the task it made or why it was skipped
+omh automations remove <name>           the tasks it made stay
+omh set <setting> <value> --automation <name>
+omh unset <setting> --automation <name>
+omh show --automation <name>            every setting its next task will have, and where it comes from
 ```
 
 - All accept `--json`.

@@ -125,9 +125,9 @@ fn approve_needs_approve_yes_a_task_it_looks_after_and_never_anyway_nor_the_repo
     assert!(refused(&["approve", &yours]).contains("for a task it may look after"));
     // a change to the repo's own settings file: never its yes
     let tree = w.base.join("tree"); git(&w.root, &["worktree", "add", "-q", "-b", "work/x", &tree.display().to_string()]);
-    std::fs::write(tree.join(".herdr-projects.json"), "{}").unwrap(); git(&tree, &["add", "-A"]); git(&tree, &["commit", "-qm", "x"]);
+    std::fs::write(tree.join(".omh.json"), "{}").unwrap(); git(&tree, &["add", "-A"]); git(&tree, &["commit", "-qm", "x"]);
     sw::store::tasks::set(&id, json!({ "worktree": tree.display().to_string() })).unwrap();
-    assert!(refused(&["approve", &id]).contains("touches the repo's .herdr-projects.json"));
+    assert!(refused(&["approve", &id]).contains("touches the repo's .omh.json"));
     in_pane(&w, "");
 }
 
@@ -274,7 +274,7 @@ fn a_change_to_the_repos_settings_file_from_autopilots_task_waits_for_your_own_y
     let w = pilot_world_with(json!({ "merge.by": "itself" }));
     let co = proj(&w);
     ok(&["autopilot", "on", "--project", "proj", "--goal", "Docs", "--autopilot.startAtOnce", "no"]);
-    let file_step = json!({ "files": { ".herdr-projects.json": "{}\n" }, "commit": "settings", "note": "Changed the repo's settings." });
+    let file_step = json!({ "files": { ".omh.json": "{}\n" }, "commit": "settings", "note": "Changed the repo's settings." });
     // the human's own task with the same change merges by itself
     let yours = w.add("Yours");
     w.script(json!({ "worker": [file_step.clone()] }));
@@ -283,7 +283,7 @@ fn a_change_to_the_repos_settings_file_from_autopilots_task_waits_for_your_own_y
     assert_eq!(t.s("stage"), "done", "{}", t.s("msg"));
     // autopilot's waits, and says why
     let id = sw::autopilot::add::add(&co, &w.root, "Its task", Default::default(), &[], false).unwrap().task.t("id");
-    w.script(json!({ "worker": [{ "files": { ".herdr-projects.json": "{ \"check\": {} }\n" }, "commit": "settings 2", "note": "Changed them again." }] }));
+    w.script(json!({ "worker": [{ "files": { ".omh.json": "{ \"check\": {} }\n" }, "commit": "settings 2", "note": "Changed them again." }] }));
     delegate(&id);
     let t = settle(&id);
     sw::housekeeping::housekeeping(&w.socket, sw::housekeeping::Force::Yes);

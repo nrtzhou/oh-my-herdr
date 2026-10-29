@@ -19,7 +19,7 @@ fn coord_world() -> World {
     let w = world_with(Opts { repo: true, settings: json!({ "coordinator.agent": "claude", "review.when": "never", "board.machines": "otherbox" }), ..Default::default() });
     let home = w.base.join("home-coord");
     std::fs::create_dir_all(&home).unwrap();
-    unsafe { std::env::set_var("HERDR_PROJECTS_COORDINATOR_DIR", &home) };
+    unsafe { std::env::set_var("OMH_COORDINATOR_DIR", &home) };
     w
 }
 /// Herdr's theme of that name, as the board paints with it.
@@ -103,7 +103,7 @@ fn the_boxs_edge_follows_the_status_of_whoever_it_talks_to_and_names_are_in_the_
 #[test]
 fn the_boxs_edge_names_the_kind_of_agent_dimmed_after_its_lit_step_and_the_empty_box_says_it_too() {
     let w = world_with(Opts { repo: true, settings: json!({ "coordinator.agent": "claude", "review.when": "never", "board.machines": "otherbox" }), ..Default::default() });
-    let home = w.base.join("home-coord"); std::fs::create_dir_all(&home).unwrap(); unsafe { std::env::set_var("HERDR_PROJECTS_COORDINATOR_DIR", &home) };
+    let home = w.base.join("home-coord"); std::fs::create_dir_all(&home).unwrap(); unsafe { std::env::set_var("OMH_COORDINATOR_DIR", &home) };
     w.script(json!({ "worker": [{ "files": { "f.txt": "1\n" }, "commit": "1", "note": "Made f." }], "coordinator": [{ "said": "Proj is quiet." }] }));
     let id = w.add("Make f");
     delegate(&id); settle(&id);

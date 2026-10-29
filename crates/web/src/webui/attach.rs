@@ -1,7 +1,7 @@
 //! A file attached in the web board's chat box (a picture pasted, dropped or picked, or any other file), kept where
 //! whoever gets the words can read it, as the herdr web UI keeps one beside its pane: the box then puts `@<path>` in
 //! the message, which the agent reads the file from. Beside the Coordinator (or a heading's coordinator) in its own
-//! folder, beside a task's agent in its working folder (under `.herdr-projects/files/`, which git is told to leave
+//! folder, beside a task's agent in its working folder (under `.omh/files/`, which git is told to leave
 //! alone), and with no Coordinator in the board's own folder (the words become a task). For another machine's agent
 //! or coordinator it goes to that machine (attach/far.rs), and the path is where it landed there.
 pub mod far;

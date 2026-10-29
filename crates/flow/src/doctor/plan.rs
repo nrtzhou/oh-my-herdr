@@ -8,9 +8,9 @@ use crate::plan::sandbox::Tool;
 /// for somewhere.
 pub struct Mount { pub tool: Tool, pub why: Option<String>, pub used: bool }
 pub fn ask() -> Mount {
-    let said = std::env::var("HERDR_PROJECTS_SANDBOX").unwrap_or_default();
+    let said = std::env::var("OMH_SANDBOX").unwrap_or_default();
     let tool = Tool::of(&said).unwrap_or(Tool::native());
-    let why = if said == "none" { Some("HERDR_PROJECTS_SANDBOX=none turns it off".into()) } else { tool.why_not(&crate::store::files::data_dir()) };
+    let why = if said == "none" { Some("OMH_SANDBOX=none turns it off".into()) } else { tool.why_not(&crate::store::files::data_dir()) };
     let used = super::settings::places().iter().filter(|at| at.task.is_none()).any(|at| {
         let scope = at.scope();
         let places = crate::store::settings::lookup::places_of(&scope, &crate::store::settings::places::yours());

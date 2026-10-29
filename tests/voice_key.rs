@@ -1,5 +1,5 @@
 //! Where the ElevenLabs API key is found (crates/core/src/voice/key.rs): `ELEVENLABS_API_KEY`, then the board's
-//! settings file, nowhere else, and never said; and with none, how to add one, as a call and `herdr-projects voice`
+//! settings file, nowhere else, and never said; and with none, how to add one, as a call and `omh voice`
 //! say it.
 use crate::common;
 use crate::voice::put_key;
@@ -39,9 +39,9 @@ fn the_key_is_found_in_the_environment_then_the_settings_file_and_never_said() {
 fn with_no_key_a_call_says_where_to_make_one_its_permission_and_the_two_places_it_can_go() {
     let _w = world();
     let said = sw::voice::key::missing();
-    assert_eq!(said, format!("No ElevenLabs API key on this machine. Make one at https://elevenlabs.io/app/developers/api-keys (Developers, API Keys) with the ElevenAgents permission set to Write (and Voices set to Write, so the call's built-in voice can be added to your account), then put it in {} as {{\"api_key\": \"…\"}}, or set ELEVENLABS_API_KEY in the environment herdr-projects runs in, and call again.", sw::store::marks::tilde(&sw::voice::key::own_file().display().to_string())));
+    assert_eq!(said, format!("No ElevenLabs API key on this machine. Make one at https://elevenlabs.io/app/developers/api-keys (Developers, API Keys) with the ElevenAgents permission set to Write (and Voices set to Write, so the call's built-in voice can be added to your account), then put it in {} as {{\"api_key\": \"…\"}}, or set ELEVENLABS_API_KEY in the environment omh runs in, and call again.", sw::store::marks::tilde(&sw::voice::key::own_file().display().to_string())));
     assert!(said.contains("settings/elevenlabs.json"));
-    // `herdr-projects voice` says it too, and a call from either board refuses with it
+    // `omh voice` says it too, and a call from either board refuses with it
     let (v, out) = sw::calls::command::main(&[]);
     assert!(out.starts_with(&format!("ElevenLabs key: none. {said}")) && v.at("key").is_null(), "{out}");
     let t = Target { name: "the Coordinator".into(), ..Default::default() };

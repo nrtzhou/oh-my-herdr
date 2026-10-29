@@ -28,7 +28,7 @@ impl Co {
     pub fn settings_key(&self) -> String { match &self.level { Level::Top => "main".into(), Level::Machine => "machine".into(), Level::Project(r) => format!("project:{r}") } }
     pub fn repo(&self) -> Option<&str> { match &self.level { Level::Project(r) => Some(r), _ => None } }
     /// What the human reads, on the board, its tab and herdr's sidebar: "Coordinator", "vm-str coordinator",
-    /// "herdr-projects coordinator" ("~ coordinator" for the home folder's).
+    /// "omh coordinator" ("~ coordinator" for the home folder's).
     pub fn name(&self) -> String {
         match &self.level { Level::Top => crate::status_words::COORDINATOR.into(), Level::Machine => named(&crate::remote::check::hostname()), Level::Project(r) => named(&crate::shown::words::repo_label(r)) }
     }

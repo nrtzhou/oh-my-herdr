@@ -17,11 +17,11 @@ fn until(done: impl Fn() -> bool) -> bool { let end = Instant::now() + Duration:
 #[test]
 fn real_programs_a_detached_job_that_ended_is_reaped_and_its_marker_reads_as_gone() {
     let _w = world();
-    unsafe { std::env::remove_var("HERDR_PROJECTS_INLINE") }
+    unsafe { std::env::remove_var("OMH_INLINE") }
     // A user's notify command, and a job of no task's (this test program, asked for a test no test is named).
     let sh = sw::runner::detached_sh("exit 0", &[]);
     let loose = sw::housekeeping::spawn_loose(&["--list", "no_test_has_this_name"]);
-    unsafe { std::env::set_var("HERDR_PROJECTS_INLINE", "1") }
+    unsafe { std::env::set_var("OMH_INLINE", "1") }
     for pid in [sh, loose] {
         assert!(pid > 0, "it did not start");
         assert!(until(|| state(pid).is_none()), "{pid} is left as {:?}", state(pid));
@@ -32,7 +32,7 @@ fn real_programs_a_detached_job_that_ended_is_reaped_and_its_marker_reads_as_gon
 #[test]
 fn real_programs_the_page_server_that_ends_is_reaped() {
     let _w = world();
-    let info = sw::review_page::start_server(std::path::Path::new(env!("CARGO_BIN_EXE_herdr-projects")));
+    let info = sw::review_page::start_server(std::path::Path::new(env!("CARGO_BIN_EXE_omh")));
     assert!(info.b("port"), "it did not say its port: {info}");
     let pid = info.i("pid") as u32;
     assert_eq!(state(pid).map(|c| c != 'Z'), Some(true), "{pid} is {:?}", state(pid));

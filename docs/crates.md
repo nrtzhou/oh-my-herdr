@@ -9,7 +9,7 @@ above it.
 | sw-flow | `crates/flow/` | the flow of a task: delegating, the finish line, landing, the keeper, other machines, automations |
 | sw-board | `crates/board/` | the board's screen (`board/`): its state, what a key does, what it draws |
 | sw-web | `crates/web/` | the board in the web UI, Ovis (`webui/`): the front door and the web board |
-| herdr-projects | `Cargo.toml`, `src/` | the command line (`cli/`) and the made pages (`docs.rs`); the library is `sw` |
+| omh | `Cargo.toml`, `src/` | the command line (`cli/`) and the made pages (`docs.rs`); the library is `sw` |
 
 Why: the compiler reads a whole crate again after any edit (and once more for its tests). When it was one crate of
 27,000 lines, every edit, even one line of the board's screen, paid for all of it.

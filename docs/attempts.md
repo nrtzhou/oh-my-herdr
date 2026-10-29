@@ -5,16 +5,16 @@
 
 ```
 # best of three, by the usual agent; you pick
-herdr-projects delegate 12 --attempts.by 3
+omh delegate 12 --attempts.by 3
 
 # a council of claude, codex and pi, with a named judge
-herdr-projects delegate 12 --attempts.by "claude, codex, pi" --attempts.pick reviewer --reviewer.agent claude/claude-opus-5-5
+omh delegate 12 --attempts.by "claude, codex, pi" --attempts.pick reviewer --reviewer.agent claude/claude-opus-5-5
 
 # two models for every task in one repo
-herdr-projects set attempts.by "claude, codex/gpt-6.1-sol" --repo my-app
+omh set attempts.by "claude, codex/gpt-6.1-sol" --repo my-app
 
 # which attempt to keep, when the task waits for you
-herdr-projects pick 12 B
+omh pick 12 B
 ```
 
 Or tell the [Coordinator](coordinator.md) in plain words: "do this one three times and let me choose", "have Claude,
@@ -98,7 +98,7 @@ kept, not the first.
   - `Alt+O` goes into the selected attempt's tab.
   - A reply to the task while its attempts work goes to every attempt still in it. `Ctrl+X` stops them all.
 - **The web Board** shows the same row and part, with the same keys as buttons (`Next attempt`, `Yes`).
-- `herdr-projects show <id>` names each attempt's agent and the one chosen. `details <id>` has the attempts and the
+- `omh show <id>` names each attempt's agent and the one chosen. `details <id>` has the attempts and the
   comparison.
 
 ## Research-only tasks

@@ -1,4 +1,4 @@
-// The call's sound on macOS, for herdr-projects' call helper (crates/flow/src/calls/native/mac.rs): the microphone with
+// The call's sound on macOS, for omh' call helper (crates/flow/src/calls/native/mac.rs): the microphone with
 // Apple's voice processing (echo cancelling, noise suppression) written to standard output as 16 kHz 16-bit mono PCM,
 // and the voice agent's sound read from standard input and played: frames of one kind byte ("a" audio, "f" flush: stop
 // what plays now), a little-endian 32-bit length and that many bytes of the same PCM. macOS asks once whether the

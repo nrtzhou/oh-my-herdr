@@ -18,12 +18,12 @@ use std::sync::Mutex;
 pub use tool::Tool;
 
 static KNOWN: Mutex<Option<(Option<Tool>, i64)>> = Mutex::new(None);
-/// The tool that makes the read-only mount here, None where none can. `HERDR_PROJECTS_SANDBOX` says it outright
+/// The tool that makes the read-only mount here, None where none can. `OMH_SANDBOX` says it outright
 /// (`bwrap`, `sandbox-exec`, `none`); else this platform's own is tried, and what it found is kept for ten minutes. A
 /// try from inside a sandbox is always made afresh and never kept: macOS refuses one sandbox inside another, which says
 /// nothing of outside.
 pub fn tool() -> Option<Tool> {
-    if let Ok(said) = std::env::var("HERDR_PROJECTS_SANDBOX") { if !said.is_empty() { return if said == "none" { None } else { Some(Tool::of(&said).unwrap_or(Tool::native())) }; } }
+    if let Ok(said) = std::env::var("OMH_SANDBOX") { if !said.is_empty() { return if said == "none" { None } else { Some(Tool::of(&said).unwrap_or(Tool::native())) }; } }
     let native = Tool::native();
     if inside::inside() { return native.why_not(&data_dir()).is_none().then_some(native); }
     let now = crate::clock::now();
@@ -52,7 +52,7 @@ pub fn boxed_command(t: &Obj, name: &str, kind: &str, args: &[String]) -> String
     let tree = guarded(t).unwrap_or_default();
     let mut guard = vec![tree.clone()];
     guard.extend(git_dir_of(&tree)); // a worktree's git folder is elsewhere; a checkout's is inside it
-    let mut all: Vec<String> = vec!["env".into(), format!("HERDR_PROJECTS_AGENT={name}"), format!("{}=1", inside::MARK)];
+    let mut all: Vec<String> = vec!["env".into(), format!("OMH_AGENT={name}"), format!("{}=1", inside::MARK)];
     all.extend(tool.wrap(&guard));
     all.push(crate::agents::kinds::program(kind).into());
     all.extend(tool.unnested(kind, args));
@@ -67,7 +67,7 @@ pub fn start_program(api: &Herdr, t: &Obj, name: &str, kind: &str, pane: &str, a
     if !boxed(t) { return api.agent_start(name, kind, pane, args, 60000).map(|_| ()); }
     api.integration_ready(kind)?;
     api.pane_run(pane, &boxed_command(t, name, kind, args))?;
-    let step = std::env::var("HERDR_PROJECTS_READY_STEP_MS").ok().and_then(|v| v.parse().ok()).unwrap_or(250u64);
+    let step = std::env::var("OMH_READY_STEP_MS").ok().and_then(|v| v.parse().ok()).unwrap_or(250u64);
     let until = crate::clock::now() + 60000;
     loop {
         if let Some(a) = api.agent_get(pane)? {

@@ -190,7 +190,7 @@ fn under_approve_yes_a_task_waiting_for_its_yes_wakes_it_but_not_one_held_for_yo
     assert!(prompts_of(&w, &co).last().unwrap().contains(&format!("{} is ready to approve", short(&mine))));
     let held = sw::autopilot::add::add(&co, &w.root, "Held", Default::default(), &[], false).unwrap().task.t("id");
     let tree = w.base.join("tree"); git(&w.root, &["worktree", "add", "-q", "-b", "work/held", &tree.display().to_string()]);
-    std::fs::write(tree.join(".herdr-projects.json"), "{}").unwrap(); git(&tree, &["add", "-A"]); git(&tree, &["commit", "-qm", "x"]);
+    std::fs::write(tree.join(".omh.json"), "{}").unwrap(); git(&tree, &["add", "-A"]); git(&tree, &["commit", "-qm", "x"]);
     sw::store::tasks::set(&held, json!({ "worktree": tree.display().to_string() })).unwrap();
     tick(&w); minutes(2); tick(&w);
     let n = wakes(&w, &co);
@@ -251,7 +251,7 @@ fn every_coordinators_rules_say_what_a_wake_is_and_hold_every_exception_for_one(
 #[test]
 fn end_to_end_a_task_it_adds_is_planned_reviewed_twice_and_merges_by_itself_with_no_yes_of_yours() {
     let w = pilot_world_with(json!({ "review.when": "repos", "merge.by": "itself", "worker.agent": "codex" }));
-    unsafe { std::env::set_var("HERDR_PROJECTS_SANDBOX", "bwrap") };
+    unsafe { std::env::set_var("OMH_SANDBOX", "bwrap") };
     w.patch(|s| s["pids"] = json!(true));
     ok(&["set", "plan.approve", "reviewer", "--repo", "proj"]);
     let work = |n: i64| json!({ "files": { "f.txt": format!("{n}\n") }, "commit": format!("v{n}"), "note": format!("Did v{n}.") });

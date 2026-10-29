@@ -1,6 +1,6 @@
 //! The settings page: every work setting of the selected task (or automation) by its name and its value, `*` on the
 //! ones that are its own. On a heading of this machine, the same page for your own settings, which every task starts
-//! from (on a repo's heading: your entry for that repo), changed as `herdr-projects set` changes them; a coordinator's
+//! from (on a repo's heading: your entry for that repo), changed as `omh set` changes them; a coordinator's
 //! row (its heading) has that coordinator's own rows first (edit_coord.rs). Move to a row and
 //! change it: a switch or a choice goes to its next value, anything else is typed and saved with enter; one key puts a
 //! row back to what it would be without this task's own answer. Only the page's own
@@ -54,7 +54,7 @@ pub fn whose_here(s: &State) -> Result<Whose, String> {
     if let Some(w) = super::edit_coord::whose_of(s) { return w; }
     let parts: Vec<&str> = s.sel.splitn(3, '\t').collect();
     if !super::heads::is_head(&s.sel) || parts.len() < 2 { return Ok(Whose::You); }
-    if !parts[1].is_empty() { return Err(format!("Your settings on {0} are changed on {0} itself: herdr-projects set <name> <value> there.", parts[1])); }
+    if !parts[1].is_empty() { return Err(format!("Your settings on {0} are changed on {0} itself: omh set <name> <value> there.", parts[1])); }
     match (parts[0], parts.get(2)) { (h, Some(repo)) if h.ends_with("repo") && s.data.repos.iter().any(|r| r == repo) => Ok(Whose::Repo(repo.to_string())), _ => Ok(Whose::You) }
 }
 pub fn open(s: &mut State, r: Option<&Obj>, fx: &mut Vec<Effect>) {

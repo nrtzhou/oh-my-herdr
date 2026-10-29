@@ -27,13 +27,13 @@ pub fn change(co: impl Into<Co>, f: impl FnOnce(&mut Obj) -> bool) -> Res<Obj> {
         Ok(c)
     })
 }
-/// Where it runs. The top-level one and the machine's: a folder of their own (HERDR_PROJECTS_COORDINATOR_DIR names
+/// Where it runs. The top-level one and the machine's: a folder of their own (OMH_COORDINATOR_DIR names
 /// another for the top-level one, used for nothing else); a folder nothing else chats in is how a conversation is told
 /// from any other. A project coordinator: its repo's own folder, at its main level.
 pub fn home(co: impl Into<Co>) -> PathBuf {
     let co = co.into();
     match &co.level {
-        Level::Top => std::env::var("HERDR_PROJECTS_COORDINATOR_DIR").ok().filter(|s| !s.is_empty()).map(PathBuf::from).unwrap_or_else(|| dir_of(&co).join("chat")),
+        Level::Top => std::env::var("OMH_COORDINATOR_DIR").ok().filter(|s| !s.is_empty()).map(PathBuf::from).unwrap_or_else(|| dir_of(&co).join("chat")),
         Level::Machine => dir_of(&co).join("chat"),
         Level::Project(_) => co.root().unwrap_or_else(|| dir_of(&co).join("chat")),
     }

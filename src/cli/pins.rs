@@ -11,10 +11,10 @@ use crate::remote::pins::{command as pin_there, machine};
 pub fn command(cmd: &str, pos: &[String], flags: &Obj, shown: &dyn Fn(&str) -> Value) -> Res<(Value, String)> {
     let on = cmd == "pin";
     let word = if on { "pinned" } else { "unpinned" };
-    let Some(want) = pos.get(1).filter(|s| !s.trim().is_empty()).map(|s| s.trim().to_string()) else { crate::fail!("{cmd} needs a task's id, a machine's name or a project's name. Try: herdr-projects help") };
-    if pos.len() > 2 { crate::fail!("{cmd} takes one task, machine or project: herdr-projects {cmd} <id | machine | project> [--on MACHINE]"); }
+    let Some(want) = pos.get(1).filter(|s| !s.trim().is_empty()).map(|s| s.trim().to_string()) else { crate::fail!("{cmd} needs a task's id, a machine's name or a project's name. Try: omh help") };
+    if pos.len() > 2 { crate::fail!("{cmd} takes one task, machine or project: omh {cmd} <id | machine | project> [--on MACHINE]"); }
     let on_flag = flags.get("on").filter(|v| !v.is_boolean()).map(text);
-    if flags.has("on") && on_flag.is_none() { crate::fail!("--on needs a machine's name: herdr-projects {cmd} PROJECT --on MACHINE"); }
+    if flags.has("on") && on_flag.is_none() { crate::fail!("--on needs a machine's name: omh {cmd} PROJECT --on MACHINE"); }
     let project = |repo: &str| -> Res<(Value, String)> { let (name, msg) = pin_here(Some(repo), on)?; Ok((json!({ "repo": name, "pinned": on }), msg)) };
     // A project, named with its machine: another machine's is pinned there (remote/pins.rs).
     if let Some(label) = on_flag {

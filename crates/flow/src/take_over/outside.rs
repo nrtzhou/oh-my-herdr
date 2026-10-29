@@ -1,5 +1,5 @@
-//! What older installs put in other programs' folders, taken out: the old herdr-projects 0.2's hooks in each agent
-//! program's settings (a command `… herdr-projects --root … hook --agent …`), its skill (a link named `autoproject`
+//! What older installs put in other programs' folders, taken out: the old omh 0.2's hooks in each agent
+//! program's settings (a command `… omh --root … hook --agent …`), its skill (a link named `autoproject`
 //! to its plugin folder) and the link it put on the PATH; and herdr-superwork's how-to (a `herdr-superwork` folder in
 //! each agent program's skills folder). Only what those versions wrote: a file is changed only where it holds their
 //! entries, and is backed up first.
@@ -15,9 +15,9 @@ fn dir_of(p: &Places, env: &Env, var: &str, rest: &str) -> PathBuf { env.get(var
 /// The settings files the old version put its hooks in, and its own file for Copilot.
 pub fn hook_files(p: &Places, env: &Env) -> (Vec<PathBuf>, PathBuf) {
     (vec![dir_of(p, env, "CLAUDE_CONFIG_DIR", ".claude").join("settings.json"), dir_of(p, env, "CODEX_HOME", ".codex").join("hooks.json"), p.home.join(".factory/settings.json"), p.home.join(".gemini/settings.json")],
-     dir_of(p, env, "COPILOT_HOME", ".copilot").join("hooks").join("herdr-projects.json"))
+     dir_of(p, env, "COPILOT_HOME", ".copilot").join("hooks").join("omh.json"))
 }
-fn old_hook(v: &Value) -> bool { v.get("command").and_then(|c| c.as_str()).map(|c| c.contains("herdr-projects") && c.contains(" hook --agent ")).unwrap_or(false) }
+fn old_hook(v: &Value) -> bool { v.get("command").and_then(|c| c.as_str()).map(|c| c.contains("omh") && c.contains(" hook --agent ")).unwrap_or(false) }
 /// A settings value without the old hooks: an entry that held only those goes, and so does a list or a table they
 /// leave empty. (value, changed); None: it goes.
 fn strip(v: &Value) -> (Option<Value>, bool) {
@@ -41,7 +41,7 @@ fn strip_map(o: &Map<String, Value>) -> (Map<String, Value>, bool) {
     for (k, x) in o { let (y, c) = strip(x); ch |= c; if let Some(y) = y { out.insert(k.clone(), y); } }
     (out, ch)
 }
-fn backup(file: &Path) { let _ = fs::copy(file, format!("{}.bak-herdr-projects", file.display())); }
+fn backup(file: &Path) { let _ = fs::copy(file, format!("{}.bak-omh", file.display())); }
 /// The old hooks taken out of every file. Returns the files changed, and those that could not be read (not JSON).
 pub fn undo_hooks(p: &Places, env: &Env) -> (Vec<String>, Vec<String>) {
     let (files, copilot) = hook_files(p, env);
@@ -65,7 +65,7 @@ pub fn undo_links(p: &Places, env: &Env, this: &Path) -> Vec<String> {
     for l in [dir_of(p, env, "CLAUDE_CONFIG_DIR", ".claude").join("skills/autoproject"), p.home.join(".agents/skills/autoproject")] {
         if fs::read_link(&l).map(|t| t.ends_with("skill/autoproject")).unwrap_or(false) && fs::remove_file(&l).is_ok() { gone.push(l.display().to_string()); }
     }
-    let on_path = dir_of(p, env, "XDG_BIN_HOME", ".local/bin").join("herdr-projects");
+    let on_path = dir_of(p, env, "XDG_BIN_HOME", ".local/bin").join("omh");
     if let Ok(t) = fs::read_link(&on_path) {
         let ours = fs::canonicalize(&on_path).ok().zip(fs::canonicalize(this).ok()).map(|(a, b)| a == b).unwrap_or(false);
         if t.to_string_lossy().contains("/plugins/") && !ours && fs::remove_file(&on_path).is_ok() { gone.push(on_path.display().to_string()); }

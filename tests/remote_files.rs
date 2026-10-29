@@ -28,7 +28,7 @@ fn a_reply_to_another_machines_agent_takes_the_file_it_names_along_and_names_it_
     let w = world();
     let far = Far::new(&w.base);
     let shot = file(&w, "shot.png", b"\x89PNG picture");
-    far.answers("vm-a", "keep", &json!({ "ok": true, "path": "/home/me/proj/.herdr-projects/files/paste-1.png" }));
+    far.answers("vm-a", "keep", &json!({ "ok": true, "path": "/home/me/proj/.omh/files/paste-1.png" }));
     far.answers("vm-a", "do", &json!({ "ok": true, "msg": "sent" }));
     let d = tell(&format!("look at @{shot} and @{shot} please"));
     assert!(d.ok, "{}", said(&d));
@@ -36,7 +36,7 @@ fn a_reply_to_another_machines_agent_takes_the_file_it_names_along_and_names_it_
     assert_eq!(a.iter().map(|x| x.0.as_str()).collect::<Vec<_>>(), ["keep", "do"], "named twice, sent once: {a:?}");
     assert_eq!(a[0].1, json!({ "name": "shot.png", "kind": "image/png", "size": 12, "id": "far/1" }));
     assert_eq!(far.fed("vm-a", "keep"), b"\x89PNG picture");
-    assert_eq!(a[1].1.s("text"), "look at @/home/me/proj/.herdr-projects/files/paste-1.png and @/home/me/proj/.herdr-projects/files/paste-1.png please");
+    assert_eq!(a[1].1.s("text"), "look at @/home/me/proj/.omh/files/paste-1.png and @/home/me/proj/.omh/files/paste-1.png please");
 }
 
 #[test]
@@ -78,13 +78,13 @@ fn a_picture_herdr_pasted_goes_too_and_the_words_name_it_where_it_landed() {
     std::fs::create_dir_all(&dir).unwrap();
     let shot = dir.join("client-327-clipboard-1792608324073248000-0.png");
     std::fs::write(&shot, b"\x89PNG").unwrap();
-    far.answers("vm-a", "keep", &json!({ "ok": true, "path": "/home/me/proj/.herdr-projects/files/paste-1.png" }));
+    far.answers("vm-a", "keep", &json!({ "ok": true, "path": "/home/me/proj/.omh/files/paste-1.png" }));
     far.answers("vm-a", "do", &json!({ "ok": true, "msg": "sent" }));
     assert!(tell(&format!("what is this {} ", shot.display())).ok);
     let a = asked(&far);
     assert_eq!(a.iter().map(|x| x.0.as_str()).collect::<Vec<_>>(), ["keep", "do"], "{a:?}");
     assert_eq!(a[0].1.s("kind"), "image/png");
-    assert_eq!(a[1].1.s("text"), "what is this /home/me/proj/.herdr-projects/files/paste-1.png ");
+    assert_eq!(a[1].1.s("text"), "what is this /home/me/proj/.omh/files/paste-1.png ");
 }
 
 #[test]
@@ -98,9 +98,9 @@ fn a_file_that_cannot_go_stops_the_words_and_says_why() {
     assert!(!d.ok);
     assert_eq!(said(&d), "shot.png could not be sent to vm-a: far/1 is not a task here. Nothing was sent.");
     assert!(!asked(&far).iter().any(|x| x.0 == "do"), "no words went");
-    // An older herdr-projects there, which does not know the request.
+    // An older omh there, which does not know the request.
     far.answers("vm-a", "keep", &json!({ "ok": false, "msg": "Unknown request keep" }));
-    assert_eq!(said(&tell(&format!("look @{shot}"))), "shot.png could not be sent to vm-a: herdr-projects on vm-a is too old to take files: update it there. Nothing was sent.");
+    assert_eq!(said(&tell(&format!("look @{shot}"))), "shot.png could not be sent to vm-a: omh on vm-a is too old to take files: update it there. Nothing was sent.");
     // It cannot be reached.
     far.ends("vm-a", "keep", "", "ssh: connect to host vm-a port 22: Connection refused\n", 255);
     assert_eq!(said(&tell(&format!("look @{shot}"))), "shot.png could not be sent to vm-a: vm-a did not answer: cannot connect (it refused the connection). Nothing was sent.");
@@ -147,7 +147,7 @@ fn the_door_keeps_a_file_where_its_reader_reads() {
     // For a task's agent: in its working folder.
     let a = sw::remote::door_with("keep", &meta(json!({ "id": id })), b"pic").unwrap();
     let p = std::path::PathBuf::from(a.s("path"));
-    assert!(a.b("ok") && p.starts_with(sw::store::repos::cwd_of(&task(&id)).join(".herdr-projects/files")), "{a}");
+    assert!(a.b("ok") && p.starts_with(sw::store::repos::cwd_of(&task(&id)).join(".omh/files")), "{a}");
     assert!(p.file_name().unwrap().to_string_lossy().starts_with("paste-") && p.extension().unwrap() == "png");
     assert_eq!(std::fs::read(&p).unwrap(), b"pic");
     // For its Coordinator when none can run here (the words become a task): the board's own folder.
@@ -167,11 +167,11 @@ fn the_door_keeps_a_file_for_a_coordinator_that_runs_in_its_own_folder() {
     let w = world_with(Opts { repo: true, settings: json!({ "coordinator.agent": "claude" }), ..Default::default() });
     let home = w.base.join("home-coord");
     std::fs::create_dir_all(&home).unwrap();
-    unsafe { std::env::set_var("HERDR_PROJECTS_COORDINATOR_DIR", &home) };
+    unsafe { std::env::set_var("OMH_COORDINATOR_DIR", &home) };
     let a = sw::remote::door_with("keep", &json!({ "name": "notes.txt", "kind": "", "size": 2, "to": "" }), b"hi").unwrap();
-    unsafe { std::env::remove_var("HERDR_PROJECTS_COORDINATOR_DIR") };
+    unsafe { std::env::remove_var("OMH_COORDINATOR_DIR") };
     let p = std::path::PathBuf::from(a.s("path"));
-    assert!(p.starts_with(home.join(".herdr-projects/files")), "{a}");
+    assert!(p.starts_with(home.join(".omh/files")), "{a}");
     assert!(p.file_name().unwrap().to_string_lossy().starts_with("notes-") && p.extension().unwrap() == "txt");
-    assert_eq!(read(&home.join(".herdr-projects/files/.gitignore")), "*\n");
+    assert_eq!(read(&home.join(".omh/files/.gitignore")), "*\n");
 }

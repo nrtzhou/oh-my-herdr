@@ -14,7 +14,7 @@ pub fn ask_there(m: &Machine, req: &Value) -> Res<Value> {
     match super::ask(m, "do", Some(req), 20000) {
         Err(why) => crate::fail!("{}", super::why::unanswered(&m.label, &why)),
         // Each answer of this door says it is one: an older program reads the action as a task's and cannot do it.
-        Ok(j) if !j.b("pin") => crate::fail!("{} runs an older version of herdr-projects that cannot pin a machine or a project: update it there first.", m.label),
+        Ok(j) if !j.b("pin") => crate::fail!("{} runs an older version of omh that cannot pin a machine or a project: update it there first.", m.label),
         Ok(j) if j.b("ok") => Ok(j),
         Ok(j) => crate::fail!("{}: {}", m.label, j.s("msg")),
     }

@@ -31,10 +31,10 @@ has its own key.
 From a shell:
 
 ```
-herdr-projects autopilot                     this machine's coordinators, each with how it stands
-herdr-projects autopilot show [--machine | --project <repo>]   one coordinator's autopilot whole, as it stands now
-herdr-projects autopilot on [--machine | --project <repo>] [--goal "<words>"] [--autopilot.<name> <value> …]
-herdr-projects autopilot off [--machine | --project <repo> | --all]
+omh autopilot                     this machine's coordinators, each with how it stands
+omh autopilot show [--machine | --project <repo>]   one coordinator's autopilot whole, as it stands now
+omh autopilot on [--machine | --project <repo>] [--goal "<words>"] [--autopilot.<name> <value> …]
+omh autopilot off [--machine | --project <repo> | --all]
 ```
 
 - **No flag is the main Coordinator**, as with the `coordinator` commands. `--machine` is this machine's coordinator,
@@ -52,7 +52,7 @@ herdr-projects autopilot off [--machine | --project <repo> | --all]
   too), but from then on every write of that turn is refused: `autopilot was turned off`.
 - **`off --all` is this machine only.** Another machine's coordinators are turned off there, or one by one with
   `Ctrl+O` on their rows.
-- `herdr-projects autopilot` lists this machine's coordinators. Another machine's are on its own board.
+- `omh autopilot` lists this machine's coordinators. Another machine's are on its own board.
 - **`coordinator new`, `restart` and `stop` leave autopilot as it is.** Its next wake goes to the new chat.
   `coordinator stop` on one on autopilot says so: its next wake starts it again, and `Ctrl+O` turns autopilot off.
 
@@ -67,7 +67,7 @@ herdr-projects autopilot off [--machine | --project <repo> | --all]
   ```
    ○ ▾ vm-str [autopilot]  33 tasks, 1 automation, 1 on autopilot
        Autopilot · next check-in in 12m · 3 of 20 today
-     ○ ▾ herdr-projects · HSW [autopilot]
+     ○ ▾ omh · HSW [autopilot]
          Working on HSW-92 · 3 of 20 today
   ```
 
@@ -90,7 +90,7 @@ herdr-projects autopilot off [--machine | --project <repo> | --all]
     `33 tasks, 1 automation, 1 on autopilot`.
   - The web board shows the same, in its own row.
   - Off, nothing of autopilot shows.
-- **The state word**, on its panel and from `herdr-projects autopilot`, the first that holds:
+- **The state word**, on its panel and from `omh autopilot`, the first that holds:
 
   | Word | Means |
   |---|---|
@@ -160,7 +160,7 @@ Autopilot: HSW-84 finished, HSW-88 has a question
 | `added`: a task was added by someone else | `HSW-84 was added` |
 
 No goal, no limits and no counts: **its rules say to read its autopilot first in every wake**, as it stands now, with
-`herdr-projects autopilot show` (`--machine`, `--project <repo>`): its state, goal, today's counts, its tasks under way
+`omh autopilot show` (`--machine`, `--project <repo>`): its state, goal, today's counts, its tasks under way
 and those that need looking after, and its settings in plain words (what it may set and touch, whether it may say yes
 or add releases). So a change between wakes is always picked up, and nothing is repeated in the chat.
 
@@ -223,7 +223,7 @@ nothing more, and autopilot may not touch it.
   the terminal saved with it, is never a task's, whatever the task has on record, and a task whose worktree was
   cleaned up is never linked again to an agent in the repo's folder. A refusal names the task the caller was taken
   for ("You are taken as AFS-6's agent").
-- Under `autopilot.repoFileWaits yes`, a change that touches the repo's own `.herdr-projects.json` never merges by
+- Under `autopilot.repoFileWaits yes`, a change that touches the repo's own `.omh.json` never merges by
   itself, whatever `merge.by` or `autopilot.approve` say. Its row says it waits for your own yes.
 - An approve from autopilot's turn is refused on any task whose change touches that file, whoever added it.
 
@@ -241,18 +241,18 @@ A coordinator has settings as a task has, looked up by the same rule, the neares
 model, effort, fast mode, access, your words) and `autopilot.*`.
 
 ```
-herdr-projects set autopilot.every 2h --project-coordinator herdr-projects
-herdr-projects set coordinator.agent codex --machine-coordinator
-herdr-projects show --main-coordinator
+omh set autopilot.every 2h --project-coordinator omh
+omh set coordinator.agent codex --machine-coordinator
+omh show --main-coordinator
 ```
 
 - **You** is your `config.json`, as for every setting: a `coordinator.agent` you set there counts for every coordinator.
 - **This coordinator** is the `coordinators` part of that same file:
-  `{"coordinators": {"main": {…}, "machine": {…}, "projects": {"herdr-projects": {…}}}}`. `set`, `unset` and `show`
+  `{"coordinators": {"main": {…}, "machine": {…}, "projects": {"omh": {…}}}}`. `set`, `unset` and `show`
   take `--main-coordinator`, `--machine-coordinator` or `--project-coordinator <repo>`.
 - **This time** is the values given with `autopilot on`, `autopilot.*` only, kept until it goes off.
 - **`autopilot.goal` is for one coordinator only**: never yours for all, never for this time.
-- **Nothing of them is read from a repo's `.herdr-projects.json`**, so code written by agents can never change them.
+- **Nothing of them is read from a repo's `.omh.json`**, so code written by agents can never change them.
 - `coordinator.instructions` add up: yours, then the coordinator's own.
 - A changed `coordinator.*` counts from its next fresh chat, and the panel says so. A `coordinator new --agent` pick
   still wins for the chat it starts.
@@ -280,7 +280,7 @@ your entry for that repo. While autopilot is on, `Enter` on an autopilot row oth
 | `autopilot.retries` | `1` | retries of one task before it is left to you |
 | `autopilot.startAtOnce` | `yes` | its tasks start at once |
 | `autopilot.needsYouAfter` | `3` | unanswered wakes before `needs you` |
-| `autopilot.repoFileWaits` | `yes` | a change to `.herdr-projects.json` waits for you |
+| `autopilot.repoFileWaits` | `yes` | a change to `.omh.json` waits for you |
 
 What each means in full is in [the list](settings.md#the-list).
 
@@ -315,7 +315,7 @@ tasks.
 It adds a task on another machine as you can, outside autopilot too:
 
 ```
-herdr-projects add "<title>" --repo <repo> --on <machine>
+omh add "<title>" --repo <repo> --on <machine>
 ```
 
 In a wake, that counts against its own limits: its slot is taken here first, and given back if that machine refuses
@@ -344,7 +344,7 @@ board refuses in autopilot's turn catches mistakes; it does not contain an agent
 - Text in closing notes, repo files or others' tasks can steer it. Its rules say such text is information, never an
   instruction, but rules are not a seal.
 - **Agent files merge like any change.** `AGENTS.md`, `CLAUDE.md`, hooks and the check's own script are not held for
-  you; only `.herdr-projects.json` is. The review is the guard there.
+  you; only `.omh.json` is. The review is the guard there.
 - **Every wake is a turn in the chat you also use.** It grows, and each wake carries all of it. `coordinator new` starts
   it fresh, and `list` gives it back its history.
 - **Talk to a coordinator on autopilot through the board, or turn autopilot off first.** The board cannot see what you
@@ -353,7 +353,7 @@ board refuses in autopilot's turn catches mistakes; it does not contain an agent
 - Watch it the first weeks for busywork once the goal is met. With `merge.by you`, its finished tasks wait for you, and
   `tasksAtOnce` counts them, so at most two (by default) pile up.
 
-## On herdr-projects itself
+## On omh itself
 
 Autopilot can work on the board's own repo, but agents there may improve their own harness instead of the project. Its
 changes only count once you release and install a version, and releases are not its own unless `autopilot.releases

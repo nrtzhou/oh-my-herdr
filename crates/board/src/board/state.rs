@@ -195,7 +195,7 @@ impl State {
         // Never a green confirmation under the chat: what was done shows where it was done.
         if kind == Ink::Green { return; }
         let said = crate::text::clean(&text.into());
-        let said = if crate::re!(r"herdr-projects \w").is_match(&said) { said } else { crate::store::keys::tag_ids(&said, &self.data.repos, &self.data.keys) };
+        let said = if crate::re!(r"omh \w").is_match(&said) { said } else { crate::store::keys::tag_ids(&said, &self.data.repos, &self.data.keys) };
         self.msg = said; self.msg_kind = kind; self.web.msg_n += 1;
     }
     /// Nothing of yours is open or half typed: the board can be swapped for its new version without losing anything.

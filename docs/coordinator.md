@@ -15,13 +15,13 @@ Each machine and each repo has a coordinator of its own too, beside this one: `S
 From a shell:
 
 ```
-herdr-projects coordinator                     how it stands
-herdr-projects coordinator tell <text>         send it a message
-herdr-projects coordinator tell <text> --delegate   and start every task it adds
-herdr-projects coordinator restart             start it again, same conversation
-herdr-projects coordinator new                 a fresh conversation
-herdr-projects coordinator new [--agent KIND[/MODEL]] [--effort E]    a different one, this once
-herdr-projects coordinator stop
+omh coordinator                     how it stands
+omh coordinator tell <text>         send it a message
+omh coordinator tell <text> --delegate   and start every task it adds
+omh coordinator restart             start it again, same conversation
+omh coordinator new                 a fresh conversation
+omh coordinator new [--agent KIND[/MODEL]] [--effort E]    a different one, this once
+omh coordinator stop
 ```
 
 Restart and new are commands, not board keys. You can also just ask the Coordinator to do them. `new --agent …` changes
@@ -31,7 +31,7 @@ only the next one: your default stays as it is.
 `~/.local/bin`, `~/.cargo/bin`, `~/bin`, `/usr/local/bin` or `/opt/homebrew/bin`, and not on a login shell's PATH)
 keeps the message in the queue but does not say `sent`: it says the message is queued, not delivered, and why, and exits
 1. The board and its keeper deliver it once they run in herdr; `HERDR_BIN_PATH` set to herdr's full path delivers from
-there. `herdr-projects doctor` names messages that wait in a queue for more than a minute.
+there. `omh doctor` names messages that wait in a queue for more than a minute.
 
 ## Its row, and its settings
 
@@ -51,7 +51,7 @@ row is that machine's, and this one is not on the board.
 ## Your message, and where you were
 
 Your words reach it exactly as typed. Which repo you were in and which task you had open are kept beside each message,
-and the Coordinator looks them up itself (`herdr-projects coordinator where` lists the last few messages, each with its
+and the Coordinator looks them up itself (`omh coordinator where` lists the last few messages, each with its
 own).
 
 A board opened from the Coordinator's own pane stays in the repo it was last in: that pane's folder is nobody's repo.
@@ -79,21 +79,21 @@ On the board you see only what it said and what you said, never its program's sc
 whole conversation, its dialogs, slash commands and menus, **go into it** in Herdr:
 
 - It is an ordinary agent in the `Coordinator` tab of your home space.
-- The plugin action `herdr-projects.coordinator` (bind a key to it) goes straight to its pane from anywhere in Herdr,
+- The plugin action `omh.coordinator` (bind a key to it) goes straight to its pane from anywhere in Herdr,
   and starts it first if it is not running.
-- Get back the way you do from any agent: your board key, or `herdr-projects`.
+- Get back the way you do from any agent: your board key, or `omh`.
 
 ## What it is
 
 - An ordinary Herdr agent, in a tab named `Coordinator`, in your home space (`~`).
-- It runs in a folder of its own inside the board's data folder. `HERDR_PROJECTS_COORDINATOR_DIR` names another; use
+- It runs in a folder of its own inside the board's data folder. `OMH_COORDINATOR_DIR` names another; use
   that folder for nothing else, since the board writes the Coordinator's rules there.
 - It starts with the same arguments as any working agent: all its tools, nothing held back.
 - Your first message starts it, and it stays. If its program exited or Herdr restarted, your next message starts it
   again in the same conversation.
 - **Closing the board does not stop it**, and the board says so as you close it. One Coordinator serves every board of
   the machine (a tab, the popup, the web board) and `coordinator tell`, and a turn of it may still be at work.
-  `herdr-projects coordinator stop` closes its tab; your next message starts it again, in the same conversation.
+  `omh coordinator stop` closes its tab; your next message starts it again, in the same conversation.
 - The agent's own new-chat command (`/clear`, `/new`) is followed: the chat and a restart go with the conversation it
   is in now.
 - Its program, model and effort are settings (`coordinator.agent`, …): [roles and commands](roles-and-commands.md).
@@ -103,7 +103,7 @@ whole conversation, its dialogs, slash commands and menus, **go into it** in Her
 ## Its standing rules are a file
 
 The rules (what the Coordinator is, how it uses the board) are written as `AGENTS.md` in the folder it starts in
-(`~/.herdr-projects/data/coordinator/<session>/chat`, see [the home folder](home-folder.md)). The program reads that file
+(`~/.omh/data/coordinator/<session>/chat`, see [the home folder](home-folder.md)). The program reads that file
 by itself at the start of every conversation. So it still knows its rules after its own `/new` or `/clear`, after
 `coordinator restart` and `coordinator new`, after `coordinator new --agent <another kind>` (the next program reads the
 same file), and when you start the program in that folder by hand.

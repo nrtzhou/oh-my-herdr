@@ -88,7 +88,7 @@ fn it_is_yours_only_a_hand_written_mistake_is_left_out_and_the_page_keeps_the_bu
     assert!(j.to_string().contains("ctrl+l is yes's key already"));
     let e = settings_command("set", &["set".into(), "board.keys".into()], &Where { task: None, repo: Some("proj".into()), automation: None, coord: None }, Some(json!("side=alt+y"))).unwrap_err().msg;
     assert!(e.contains("board.keys is a board setting: it is yours only"), "{e}");
-    std::fs::write(w.root.join(".herdr-projects.json"), r#"{ "board.keys": "side=alt+y" }"#).unwrap();
+    std::fs::write(w.root.join(".omh.json"), r#"{ "board.keys": "side=alt+y" }"#).unwrap();
     let (_, said) = sw::store::settings::places::repo_file(&w.root, None);
     assert!(said.iter().any(|p| p.contains("board.keys is refused")), "{said:?}");
 }
@@ -98,7 +98,7 @@ fn a_hand_written_chord_of_the_key_that_opens_the_board_does_not_count_on_the_bo
     let w = world_with(Opts { repo: true, settings: json!({ "board.keys": "menu=alt+w, side=alt+y" }), ..Default::default() });
     let conf = sw::extras::herdr_config();
     std::fs::create_dir_all(conf.parent().unwrap()).unwrap();
-    let bind = |key: &str| std::fs::write(&conf, format!("[[keys.command]]\nkey = \"{key}\"\ntype = \"plugin_action\"\ncommand = \"herdr-projects.open\"\n")).unwrap();
+    let bind = |key: &str| std::fs::write(&conf, format!("[[keys.command]]\nkey = \"{key}\"\ntype = \"plugin_action\"\ncommand = \"omh.open\"\n")).unwrap();
     bind("alt+w");
     assert_eq!((key_name("menu"), key_name("side")), ("?".to_string(), "alt+y".to_string()));
     assert!(!is(&Press::chord("alt+w"), K::Menu) && is(&Press::char('?'), K::Menu));

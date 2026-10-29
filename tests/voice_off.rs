@@ -1,6 +1,6 @@
 //! `voice.calls off` (crates/core/src/voice/mod.rs): voice is gone, not just broken. The web board's page has no Call
 //! button and may not reach ElevenLabs, the front door refuses a call and the voice agent's tools, the call key only
-//! says calls are off, the call helper does not run and nothing contacts ElevenLabs; `herdr-projects voice` says how
+//! says calls are off, the call helper does not run and nothing contacts ElevenLabs; `omh voice` says how
 //! to turn them on. A call on when they are turned off ends, and its page or helper lets go of it. With the default,
 //! all of it is there.
 use crate::common;
@@ -36,7 +36,7 @@ fn with_calls_off_the_front_door_refuses_a_call_and_the_tools_and_nothing_reache
     web(&w, "board", json!({}));
     let (st, out) = api::start(&json!({ "client": "test" }), || Ok("drive".to_string()));
     assert_eq!(st, 403, "{out}");
-    assert!(out.s("msg").starts_with("Voice calls are off (voice.calls)") && out.s("msg").contains("herdr-projects set voice.calls on"), "{out}");
+    assert!(out.s("msg").starts_with("Voice calls are off (voice.calls)") && out.s("msg").contains("omh set voice.calls on"), "{out}");
     assert!(call::get().is_none(), "no call is made");
     for what in ["start", "tool", "heard", "feed"] { assert_eq!(api::local(what, &json!({ "ticket": "t", "name": "board_status" }), "k").0, 403, "{what}"); }
     // a call already on (started before calls were turned off) can still be hung up
@@ -62,7 +62,7 @@ fn with_calls_off_the_call_key_says_so_once_and_starts_nothing_and_the_voice_com
     assert_eq!(sw::calls::ring::ring("terminal:1", &t, "default"), Err("Voice calls are off (voice.calls)".to_string()));
     let said = sw::calls::command::main(&[]);
     assert_eq!(said.0.s("calls"), "off");
-    assert!(said.1.starts_with("Voice calls are off (voice.calls)") && said.1.contains("herdr-projects set voice.calls on"), "{}", said.1);
+    assert!(said.1.starts_with("Voice calls are off (voice.calls)") && said.1.contains("omh set voice.calls on"), "{}", said.1);
     assert!(log.borrow().is_empty());
     sw::voice::eleven::set_fake(None);
 }
