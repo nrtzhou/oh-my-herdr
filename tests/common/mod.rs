@@ -47,7 +47,7 @@ pub fn world_with(o: Opts) -> World {
     for (k, v) in [("HOME", b("home")), ("OMH_TMP", b("tmp")), ("OMH_HOME", b("sw")), ("HERDR_SOCKET_PATH", socket.clone()), ("XDG_CONFIG_HOME", b("home/.config")), ("XDG_STATE_HOME", b("home/.state")), ("XDG_DATA_HOME", b("home/.local/share")),
         ("CLAUDE_CONFIG_DIR", b("claude")), ("CODEX_HOME", b("codex")), ("PI_CODING_AGENT_DIR", b("pi")), ("OMP_CODING_AGENT_DIR", b("omp")), ("OMH_CLAUDE_JSON", b("claude.json")), ("OMH_CODEX_TOML", b("codex.toml"))] { set(k, &v); }
     for (k, v) in [("OMH_INLINE", "1"), ("OMH_SETTLE_MS", "0"), ("OMH_PR_LAG_MS", "0"), ("OMH_FETCH_PAUSE_MS", "0"), ("OMH_READY_STEP_MS", "0"), ("OMH_POLL_MS", "20"),
-        ("OMH_NO_KEEPER", "1"), ("OMH_NO_SWEEP", "1"), ("OMH_FREE", "1000000000000"), ("OMH_NO_HOOK", "1"), ("OMH_NO_MODEL_LIST", "1"), ("OMH_READ_MS", "0"), ("OMH_NO_SERVER", "1"), ("OMH_LINKS", "local"),
+        ("OMH_NO_KEEPER", "1"), ("OMH_NO_SWEEP", "1"), ("OMH_FREE", "1000000000000"), ("OMH_NO_HOOK", "1"), ("OMH_NO_MODEL_LIST", "1"), ("OMH_READ_MS", "0"), ("OMH_NO_SERVER", "1"), ("OMH_LINKS", "local"), ("LC_ALL", "C"),
         ("HERDR_BIN_PATH", "/bin/false"), ("GIT_AUTHOR_NAME", "tester"), ("GIT_AUTHOR_EMAIL", "t@test"), ("GIT_COMMITTER_NAME", "tester"), ("GIT_COMMITTER_EMAIL", "t@test"), ("GIT_CONFIG_GLOBAL", "/dev/null"), ("GIT_CONFIG_NOSYSTEM", "1")] { set(k, v); }
     let data = sw::store::files::data_dir();
     let config = sw::store::files::config_dir();
