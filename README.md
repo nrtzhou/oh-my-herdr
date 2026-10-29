@@ -2,8 +2,6 @@
 
 herdr 插件：一张任务看板，把要做的事交给多个 coding agent 并行完成。你说需求，协调者（Coordinator）拆成任务；每个任务一个 agent、一棵独立工作树、一条独立分支，绝不碰你自己的 checkout。任务收尾自动提交、跑仓库检查、由第二个 agent 评审，最后等你点头才合并。需要你回答或批准的任务排在最前。
 
-<p align="center"><img src="assets/omh-launch.webp" width="720" alt="使用示意：说出需求，协调者拆成任务，看板按需要你、待批准、进行中分组" /></p>
-
 ## 安装
 
 前置：Linux 或 macOS；[herdr](https://herdr.dev) 0.9.3+（**正在运行的 server 也要是 0.9.3+**）；`git` 与 `curl` 或 `wget`。可选：`gh`（开 PR）、`tailscale`（私有评审链接）。不需要 Node/npm。
@@ -59,3 +57,15 @@ omh update && omh doctor         # 更新 + 体检
 - 自动化：[自动驾驶](docs/autopilot.md) · [自动化任务](docs/automations.md) · [多机](docs/other-machines.md) · [语音](docs/voice.md)
 
 更多见 [docs/](docs/) 目录。
+
+## 致谢与沿革
+
+基于 [Herdr Projects](https://github.com/eliasstravik/shepherdr)（Elias Stravik，MIT 许可）1.2.27 分叉维护，感谢原项目。
+
+**分叉初衷：增强对 omp（oh-my-pi）的支持。** 本版把 omp 从「只能读屏的二等程序」提升到与 Claude Code / Codex / pi 同级：看板直接读它的会话——回合结束、token 用量（含侧调用）、聊天转录、会话发现与恢复、收尾钩子，`limit.tokens` 等能力一并生效。
+
+**与上游后续版本（Shepherdr 2.0）的理念区别**，也是本 fork 存在的理由：
+
+- **人是合并闸门**：默认 `merge.by you`，评审通过后仍等你点头才合并；2.0 默认自动合并，人退到「被通知」。
+- **评审门独立裁决**：评审者只列发现，看板按固定规则判定通过与否；2.0 改为任务 agent 自评自判。
+- **控制优先于规模**：保留 `limit.time` / `limit.tokens` 限额、并行尝试（attempts）、先计划沙盒、终端看板与键盘操作；2.0 面向手机端放手跑量。
