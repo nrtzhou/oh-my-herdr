@@ -10,7 +10,7 @@ herdr 插件：一张任务看板，把要做的事交给多个 coding agent 并
 herdr plugin install nrtzhou/oh-my-herdr
 ```
 
-首次打开看板时它会请求写入 herdr 配置（按键 `prefix+a`、侧栏行），同意即可。把 `~/.omh/data/bin` 加进 PATH 后可以直接敲 `omh`。
+首次打开看板时它会请求写入 herdr 配置（按键 `prefix+a`、侧栏行），同意即可。启动器 `~/.omh/data/bin/omh` 自动写好并维护（安装、更新、每次启动）；把它加进 PATH 即可敲 `omh`（fish：`fish_add_path ~/.omh/data/bin`）。
 
 - 从源码构建：`git clone https://github.com/nrtzhou/oh-my-herdr && cd oh-my-herdr && cargo build --profile quick`，产物在 `./target/quick/omh`。
 - 更新：`omh update`。固定版本：`herdr plugin install nrtzhou/oh-my-herdr --ref v1.2.27`。

@@ -217,6 +217,27 @@ fn real_programs_run_sh_downloads_once_and_runs_it() {
     let later = std::time::SystemTime::now() + std::time::Duration::from_secs(5);
     std::fs::File::options().write(true).open(p.join("src/main.rs")).unwrap().set_modified(later).unwrap();
     assert_eq!(run_sh(&b, &["board"]).1, "release 0.5.0 board\n", "the source is newer than the build");
-    // --fetch only gets the program.
-    assert_eq!(run_sh(&b, &["--fetch"]), (0, String::new(), String::new()));
+    // --fetch only gets the program and the launcher beside it: the launcher step runs at the build step, never the board.
+    let (code, out, _) = run_sh(&b, &["--fetch"]);
+    assert_eq!(code, 0);
+    assert!(out.contains("install") && !out.contains("board"), "{out}");
+}
+
+#[test]
+fn real_programs_run_sh_writes_the_launcher_at_the_build_step_and_quietly_at_a_start() {
+    let (b, _one) = scratch();
+    if std::process::Command::new("curl").arg("--version").output().is_err() { eprintln!("no curl here: skipped"); return; }
+    plugin(&b, "0.3.0");
+    // a program that logs what it is run as
+    let f = b.join("rel/download/v0.3.0").join(asset_name(here()));
+    exec(&f, "#!/bin/sh\necho \"$*\" >> \"$(dirname \"$0\")/../../calls.log\"\necho \"release 0.3.0 $*\"\n");
+    write(&PathBuf::from(format!("{}.sha256", f.display())), &format!("{}  {}\n", sha256(&f).unwrap(), asset_name(here())));
+    let (code, out, err) = run_sh(&b, &["--fetch"]);
+    assert_eq!(code, 0, "{err}");
+    assert!(out.contains("install"), "the build step runs it where its words are seen: {out}");
+    // a start runs it again (the plugin's folder moves on an update), quietly: its words never go into the hook's answer
+    assert_eq!(run_sh(&b, &["hook", "x y"]), (0, "release 0.3.0 hook x y\n".into(), String::new()));
+    let calls = read(&b.join("calls.log"));
+    assert_eq!(calls.lines().filter(|l| *l == "install").count(), 2, "{calls}");
+    assert!(calls.lines().any(|l| l == "hook x y"), "{calls}");
 }

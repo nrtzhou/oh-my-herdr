@@ -134,7 +134,7 @@ pub fn path_problem(at: &Path, exe: &Path, path: &str) -> Option<(String, String
     match std::env::split_paths(path).map(|d| d.join("omh")).find(|f| runs(f)) {
         Some(f) if f == at || real(&f).is_some() && (real(&f) == real(at) || real(&f) == real(exe)) => None,
         Some(f) => Some((format!("{} comes first on your PATH (an older install? `npm unlink -g omh` takes out the Node one)", f.display()), format!("Remove it, or put {} before it.", dir.display()))),
-        None => Some(("omh is not on your PATH".into(), format!("To type omh in any shell, put its folder on your PATH (in ~/.profile or your shell's start-up file): export PATH=\"{}:$PATH\"", dir.display()))),
+        None => Some(("omh is not on your PATH".into(), format!("To type omh in any shell, put its folder on your PATH (in ~/.profile or your shell's start-up file): export PATH=\"{}:$PATH\" (fish: fish_add_path {})", dir.display(), dir.display()))),
     }
 }
 /// `install`: the launcher in the data folder names this program (flow/send.rs writes it, the only writer), and what

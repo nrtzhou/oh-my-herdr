@@ -80,9 +80,9 @@ rows = [["state_icon", "workspace"], ["branch", "git_status"], [{ token = "$summ
 
 代理和钩子拿到的是启动器 `~/.omh/data/bin/omh`，它运行真正的程序。
 
-- 看板打开时会写入它。用 `herdr plugin install` 的话，先用插件动作 "Open the work board" 打开一次看板。
+- 安装（插件的 build 步骤）、herdr 每次启动、`omh update` 和看板打开时都会自动写好并维护它——插件目录在更新后会换地方，启动器总会指对真正的程序。
 - `omh install` 会重新写入，并提示 PATH 里是否有别的同名 `omh` 排在前面。
-- 想在 shell 里敲 `omh`，把那个目录加进 PATH（`~/.profile` 或你 shell 的启动文件）。
+- 想在 shell 里敲 `omh`，把那个目录加进 PATH（`~/.profile` 或你 shell 的启动文件；fish：`fish_add_path ~/.omh/data/bin`）。这是唯一需要手动的一步。
 
 **在会被其他机器索取任务的机器上**（[其他机器](other-machines.md)），`omh` 必须能被无人交互的登录 shell 找到，也就是 SSH 启动的那种 shell。只在 `~/.bashrc` 设 PATH 往往不够。`omh machines` 会在本机检查并告诉你怎么修。从另一台机器这样测；一切正常时末行是一行 JSON：
 

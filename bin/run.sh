@@ -17,7 +17,13 @@ root=$(dirname -- "$here")
 PATH="${PATH:+$PATH:}/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:$HOME/.cargo/bin"; export PATH
 say() { printf 'omh: %s\n' "$*" >&2; }
 fetch_only=""; [ "$1" = "--fetch" ] && { fetch_only=1; shift; }
-run() { [ -n "$fetch_only" ] && exit 0; exec "$@"; }
+# `install` writes the launcher in the data folder and says what stands in the way of typing `omh`. The build step
+# runs it where its words are seen; every herdr start runs it quietly, because the plugin's folder moves on an update.
+run() {
+  if [ -n "$fetch_only" ]; then "$1" install || say "could not write the launcher: run 'omh install' yourself"; exit 0; fi
+  [ "$2" = "hook" ] && "$1" install >/dev/null 2>&1 || true
+  exec "$@"
+}
 
 built="$root/target/release/omh"
 fresh() { [ -x "$built" ] && [ -z "$(find "$root/src" "$root/crates" "$root/Cargo.toml" "$root/Cargo.lock" -newer "$built" 2>/dev/null | head -n 1)" ]; }
@@ -100,7 +106,7 @@ else : > "$failed" 2>/dev/null; fi
 
 if [ -n "$fetch_only" ] && command -v cargo >/dev/null 2>&1; then
   say "building it from source instead: cargo build --release (a few minutes)"
-  (cd "$root" && cargo build --release --locked) && exit 0
+  (cd "$root" && cargo build --release --locked) && { "$built" install || say "could not write the launcher: run 'omh install' yourself"; exit 0; }
 fi
 [ -x "$built" ] && { say "using $built, which is older than its source: build it again (cd '$root' && cargo build --release)"; run "$built" "$@"; }
 [ -x "$prog" ] && { say "using the downloaded omh $(cat "$prog.version" 2>/dev/null), not $want"; run "$prog" "$@"; }
