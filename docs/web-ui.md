@@ -1,470 +1,298 @@
-# The board in the web UI (Ovis)
+# web UI（Ovis）里的看板
 
-**With the web UI [Ovis](https://github.com/devswha/ovis) installed in Herdr beside this plugin, the board is part of
-that web UI**: a **Boards** section in its sidebar, one entry per machine, at the same link and behind the same login.
-It does what the terminal board does, with buttons and touch instead of keys, on a phone and on a desktop. Without the
-web UI, none of this runs.
+**在 Herdr 里装了 web UI [Ovis](https://github.com/devswha/ovis) 和这个插件（plugin）之后，看板就是那个 web UI 的一部分**：它侧栏里的一个 **Boards** 部分，每台机器一个条目，同一个链接、同一套登录。它做终端看板做的一切，用按钮和触控代替按键，手机和桌面都行。没有 web UI，这一切都不运行。
 
-Ovis was called herdr-web-ui before, and an install from then may still have its old plugin id until Ovis's installer
-moves it: the board finds it under either, `devswha.ovis` first, then `devswha.herdr-web-ui`
-([its two names](#its-two-names)).
+Ovis 以前叫 herdr-web-ui，那时装的可能还带着旧插件 id，直到 Ovis 的安装器迁移它：看板在两个 id 下都能找到它，先找 `devswha.ovis`，再找 `devswha.herdr-web-ui`（[它的两个名字](#它的两个名字)）。
 
-## Setting it up
+## 配置
 
-1. **Install both plugins** (Ovis as [its own page](https://github.com/devswha/ovis) says). From then on a small
-   **front door** of the board's own runs on this machine, in front of the web UI. It starts with Herdr and is kept up
-   by the keeper.
-2. **Share the web UI** as it says itself (its Settings → Phone shows the `tailscale serve` command).
-3. **Say yes once.** The next time you open the board in the terminal, it asks: *Show this board in the web UI (Ovis)?*
-   **Yes** points the web UI's shared link at the front door. **No** leaves the link alone for good. **Later** asks again
-   the next time the board opens.
+1. **装好两个插件**（Ovis 按[它自己的页面](https://github.com/devswha/ovis)说的装）。从此看板自己的一个小**前门**运行在本机，在 web UI 前面。它随 Herdr 启动，由看守维持。
+2. **共享 web UI**，按它自己的说明（它的 Settings → Phone 显示 `tailscale serve` 命令）。
+3. **答应一次。** 下次在终端里打开看板时，它会问：*Show this board in the web UI (Ovis)?* **Yes** 把 web UI 的共享链接指向前门。**No** 从此不动那个链接。**Later** 下次打开看板再问。
 
-That one change is the whole setup. By hand, any time:
+这一次改动就是全部配置。随时可以手动来：
 
     omh web-ui            how things stand: the web UI, the front door, which links go through it
     omh web-ui link       point the web UI's shared link at the front door
     omh web-ui unlink     point it back
 
-- `omh remove-extras` also points the link back and stops the front door ([installing](install.md)).
-- To turn the whole thing off and keep the rest: `omh set board.webUi none` ([settings](settings.md)). The front
-  door points the link back by itself, and closes.
-- On the machine itself, the board is also at the front door's own address, which `web-ui` prints
-  (`http://127.0.0.1:7327/` unless that port was taken).
+- `omh remove-extras` 也会把链接指回去并停掉前门（[安装](install.md)）。
+- 要整个关掉而保留其余：`omh set board.webUi none`（[设置](settings.md)）。前门自己把链接指回去，然后关闭。
+- 在机器本身上，看板也在前门自己的地址上，`web-ui` 会打印它（`http://127.0.0.1:7327/`，除非端口被占）。
 
-## The Boards section
+## Boards 部分
 
-In the sidebar, under **Agents** and above its foot (Install app, Settings), the board has a section of its own:
-**Boards**.
+在侧栏里、**Agents** 之下、底部（Install app、Settings）之上，看板有自己的部分：**Boards**。
 
-- Its heading is the web UI's own Agents heading, built again from the web UI's own classes: the same type, spacing and
-  caret, and it folds the same way. Like Agents, it starts folded on a phone (the sidebar is a drawer there) and open on a
-  wide screen, and a fold stays while the page is open. Folded, the heading still shows the dot of all the boards
-  together.
-- The section is the board's one place in the sidebar (the single Board entry at its foot is gone). The web UI redraws its
-  sidebar whenever it likes (on a phone, each time the drawer opens): the script puts the same section back in its place.
+- 它的标题是 web UI 自己的 Agents 标题，用 web UI 自己的类重建：同样的字体、间距和光标，折叠方式也一样。和 Agents 一样，手机上默认折叠（那里侧栏是抽屉），宽屏上展开，折叠状态在页面打开期间保持。折叠时标题仍显示所有看板合在一起的圆点。
+- 这个部分是看板在侧栏里唯一的位置（底部那个单独的 Board 条目没了）。web UI 随时会重画它的侧栏（手机上每次打开抽屉都重画）：脚本把同一个部分放回原位。
 
-Under it, one entry per machine that has a board, drawn as an agent's entry is:
+下面每台有看板的机器一个条目，画得像代理的条目：
 
-- **All machines** first, at the top, once the board knows another machine. While this machine is the only one it is
-  not there (it would show this machine's tasks again), and a board that showed every machine shows this machine's own;
-  it comes back as soon as herdr has a second machine.
-- Under it, **this machine** and **each other machine the board knows** (the ones its Other machines goes round: Herdr's
-  saved machines, or `board.machines`), in the order of Herdr's sidebar, this machine where that sidebar puts it
-  ([machine order](machine-order.md)).
-- **Names:** each as the web UI names that machine (`Mac`, `elias-macbook-pro-m1`, `vm-str`), matched to its PCs as below
-  ([other machines](#other-machines)). One the web UI has no PC for keeps the board's name for it. A web UI that names
-  this machine by no name of its own gives `This machine`.
-- **A dot in the board's status colours**, where an agent's status stands: red when a task needs you, green when one is
-  ready to approve, the working colour when work goes on (it breathes as the web UI's working dot does, where the web UI
-  has that), the dim grey when all is quiet.
-- **A short second line**: `1 needs you · 2 working · 3 to do` (`to approve` for a task ready to approve), or
-  `all quiet`. Archived and done tasks are not counted.
-- **A machine that cannot be reached** says `not reachable`, dimmed like an agent on a PC that is away, with a ring for a
-  dot. Pointing at it says why, in the board's words. All machines adds up the ones that answered and says how many did
-  not (`· 1 not reachable`). While a machine is asked for the first time, its entry says `asking…`.
+- **All machines** 在最上面，看板知道有另一台机器之后才有。只有本机时它不在（那会把本机任务再显示一遍），曾显示所有机器的看板回到本机自己的；herdr 一有第二台机器它就回来。
+- 它下面是**本机**和**看板认识的每台其他机器**（它的「其他机器」轮换的那些：Herdr 的已保存机器，或 `board.machines`），按 Herdr 侧栏的顺序，本机在那个侧栏放它的位置（[机器顺序](machine-order.md)）。
+- **名字：** 按 web UI 命名那台机器的方式（`Mac`、`elias-macbook-pro-m1`、`vm-str`），与它的 PC 对应见下（[其他机器](#其他机器)）。web UI 没有对应 PC 的保留看板的名字。web UI 不以任何自己的名字命名本机时给 `This machine`。
+- **看板状态色的圆点**，在代理状态的位置：任务需要你时红，一个待批准时绿，有工作时用进行色（呼吸，像 web UI 的工作点，web UI 有那效果的地方），万籁俱寂时暗灰。
+- **简短的第二行**：`1 needs you · 2 working · 3 to do`（待批准的任务写 `to approve`），或 `all quiet`。归档和完成的任务不计。
+- **够不到的机器**显示 `not reachable`，像离开的 PC 上的代理一样变暗，圆点是空环。指向它用看板的话说明原因。All machines 把回答了的加总，说有几台没回答（`· 1 not reachable`）。第一次询问某台机器时它的条目显示 `asking…`。
 
-**Picking an entry opens that machine's board** over the main area, with its tasks and its coordinators, and the entry
-is highlighted as a selected agent is.
+**点一个条目打开那台机器的看板**，盖在主区域上，带它的任务和协调者，条目像选中的代理一样高亮。
 
-- It does what choosing that machine on the board's filter row (or its **Other machines**) does. No line confirms it:
-  the filter row's first item names whose board shows, the chat's switch who gets your words. Only where the board moved
-  by itself, following the web UI to another PC, does it say so (`Only vm-str. What you type goes to vm-str.`). The two
-  stay in step: the board's own pick, and the board following the web UI, move the highlight too.
-- On a phone, the drawer closes, as it does when you pick a pane.
-- The section asks every four seconds while the page is in view. The other machines are asked for their tasks every twenty
-  seconds at most, as the board asks them.
+- 它做的事和在看板筛选行（或它的 **Other machines**）上选那台机器一样。没有行来确认：筛选行的第一项说明显示谁的看板，聊天的切换器说明谁收你的话。只有看板自己跟随 web UI 移到另一台 PC 时才说明（`Only vm-str. What you type goes to vm-str.`）。两者保持同步：看板自己的选择和看板跟随 web UI，都移动高亮。
+- 手机上抽屉关闭，像选面板时一样。
+- 这个部分在页面可见期间每四秒问一次。其他机器的任务最多每二十秒问一次，和看板问它们一样。
 
-## What the board looks like there
+## 看板在那里什么样
 
-It uses the web UI's own colours, type, sizes and spacing (its CSS variables, `DESIGN.md` there), so it follows light,
-dark and every palette of the web UI by itself.
+它用 web UI 自己的颜色、字体、尺寸和间距（它的 CSS 变量、那边的 `DESIGN.md`），所以自动跟随 web UI 的浅色、深色和每套调色板。
 
-- The web UI does not read Herdr's theme, so there the Board matches Herdr as the web shows it.
-- A status is the web UI's own colour for it; a task nobody started is its dim text colour.
-- **Colour means status only**, as on the terminal board: names are in the base colour (the top row's and a machine's
-  bold, a project's and a task's in normal weight), what goes with them dimmed (keys, counts, times, a title's tags);
-  marks, a status group's heading, the lit filter and the selected row keep their colours ([colours](colours.md)).
-- The chat is the web UI's own chat, docked under the list: [the web board's chat](web-chat.md). Where the board's own box
-  stands in, its frame is in the status colour of whoever gets your words, as on the terminal board: base when idle or
-  never started, amber while working, red when it needs you or failed ([colours](colours.md)). That box is the web UI's
-  own chat input, built again and measured against it: [the web board's chat box](web-chat-box.md).
+- web UI 不读 Herdr 的主题，所以那里的 Board 和网页显示的 Herdr 一致。
+- 状态用 web UI 给它的颜色；没人开始的任务用它的暗文字色。
+- **颜色只表示状态**，和终端看板一样：名字用基础色（顶行和机器的加粗，项目和任务的常规字重），附属信息变暗（按键、计数、时间、标题的标签）；标记、状态组的标题、高亮的筛选器和选中的行保留它们的颜色（[颜色](colours.md)）。
+- 聊天是 web UI 自己的聊天，停靠在列表下方：[web 看板的聊天](web-chat.md)。看板自己的输入框顶上时，它的边框用收话人的状态色，和终端看板一样：空闲或从未启动为基础色，工作中琥珀色，需要你或失败红色（[颜色](colours.md)）。那个输入框是 web UI 自己的聊天输入，重建并对照测量：[web 看板的输入框](web-chat-box.md)。
 
-| On the terminal board | On the web board |
+| 终端看板上 | web 看板上 |
 |---|---|
-| the filter row under the header: whose board, then `All`, `Coordinators`, `Needs you`, `Working`, `Ready`, `To do`, `Done`, `Automations`, `Pinned` with their counts (`tab`) | the same row under the header, each filter a pill with its count, the one shown lit in its own colour (`Needs you` red, `Working` amber, `Ready` green, `Coordinators` the accent, `Automations` purple, the others the base colour), a count of what needs you in red. A tap shows a filter. Whose board stands first, where there is another machine (`All machines`, or the machine shown, lit): a tap lists every board to pick one, as the sidebar's Boards section does. On a phone the row scrolls sideways and the names are the short ones (`Needs`, `Coords`, `Autos`). The page keeps the filter shown for the next page. None in the archive |
-| the list, its groups, marks, progress, review and pull request tags | the same list; a pull request's tag is a link. The agent at work is a full dot, its reviewer the right half of one, and the board's own steps the lower half: all three drawn at one size (as text the two half discs came out a third the size of the dot). Every other mark is the terminal board's own character (one cross, `✗`; `◆` ready to approve; `@` a sign-in). Each row stands as far in as the terminal sets it: all machines → machine → project → task ([list headings](list-headings.md)) |
-| a machine's row and a project's row: its coordinator, read as a task's row | the same: its coordinator's mark where a task has its mark (`○` idle, `◐` working, `?` asks you, `✗` could not start), its name, its time on the right; on autopilot a dimmed `[autopilot]` after its name and what autopilot does under it, in a task's grey second line. The top row (`All machines`, or the machine shown) says what it holds (`2 projects · 14 tasks`). A tap selects it, as a task's row; its caret folds and unfolds it. Selected, its **Open** shows the coordinator whole, with its buttons (start, stop, autopilot, archive this project). A status group's heading folds with a tap anywhere on it |
-| moving between tasks | tap a task (or a machine's or a project's row): it is selected, as the cursor selects it on the terminal board, and nothing opens. The selected row has a bar in its gutter as well as its tint, and an **Open task** button (**Open automation** on an automation's row), which shows it whole; Enter on the selected row does the same. On a wide screen, with a task already open beside the list, the open task follows the selection, as the terminal board's side panel does |
-| the task panel: status, what it needs from you, description, reviews, evidence, what the agent said, settings, session | the open task, every part whole, evidence as links. The settings stand right under the status and what it needs from you, so a long description never pushes them off the first screen |
-| the settings page (`ctrl+e`): every work setting of the task by its plain name and value, `*` on the ones set for this task only | **All settings**, under the open task (and under an open automation), folded until you open it or pick `this task's settings` in More…: each setting with its plain label, what it means where that needs saying (`Research only`), its value, and `* this task only` on the ones that are. A switch or a choice is a list to pick from, anything else a box that saves on enter; **Put back** takes the task's own answer away. A refused value is refused in the board's own words and changes nothing; a device that only watches cannot change one; an archived task's are read-only |
-| the hint line: what can be done to the selected task now | the buttons at the top of the open task, in the same words |
-| the `?` menu | **More…** (and `⋯` in the header): only what applies now and is not a button already, in the buttons' own words (`Remove this task`, `Show every machine's tasks`). A key the page has no button for has no entry |
-| whose board you see (`Alt+M`) | the filter row's first item, an entry of the sidebar's **Boards** section, or **Other machines** in More… |
-| the chat, and who it talks to (`space` flips it); the box's edge names them (`vm-str ›  gtm  · Project coordinator`) | the web UI's own chat of whoever it talks to, docked under the list ([the web board's chat](web-chat.md)), under a bar whose switch has the two you can talk to: the top row's coordinator (`All machines`, or the machine shown) and the selected row's agent (`HP-179`, or on a machine's or a project's row its coordinator, `gtm`). The one you talk to is pressed, its name in the status colour of where it stands; after the switch, dimmed, the kind of agent it is (`· Agent`, `· Reviewer`, `· Project coordinator`, `· Machine coordinator`). A tap on the other presses the board's own key, as space does. With nobody else to talk to (the top row selected, a status group, an automation's row), only their name. There is no main Coordinator: the top row's is who the chat talks to by default |
-| where they stand: the mark, the time, what they do | each choice of the switch with its mark, and beside it where they stand, with the check's progress (on a phone a word the mark says steps aside, a longer one has a line of its own) |
-| the chat's box: the newest thing said, under a line that names who said it (the reviewer, during a review) | the web UI's own transcript of that agent, whole: its markdown, its tools, its scrolling. Where the web UI has none to show (a Coordinator not started yet, a task with no agent in its pane, another machine's Coordinator), the board's own conversation in the same place, drawn as the web UI draws its own, in the terminal board's inks: no labels on your words or on the replies of the one you talk to, yours bright, theirs grey; only someone else is named (`Reviewer`, `Autopilot`, the board), never the program's screen but where its conversation cannot be read. Markdown is read as the terminal reads it. **Full screen** (the arrows in the bar) gives the chat the whole screen |
-| `alt+k` `alt+j` and the wheel: earlier in the conversation, and back | scrolling the chat, as anywhere in the web UI. The bar's grip sets how much of the screen the chat has under the list |
-| `alt+c`: hide and show the latest message | **Hide** and **Show** (the chevron in the bar): the board's own key, so the board remembers which (also over a reload). Hidden, the bar and the box stay and the list has the screen |
-| typing, then sending | the web UI's own box. A task's agent's words go as the web UI sends them; a coordinator's the board sends, as enter does, so the Coordinator knows where you were, and it decides what to start. The board's own box, where it stands in, is the web UI's built again ([the chat box](web-chat-box.md)) |
-| who typed words are for | the switch says it. In the board's own box the words are locked to who it named when the first of them was typed: tapping another task or the switch meanwhile changes what you look at, never who gets the words. While the page shows somebody else, the box says so in its lower left (`To: HSW-1's agent · not who is shown above`) and its frame is the plain colour. Which machine's Coordinator is part of it: words typed for `vm-a`'s go to `vm-a` also after the view moved to another machine, and to nobody when `vm-a` is no longer reachable. The draft is kept with who it is for, so a reload brings both back |
-| a question (approve a merge, remove a task) | a sheet with the same words and answers. For a merge or a remove, neither answer is the filled button, and after a failed review the yes reads **Merge anyway** |
-| the board's message to you | a short notice above the chat. One that says something went wrong stays until dismissed. Nothing confirms what went well: the row says what is under way (`Starting…`, `Stopping…`, `Archiving…`), on a coordinator's row in its time's place |
-| the automations: a group of each machine's part of the list, one of them whole, on and off, fire now, remove | the same group in the same place (after the machine's task groups; grouped by repo, under the repo), on a phone and on a wide screen, under a heading in the automations' own purple that folds as the others do ([colours](colours.md)). Its rows are in the task rows' places: the mark (`⟳`, an arrow going round, drawn at the size of the round marks; dimmed while off); the word `on` or `off` where a task has its number (on a list too narrow for the numbers it goes with them, so every title still starts at one left edge, and is then the first word under the name: `off · every 2h`); the name; the next or last firing where a task has its time (`next in 4m`); under the name the trigger (and why it was turned off, never clamped to two lines); and the task its last firing made where a task has its tags. A task an automation made has its `[auto]` tag in that purple. A row tapped open is the automation, whole, with the same buttons, each firing a link to its task. Another machine's is named as its tasks are ([automations](automations.md)) |
-| find, the archive, grouping by status, repo or machine, all done tasks, other machines | the search button, and **Show** in More…; what is on shows as a chip under the filter row (`Find: …`, `Archive`, `By repo`, `By machine`), and its × puts the plain view back (by status, for a grouping). Whose tasks show is the filter row's first item |
-| pins (`ctrl+p`) | the yellow pin mark `★` after a pinned row's name; **Pin** in More… on a task, a project's or a machine's row; `Pinned`, the last filter on the filter row, shows only what is pinned ([pins](pinned.md)) |
-| archiving a project (`ctrl+a` on its row), restoring it in the archive | select the project's row: **Archive** is among its coordinator's buttons (Open) and in More… (`Archive this project with its tasks`), with the same question first where a task of it works, waits or is to do. In the archive, the archived project's row, selected, has **Restore this project** under it ([archiving a project](board.md#archiving-a-project)) |
-| a machine whose tasks cannot be read: a line where its tasks would be, with why and what to do | one notice over the list: `vm-a and vm-b do not answer, so their tasks are not shown. The board keeps asking by itself.`, then a line each with why (`vm-a: cannot connect (its name is not known).`) and **What to do** behind it. Its × dismisses it in that browser until another machine stops answering or one answers for another reason. A machine asked for the first time is one quiet line, `Asking vm-a for its tasks…` |
-| going into a task's agent | **Open this task's agent**: the web UI's own view of that pane (chat, or the terminal when no agent is in it); a closed space is opened again first ([opening a task's agent](#opening-a-tasks-agent)) |
+| 头部下方的筛选行：谁的看板，然后是 `All`、`Coordinators`、`Needs you`、`Working`、`Ready`、`To do`、`Done`、`Automations`、`Pinned` 和计数（`tab`） | 头部下方同一行，每个筛选器是带计数的胶囊，显示中的用自己的颜色高亮（`Needs you` 红、`Working` 琥珀、`Ready` 绿、`Coordinators` 强调色、`Automations` 紫、其余基础色），需要你的计数红色。点按显示一个筛选器。谁的看板排在最前，有另一台机器时（`All machines`，或显示的机器，高亮）：点按列出所有看板供你选，和侧栏的 Boards 部分一样。手机上这行横向滚动，名字是缩写（`Needs`、`Coords`、`Autos`）。页面为下一次保留显示的筛选器。归档里没有筛选器 |
+| 列表、它的分组、标记、进度、评审和 PR 标签 | 同一个列表；PR 的标签是链接。工作中的代理是实心圆点，它的评审者是右半圆，看板自己的步骤是下半圆：三者同一尺寸（作为文字时两个半圆只有圆点的三分之一大）。其他标记都是终端看板自己的字符（一个叉 `✗`；`◆` 待批准；`@` 一个登录）。每行的缩进和终端设的一样：所有机器 → 机器 → 项目 → 任务（[列表标题](list-headings.md)） |
+| 机器的行和项目的行：它们的协调者，读法像任务的行 | 相同：任务放标记处放协调者的标记（`○` 空闲，`◐` 进行中，`?` 问你，`✗` 未能启动），它的名字，右侧是时间；开着自动驾驶时名字后有变暗的 `[autopilot]`，下面是自动驾驶在做什么，用任务的灰色第二行。顶行（`All machines`，或显示的机器）说它包含什么（`2 projects · 14 tasks`）。点按选中它，像任务的行；它的光标折叠和展开。选中后它的 **Open** 显示完整的协调者，带它的按钮（启动、停止、自动驾驶、归档这个项目）。状态组的标题点哪里都折叠 |
+| 在任务间移动 | 点任务（或机器行、项目行）：它被选中，像终端看板上光标选中那样，什么都不打开。选中的行在侧槽有一条竖条加底色，还有 **Open task** 按钮（自动化的行上是 **Open automation**），显示完整的它；在选中行按 Enter 一样。宽屏上列表旁已有打开的任务时，打开的任务跟随选择，像终端看板的侧面板 |
+| 任务面板：状态、需要你做什么、描述、评审、证据、代理说了什么、设置、会话 | 打开的任务，每个部分完整，证据是链接。设置紧跟在状态和需要你做什么下面，所以长描述绝不会把它们挤出第一屏 |
+| 设置页（`ctrl+e`）：任务每项工作设置的名字和值，只对本任务设的标 `*` | **All settings**，在打开的任务（和打开的自动化）下面，折叠着直到你打开它或在 More… 里选 `this task's settings`：每个设置带朴素标签、需要时说明含义（`Research only`）、它的值，只属本任务的标 `* this task only`。开关或选项是挑选的列表，其他是回车保存的框；**Put back** 去掉任务自己的答案。被拒的值用看板自己的话拒绝且不改任何东西；只能观看的设备改不了；归档任务的是只读 |
+| 提示行：现在能对选中的任务做什么 | 打开任务顶部的按钮，用同样的话 |
+| `?` 菜单 | **More…**（以及头部的 `⋯`）：只列现在适用且还不是按钮的，用按钮自己的话（`Remove this task`、`Show every machine's tasks`）。页面没有按钮的按键没有条目 |
+| 你看谁的看板（`Alt+M`） | 筛选行的第一项、侧栏 **Boards** 部分的一个条目，或 More… 里的 **Other machines** |
+| 聊天，以及它在和谁说话（`space` 翻转）；框的边框点名（`vm-str ›  gtm  · Project coordinator`） | 聊天对象的 web UI 自己的聊天，停靠在列表下（[web 看板的聊天](web-chat.md)），上方一条栏，其切换器有两个可交谈对象：顶行的协调者（`All machines`，或显示的机器）和选中行的代理（`HP-179`，或机器行、项目行上的协调者 `gtm`）。正在交谈的那个按下去，名字用它所在状态的状态色；切换器后变暗的是代理种类（`· Agent`、`· Reviewer`、`· Project coordinator`、`· Machine coordinator`）。点另一个等于按下看板自己的按键，和 space 一样。没有别人可交谈时（选中顶行、状态组、自动化的行），只显示名字。没有主协调者：默认聊天谈的就是顶行那个 |
+| 它们的状况：标记、时间、在做什么 | 切换器的每个选项带它的标记，旁边是状况，带检查进度（手机上标记已说的词让位，更长的独占一行） |
+| 聊天框：最新说的一句，上方一行点名谁说的（评审期间是评审者） | 那个代理的 web UI 自己的完整会话记录：它的 markdown、它的工具、它的滚动。web UI 没有可显示时（协调者还没启动、任务面板里没代理、别的机器的协调者），看板自己的对话在同一位置，按 web UI 画自己的方式画，用终端看板的墨色：你的话和对方的回复不带标签，你的亮、对方的灰；只点名别人（`Reviewer`、`Autopilot`、看板），绝不显示程序的屏幕，除非它的会话读不出来。Markdown 按终端的读法渲染。**Full screen**（栏里的双向箭头）让聊天占满全屏 |
+| `alt+k` `alt+j` 和滚轮：对话往回翻，再回来 | 滚动聊天，和 web UI 任何地方一样。栏的拖拽条设定聊天在列表下占多少屏幕 |
+| `alt+c`：隐藏和显示最新消息 | **Hide** 和 **Show**（栏里的雪佛龙）：看板自己的按键，所以看板记得状态（刷新后也是）。隐藏时栏和输入框留下，屏幕归列表 |
+| 打字，然后发送 | web UI 自己的输入框。任务代理的话按 web UI 发送的方式发；协调者的由看板发，和 enter 一样，所以协调者知道你当时在哪，它决定启动什么。看板自己的输入框，所在之处，是 web UI 的重建（[输入框](web-chat-box.md)） |
+| 打的字给谁 | 切换器说明。看板自己的输入框里，字锁定给打第一个字时指定的人：期间点别的任务或切换器只改你看的，绝不改收话人。页面显示着别人时，框在左下角说明（`To: HSW-1's agent · not who is shown above`），边框是素色。哪台机器的协调者也是锁定的一部分：为 `vm-a` 打的字在视图移到别的机器后仍去 `vm-a`，`vm-a` 不可达时谁都不给。草稿连同收话人保存，刷新后两者都回来 |
+| 一个问题（批准合并、删除任务） | 同样的话和答案的面板。合并或删除时两个答案都不是实心按钮，评审失败后的 yes 写作 **Merge anyway** |
+| 看板给你的消息 | 聊天上方一条短通知。说出了问题的留到你关掉为止。顺利的事不确认：行上写正在进行什么（`Starting…`、`Stopping…`、`Archiving…`），协调者的行写在它时间的位置 |
+| 自动化：每台机器部分里的组、完整的自动化、开关、立即触发、删除 | 同样的组在同样的位置（机器任务组之后；按仓库时在仓库下），手机和宽屏都一样，在自动化专属紫色的标题下，折叠方式同其他（[颜色](colours.md)）。它的行占据任务行的位置：标记（`⟳`，转圈的箭头，按圆形标记的尺寸画；关闭时变暗）；任务写编号的位置写 `on` 或 `off`（列表窄到放不下编号时随编号一起挪，好让每个标题都从同一左边开始，然后成为名字下的第一个词：`off · every 2h`）；名字；任务写时间处写下次或上次触发（`next in 4m`）；名字下面写触发器（以及它被关掉的原因，绝不截成两行）；任务写标签处写上次触发创建的任务。自动化创建的任务的 `[auto]` 标签是那个紫色。点开的行是完整的自动化，带同样的按钮，每次触发是指向它任务的链接。别的机器的按它的任务的方式命名（[自动化](automations.md)） |
+| 查找、归档、按状态/仓库/机器分组、全部完成的任务、其他机器 | 搜索按钮，以及 More… 里的 **Show**；开着的东西作为筛选行下的片显示（`Find: …`、`Archive`、`By repo`、`By machine`），它的 × 恢复朴素视图（分组时按状态）。显示谁的任务由筛选行第一项决定 |
+| 置顶（`ctrl+p`） | 置顶行名字后的黄色图钉 `★`；任务、项目行、机器行上 More… 里的 **Pin**；`Pinned`，筛选行最后一个筛选器，只显示置顶的（[置顶](pinned.md)） |
+| 归档项目（行上 `ctrl+a`），在归档里恢复 | 选中项目的行：**Archive** 在它协调者的按钮（Open）里和 More… 里（`Archive this project with its tasks`），项目里有任务在工作、等待或待办时先问同样的问题。归档里，选中归档项目行后下面有 **Restore this project**（[归档项目](board.md#归档一个项目)） |
+| 读不到任务的机器：任务该在处一行，带原因和该怎么做 | 列表上方一条通知：`vm-a and vm-b do not answer, so their tasks are not shown. The board keeps asking by itself.`，然后每台一行带原因（`vm-a: cannot connect (its name is not known).`）和它后面的 **What to do**。它的 × 在这个浏览器里关掉它，直到别的机器停止回答或换了原因再出现。第一次询问的机器是一条安静的行：`Asking vm-a for its tasks…` |
+| 进入任务的代理 | **Open this task's agent**：那个面板的 web UI 自己视图（聊天，或没代理时的终端）；关闭的空间先重新打开（[打开任务的代理](#打开任务的代理)） |
 
-**The page speaks web and fits a thumb.**
+**页面说 web 的话，拇指够得着。**
 
-- No terminal key is named on it. A task's settings point to **All settings** below them, not to `ctrl+e`; a setting that
-  is the task's own says so in words, not with a star.
-- There is one back arrow at a time: on a phone, the open task's stands for the Board's.
-- Nothing that is read is under 13 px, and everything that is tapped is at least 40 px high (the chat box's two send
-  controls are the web UI's own sizes: 32 and 34 px with a mouse, 40 px on touch).
-- The header names the repo, with no folder path.
-- Every [key](keys.md) of the board is a button or a menu entry, except the ones that belong to a terminal: closing the
-  board's terminal, the `?` menu itself, the side panel, and the full screen (the page scrolls, and shows the list and the
-  task side by side when it is wide enough). The chat's keys are its own controls (the switch, Hide and Show, Full
-  screen, tab and enter in the box).
+- 页面上绝不提终端按键。任务的设置指向它们下面的 **All settings**，不是 `ctrl+e`；只属任务的设置用文字说明，不用星号。
+- 一次只有一个返回箭头：手机上打开任务的代替 Board 的。
+- 要读的东西不小于 13 px，要点的东西至少 40 px 高（输入框的两个发送控件是 web UI 自己的尺寸：鼠标 32 和 34 px，触屏 40 px）。
+- 头部写仓库名，不写文件夹路径。
+- 看板的每个[按键](keys.md)都是按钮或菜单条目，除了属于终端的那些：关闭看板的终端、`?` 菜单本身、侧面板、全屏（页面滚动，够宽时列表和任务并排显示）。聊天的按键是它自己的控件（切换器、Hide 和 Show、Full screen、输入框里的 tab 和 enter）。
 
-**What the web chat does differently, and why.**
+**web 聊天的不同之处，以及为什么。**
 
-- `Esc` does not put a draft away (the page keeps it in its box, and over a reload), so there is nothing for `Ctrl+Z` to
-  bring back there. The terminal's way stays on the terminal.
-- The switch flips also while words are typed: the words stay locked to whom they were for and the box says so. (The
-  terminal lets nothing but enter, tab and esc act on a draft.)
-- The conversation is the web UI's: it scrolls as a chat does, the whole of it, rather than opening on the newest thing
-  said alone.
+- `Esc` 不收起草稿（页面把它留在框里，刷新后也是），所以 `Ctrl+Z` 在那里没东西可捞。终端的方式留在终端。
+- 打着字也能翻转切换器：字锁定给原收话人，框会说明。（终端只让 enter、tab 和 esc 对草稿动手。）
+- 对话是 web UI 的：像聊天一样整体滚动，而不是只开在最新一句上。
 
-**Fresh, and per browser.** While open, it asks every two seconds and redraws only what changed. Each browser has its own
-selection, question and message, so a phone and a desktop do not get in each other's way. What you type stays in that
-browser tab until it is sent.
+**实时，且每个浏览器各自独立。** 打开期间它每两秒问一次，只重画变了的部分。每个浏览器有自己的选择、问题和消息，所以手机和桌面互不干扰。你打的字留在那个浏览器标签页里，直到发出。
 
-A task on [another machine](other-machines.md) shows and acts as on the terminal board. Its agent's pane is on that
-machine: the board says so instead of opening it.
+[另一台机器](other-machines.md)上的任务显示和操作都和终端看板一样。它的代理的面板在那台机器上：看板改为说明，而不是打开它。
 
-## Opening a task's agent
+## 打开任务的代理
 
-**Open this task's agent** opens the task's space again when it was closed (approving or archiving closes it), as the
-terminal board does, and the page then goes to the web UI's own view of its pane.
+**Open this task's agent** 在任务的空间被关掉后重新打开它（批准或归档会关掉它），和终端看板一样，页面随后前往那个面板的 web UI 自己视图。
 
-- **The page goes only once the web UI shows that pane.** A space opened again is a new workspace and pane, and the web
-  UI's page drops an address that names a pane it does not know yet: Ovis 0.4.13 stayed on the pane it was on, and the
-  button seemed to do nothing ([#356](https://github.com/eliasstravik/omh/issues/356)). So the board asks the
-  web UI which panes it has (its `/api/machines`) until the new one is there, for 8 seconds at most. That took about a
-  second in the check below.
-- **When it still is not there, the page stays and says so**: *“HP-1 Make f” is open in herdr, but the web UI (Ovis) does
-  not show it yet, so the page stayed here. Pick it in the web UI's sidebar in a moment, or open the agent again.*
-- **The page checks that the web UI went.** Where the web UI still drops the address, it is written again a few times, a
-  second apart; then the address is put back, the Board comes back, and it says the web UI did not go to that space.
-- **A space that cannot be opened again** says why (its worktree is gone, say), and the page stays.
-- A web UI that does not say which panes it has gets the address at once, as before.
+- **只在 web UI 显示出那个面板后页面才过去。** 重新打开的空间是新的 workspace 和面板，web UI 的页面丢弃指向它还不认识的面板的地址：Ovis 0.4.13 会停在原来的面板上，按钮看起来没反应（[#356](https://github.com/nrtzhou/oh-my-herdr/issues/356)）。所以看板问 web UI 它有哪些面板（它的 `/api/machines`），直到新面板出现，最多等 8 秒。下面的检查里这花约一秒。
+- **仍然没出现时，页面留在原处并说明**：*“HP-1 Make f” is open in herdr, but the web UI (Ovis) does not show it yet, so the page stayed here. Pick it in the web UI's sidebar in a moment, or open the agent again.*
+- **页面核查 web UI 过去了没有。** web UI 仍丢弃地址的地方，地址会被重写几次，间隔一秒；然后地址放回去，Board 回来，并说明 web UI 没去那个空间。
+- **打不开的空间**说明原因（比如工作树没了），页面留在原处。
+- 不说有哪些面板的 web UI 直接拿到地址，和从前一样。
 
-## The chat full screen
+## 聊天全屏
 
-**Full screen** (the arrows in the chat's bar) gives the chat the whole screen: the board's header and list step aside,
-the bar stays at the top. It is the web UI's own chat view of whoever the chat talks to, docked
-([the web board's chat](web-chat.md)), so it reads as it does for any agent; where the web UI has none to show, the
-board's own conversation. The same button (its arrows now going in), Esc or a phone's back gesture go back.
+**Full screen**（聊天栏里的双向箭头）让聊天占满全屏：看板的头部和列表让开，栏留在顶部。那是聊天对象的 web UI 自己的聊天视图，停靠着（[web 看板的聊天](web-chat.md)），所以读起来和任何代理一样；web UI 没有可显示时是看板自己的对话。同一个按钮（箭头变向内）、Esc 或手机的返回手势回去。
 
-## The same code decides
+## 同一份代码做决定
 
-The web board works nothing out again. On the server it *is* the terminal board, opened with no terminal
-(`crates/web/src/webui/view.rs`, and the board as data for the page in `crates/web/src/webui/model/`): the same list,
-selection, questions and actions.
+web 看板什么都不重新算。在服务器上它*就是*不开终端的终端看板（`crates/web/src/webui/view.rs`，看板作为页面的数据在 `crates/web/src/webui/model/`）：同一个列表、选择、问题和操作。
 
-- A button presses the board's own key. What is typed is sent as enter sends it.
-- The row's mark, words and columns, the task panel's lines, the hint line and the `?` menu are drawn by the board's own
-  code, through a theme that names each colour instead of painting it, and the page gives each name a colour.
-- So the two boards cannot disagree, and a change to the terminal board is a change to the web board.
-- A key's button has a name of its own in the board's words there (`web` in `crates/flow/src/board/keys.rs`): "“Undo”
-  brings it back".
+- 按钮按下看板自己的按键。打的字按 enter 发送的方式发。
+- 行的标记、文字和列，任务面板的行，提示行和 `?` 菜单由看板自己的代码画，经一个只命名颜色不涂色的主题，页面给每个名字配色。
+- 所以两块看板不可能不一致，改终端看板就是改 web 看板。
+- 按键的按钮在那边用看板自己的话有自己的名字（`crates/flow/src/board/keys.rs` 里的 `web`）：「“Undo” brings it back」。
 
-## Other machines
+## 其他机器
 
-The web UI has machines of its own, its **PCs**: this one, and the ones added in its Settings → Remote PCs. The board has
-Herdr's saved machines ([other machines](other-machines.md)). The front door asks the web UI which PCs it has
-(`GET /api/machines`, with your own login, nothing kept), and the board matches the two: by Herdr's own id for the saved
-machine where the web UI names it, else by where they connect (the same host, port and Herdr session, and the same user
-where both say one).
+web UI 有自己的机器，它的 **PC**：这台，以及它 Settings → Remote PCs 里加的。看板有 Herdr 的已保存机器（[其他机器](other-machines.md)）。前门问 web UI 它有哪些 PC（`GET /api/machines`，用你自己的登录，不留任何东西），看板把两者对应：web UI 点名了的用 Herdr 自己给已保存机器的 id，否则按连接位置（相同主机、端口和 Herdr 会话，双方都写了用户时也相同）。
 
-- **Every machine, or one.** An entry of the sidebar's **Boards** section ([above](#the-boards-section)) shows that
-  machine's board, or all of them. `More` → **Other machines** goes round as `Alt+M` does on the terminal board: this
-  machine, every machine, each one by itself. A chip says which: a tap on it picks another, its × goes back to this
-  machine's own. Every button works on another machine's task as on the terminal board, and what you type while one
-  machine shows goes to that machine's Coordinator.
-- **It opens on the terminal board's choice.** A page shows whose board the terminal board shows (this machine, every
-  machine, or one), so the two show the same tasks. A board picked on the web is the web's own and stays for the next
-  page. Picking the terminal board's choice again makes the web follow the terminal board again.
-- **Open this task's agent** on another machine's task: that machine reopens the task's space and restarts an exited
-  agent, as it does for the terminal board, and the page goes to the web UI's own view of that pane on that PC
-  (`?machine=<its PC>&pane=…`). Work never moves: only the page does.
-- **The board goes with the web UI.** Opened while the web UI shows a pane of another PC, the Board is that machine's board
-  by itself. Back on a pane of this machine, it shows what it showed before. A choice of your own stands while the web UI
-  stays where it is.
-- **What is missing is said, not hidden**: the web UI has no PC for that machine (add it in Settings → Remote PCs); the PC
-  is not connected there; the web UI did not say which PCs it has (an older one); the other machine did not answer, or
-  runs a plugin too old to reopen a space (the pane it last named is opened, and the board says to update); or the web UI
-  is on a PC the board knows no machine for (`herdr machine add`).
+- **所有机器，或一台。** 侧栏 **Boards** 部分的一个条目（[上文](#boards-部分)）显示那台机器的看板，或全部。`More` → **Other machines** 像终端看板的 `Alt+M` 一样轮换：本机、所有机器、逐台。一个片说明当前是哪个：点它选另一个，它的 × 回到本机自己的。每个按钮对别的机器的任务的操作和终端看板一样，显示一台机器时你打的字去那台机器的协调者。
+- **它按终端看板的选择打开。** 页面显示终端看板在显示谁的看板（本机、所有机器、或一台），所以两边显示同样的任务。web 上选的是 web 自己的，下个页面保持。再选终端看板的选择，web 重新跟随终端看板。
+- **别的机器任务上的 Open this task's agent**：那台机器重新打开任务的空间并重启退出的代理，像对终端看板那样，页面前往那台 PC 上那个面板的 web UI 自己视图（`?machine=<它的 PC>&pane=…`）。工作从不移动：只动页面。
+- **看板跟随 web UI。** 在 web UI 显示另一台 PC 的面板时打开，Board 就是那台机器的看板。回到本机的面板，它显示之前显示的。你自己的选择在 web UI 原地不动期间保持。
+- **缺什么就说什么，不藏**：web UI 没有那台机器的 PC（在 Settings → Remote PCs 里加）；那边的 PC 没连；web UI 没说它有哪些 PC（旧版）；别的机器没回答，或插件旧得打不开空间（打开它最后点名的面板，看板提示更新）；或 web UI 在一台看板不认识对应机器的 PC 上（`herdr machine add`）。
 
-Each machine with both plugins also has a front door and a Board of its own, at its own web UI's link.
+两个插件都装的每台机器也有自己的前门和 Board，在它自己 web UI 的链接上。
 
-**When the web UI runs on one machine and the tasks are on another.** The Board is served by the machine the web UI runs
-on. So that machine needs this plugin too, on this version, and it needs the other machine as one of Herdr's saved
-machines there (`herdr machine add`, or `board.machines`), reachable over SSH with `omh` on its path. The
-machine with the tasks needs no web UI and no front door. The Board then shows that machine's tasks when the web UI is on
-one of its panes, or through `More` → **Other machines**. The terminal board running on the machine with the tasks is
-that machine's own program: that machine's plugin must be on this version for it to stay put in the web UI's terminal
-view.
+**当 web UI 在一台机器上运行而任务在另一台。** Board 由 web UI 运行的机器提供。所以那台机器也要装本插件、本版本，还要把另一台作为它那边 Herdr 的已保存机器（`herdr machine add`，或 `board.machines`），能经 SSH 到达且 PATH 上有 `omh`。有任务的机器不需要 web UI 和前门。web UI 在它某个面板上、或经 `More` → **Other machines** 时，Board 显示那台机器的任务。有任务那台机器上跑的终端看板是那台机器自己的程序：那台机器的插件必须是本版本，它才会在 web UI 的终端视图里待得住。
 
-## The terminal board in the web UI's terminal view
+## web UI 终端视图里的终端看板
 
-The terminal board is an ordinary pane, so the web UI shows it in its terminal view like any other, on this machine and
-on its other PCs. Three things made it unusable there, and the board handles them ([its size](board-size.md),
-[its keys](keys.md)):
+终端看板是个普通面板，所以 web UI 像对别的面板一样在终端视图里显示它，本机和它的其他 PC 上都一样。有三件事曾让它在那里没法用，看板处理了（[它的尺寸](board-size.md)、[它的按键](keys.md)）：
 
-- **It is not disconnected.** The web UI's view of a pane sets that pane's size. The board used to take its size back
-  from every such view, the web UI reattached by itself, and the two took the terminal from each other every four
-  seconds. A view somebody is looking through now keeps the terminal, and the board is drawn for it.
-- **`Alt` keys and `Shift+Enter` work.** The web UI's terminal sends the old byte forms for them, and the board takes those
-  too.
-- **A phone's input line** sends an Enter of its own after what you type. While a view of the pane is open, that Enter is
-  dropped after `?`, `y`, `n` or space, so `?` opens the menu and leaves it open.
+- **它不会掉线。** web UI 对某个面板的视图决定那个面板的尺寸。看板过去会从每个这样的视图把尺寸抢回来，web UI 自己重新附上，两者每四秒互相抢终端。现在有人在看的视图保有终端，看板按它绘制。
+- **`Alt` 键和 `Shift+Enter` 能用。** web UI 的终端为它们发旧的字节形式，看板也收。
+- **手机的输入行**在你打的字后面送它自己的 Enter。面板的视图开着时，`?`、`y`、`n` 或空格之后的那个 Enter 被丢弃，所以 `?` 打开菜单并保持打开。
 
-| The key | In a desktop browser | On a phone |
+| 按键 | 桌面浏览器里 | 手机上 |
 |---|---|---|
-| letters, `Enter`, `Tab`, `Esc`, arrows | typed | the input line and the key bar (`Esc` `Tab` `Enter` and the arrows) |
-| `Ctrl` keys | typed. A browser keeps a few for itself (`Ctrl+N`, `Ctrl+T`, `Ctrl+W` in Chrome): pick that line in the `?` menu | `Ctrl` on the key bar, then the letter with direct typing on (the keyboard button); or the `?` menu |
-| `Alt` keys | typed. On a Mac, Option types a character instead: pick the line in the `?` menu | `Alt` on the key bar, then the letter with direct typing on; or the `?` menu |
-| `?` | typed | typed into the input line and sent |
+| 字母、`Enter`、`Tab`、`Esc`、方向键 | 直接打 | 输入行和按键条（`Esc` `Tab` `Enter` 和方向键） |
+| `Ctrl` 键 | 直接打。浏览器自己留几个（Chrome 里的 `Ctrl+N`、`Ctrl+T`、`Ctrl+W`）：在 `?` 菜单里选那行 | 按键条上的 `Ctrl`，然后在直接输入开着（键盘按钮）时按字母；或 `?` 菜单 |
+| `Alt` 键 | 直接打。Mac 上 Option 反而打出字符：在 `?` 菜单里选那行 | 按键条上的 `Alt`，然后直接输入开着时按字母；或 `?` 菜单 |
+| `?` | 直接打 | 打进输入行并发送 |
 
-**Going into an agent** from the terminal board there: for a task on this machine, Herdr's own window goes to the agent,
-and the board says to pick it in the web UI's sidebar. For a task on another machine, the board does not turn its
-terminal into that agent's while the web UI shows it, and says where the agent is in the sidebar instead: the way back is
-Herdr's `ctrl+b q`, and the web UI's view of the pane takes that chord for itself, so the board would stay inside the
-agent. The web Board's **Open this task's agent** is the way that works from a browser.
+**从那里的终端看板进入代理**：本机的任务，Herdr 自己的窗口前往代理，看板提示在 web UI 的侧栏里选它。别的机器的任务，在 web UI 显示它期间看板不把终端变成那个代理的，改为在侧栏说明代理在哪：回来的路是 Herdr 的 `ctrl+b q`，而 web UI 对那个面板的视图把这个组合键占为己有，看板会陷在代理里。web Board 的 **Open this task's agent** 是从浏览器里走得通的那条路。
 
-## Who gets in
+## 谁进得来
 
-The board is as protected as the web UI, by the web UI:
+看板和 web UI 受同等保护，由 web UI 保护：
 
-- **The front door keeps no token, no cookie and no list of devices.** For every call of the board's, it asks the web UI
-  itself, with the caller's own headers exactly as they came, whether that caller is logged in (its token and device
-  gate: `server/auth.ts`, `server/access.ts` there). Anything but a plain yes is a no: no answer, an answer it cannot
-  read, a web UI that is down. Not logged in, nothing of the board can be read or changed.
-- **A call that changes something must come from the board's own page**: the same origin, and a header of the board's own
-  (`x-omh`), which a page of another site cannot send. The web UI asks the same of its own controls.
-- **A device the web UI paired to *watch*** can look at the board and change nothing: it can select, find, pick a filter on
-  the filter row, put the grouping back to by status, and show or hide; it cannot send, approve, stop or archive.
-- The page's own files (scripts and styles) hold no task and are public, as the web UI's own files are.
-- **Private only.** The front door listens on `127.0.0.1` and nowhere else. The only way to it from another device is the
-  web UI's own private link (`tailscale serve`). A link open to the internet (Tailscale Funnel) is never pointed at it,
-  and nothing here ever makes one.
+- **前门不留 token、cookie 和设备清单。** 看板的每次调用，它都原样带着调用方的 headers 问 web UI 本身，那个调用方登录了没有（它的 token 和设备闸门：那边的 `server/auth.ts`、`server/access.ts`）。除明确的 yes 外都是 no：没回答、读不懂的回答、挂了的 web UI。没登录，看板的一切都读不了也改不了。
+- **改动什么的调用必须来自看板自己的页面**：同源，外加看板自己的一个 header（`x-omh`），别的站点的页面发不出来。web UI 对它自己的控件问同样的问题。
+- **web UI 配对为「仅观看」的设备**只能看不能改：可以选择、查找、在筛选行挑筛选器、把分组恢复为按状态、显示或隐藏；不能发送、批准、停止、归档。
+- 页面自己的文件（脚本和样式）不含任务，是公开的，和 web UI 自己的文件一样。
+- **仅私有。** 前门只监听 `127.0.0.1`，别处没有。从别的设备到它的唯一通路是 web UI 自己的私有链接（`tailscale serve`）。对互联网开放的链接（Tailscale Funnel）绝不指向它，这里也绝不会弄出一个来。
 
-## Its two names
+## 它的两个名字
 
-The web UI was renamed from herdr-web-ui to Ovis. Ovis 0.4.13, its release at the time of writing, still has the old
-plugin id; its code after that has the new one, its installer moves an install over, and the names of its own files
-changed with it. The board reads each of them as the web UI under that id does:
+web UI 从 herdr-web-ui 改名为 Ovis。Ovis 0.4.13，写作时的发布版，还带着旧插件 id；那之后的代码是新的，它的安装器会迁移旧安装，它自己文件的名字也跟着变了。看板把它们都当作那个 id 下的 web UI 来读：
 
-| What | Ovis (`devswha.ovis`) | Before the rename (`devswha.herdr-web-ui`) |
+| 项目 | Ovis（`devswha.ovis`） | 改名前（`devswha.herdr-web-ui`） |
 |---|---|---|
-| Found in Herdr's plugins | first: where Herdr lists both (while Ovis's installer moves it), Ovis | when Ovis is not installed, or turned off |
-| The port a start of it settled on (`plugin-port`) | in `OVIS_STATE_DIR`, else `~/.config/ovis` (`$XDG_CONFIG_HOME/ovis`); in `~/.config/herdr-web-ui` while that still holds state of its own, as Ovis itself does when it could not move it over | in `HERDR_WEB_STATE_DIR`, else `~/.config/herdr-web-ui` |
-| Files pasted in its chat box, beside a pane | `.ovis/` in the pane's folder (or `OVIS_PASTE_DIR`) | `.herdr-web-ui/` |
-| Its settings in the browser | `ovis:settings` | `herdr-web-ui:settings` |
+| 在 Herdr 插件里的发现顺序 | 优先：Herdr 两个都列时（Ovis 安装器迁移期间），Ovis | Ovis 未安装或被关闭时 |
+| 启动时定下的端口（`plugin-port`） | 在 `OVIS_STATE_DIR`，否则 `~/.config/ovis`（`$XDG_CONFIG_HOME/ovis`）；`~/.config/herdr-web-ui` 里还有自己状态时也在那，就像 Ovis 自己没能迁移时那样 | 在 `HERDR_WEB_STATE_DIR`，否则 `~/.config/herdr-web-ui` |
+| 聊天框粘贴的文件，在面板旁 | 面板文件夹里的 `.ovis/`（或 `OVIS_PASTE_DIR`） | `.herdr-web-ui/` |
+| 浏览器里的设置 | `ovis:settings` | `herdr-web-ui:settings` |
 
-- A task's worktree leaves both paste folders out of git (in the repo's `.git/info/exclude`; a repo whose rule was written
-  before gets `.ovis/` added the next time a task starts there).
-- The board's page reads `ovis:settings` first, then the old record (Ovis moves the old one over the first time it
-  opens): Enter sends, Files at once, and Voice input are the ones you chose there.
-- `omh web-ui` says which id it found, and its version: `Web UI (Ovis): found at http://127.0.0.1:7317
-  (devswha.ovis 0.4.13)`. Not found, it names both ids.
-- Its `PORT` and `HOST` are in the `env` or `.env` of the plugin's config folder (`herdr plugin config-dir devswha.ovis`),
-  as before.
+- 任务的工作树把两个粘贴文件夹都排除在 git 之外（写进仓库的 `.git/info/exclude`；规则是更早写的仓库会在下次任务启动时补上 `.ovis/`）。
+- 看板的页面先读 `ovis:settings`，再读旧记录（Ovis 首次打开时会迁移旧的）：Enter 发送、Files at once、Voice input 是你在那里选的值。
+- `omh web-ui` 说明它找到的是哪个 id、什么版本：`Web UI (Ovis): found at http://127.0.0.1:7317 (devswha.ovis 0.4.13)`。没找到时点名两个 id。
+- 它的 `PORT` 和 `HOST` 在插件配置文件夹的 `env` 或 `.env` 里（`herdr plugin config-dir devswha.ovis`），和从前一样。
 
-## Why a front door
+## 为什么需要前门
 
-The web UI has no place for an add-on (checked on herdr-web-ui 0.4.8). Its pages allow scripts and connections from its
-own address only, and may not be put in a frame (`server/static.ts` there; Ovis 0.4.13 sends the same rules), so the
-board has to come from the very address the web UI comes from. Changing the web UI's files is no way either: its updater builds each release from the
-official code and wants a clean checkout, so a patch would be wiped by every update and could block updating.
+web UI 没有给扩展的地方（在 herdr-web-ui 0.4.8 上核实）。它的页面只允许来自自己地址的脚本和连接，且不许被放进 frame（那边的 `server/static.ts`；Ovis 0.4.13 发同样的规则），所以看板必须来自 web UI 出来的那个地址本身。改 web UI 的文件也不行：它的更新器用官方代码构建每个发布，要求干净的工作区，补丁会被每次更新抹掉，还可能挡住更新。
 
-So the front door stands in front of it instead:
+所以前门站在它前面：
 
-- **It passes every request on as it is**: pages, `/api/*`, the `/ws` socket, streams, ranged and ready-compressed files,
-  the service worker. The same method, address and headers go in, in their own order and spelling; the same status,
-  headers and bytes come out as they arrive. Only the two connection headers every HTTP hop writes for itself
-  (`Connection`, `Keep-Alive`) are its own, both ways: each request and its answer is one exchange that ends with
-  `Connection: close`, so a proxy in front that keeps its connections open (envoy) brings the next request to the
-  front door again, never straight to the web UI.
-- **It adds one line to the web UI's page**: a script, from the same address, that puts the Boards section into the
-  sidebar. Nothing else in the page changes, and its security policy stays as sent. A page that cannot be read is passed
-  on as it is.
-- **It corrects one answer**: what the web UI's Settings → Phone is told about its own link (`GET /api/access`). The web
-  UI finds its link by looking for a `tailscale serve` entry that points at its own port. Through the front door the entry
-  points at the front door's port, so the web UI would say it has no link and offer the command for a second one. The
-  answer is given the link it already has. Anything else in it, and the answer itself whenever it already names a link or
-  cannot be read, is passed on as it came.
-- **It answers under one path the web UI does not use**, `/omh/`: the board's page files and its calls.
-- **A fault of the board never breaks the web UI.** Whatever goes wrong on the board's side, a request that is not the
-  board's still goes through. The board's work is done in a thread of its own, so reading tasks never holds up a
-  terminal's keystrokes on their way through.
-- **It shows the Herdr the web UI shows**, worked out as the web UI's own start does: the session that started both
-  plugins comes first (Herdr hands every plugin its socket), then a socket the web UI's settings name. Not always the
-  default session.
-- **It follows the web UI**: through its restarts and its own updates (it keeps its port), and to another port when it
-  takes one. While the web UI is down, its address answers "not answering right now", and the board lets nobody in.
+- **它把每个请求原样转过去**：页面、`/api/*`、`/ws` socket、流、range 请求和已压缩的文件、service worker。同样的方法、地址和 headers 原序原拼写进去；同样的状态、headers 和字节原样出来。只有每个 HTTP 跳点为自己写的两个连接头（`Connection`、`Keep-Alive`）是它自己的，双向都改写：每个请求连同回答是一次以 `Connection: close` 结束的交换，所以前面保持连接的代理（envoy）会把下一个请求带回前门，绝不会直达 web UI。
+- **它给 web UI 的页面加一行**：同一地址来的脚本，把 Boards 部分放进侧栏。页面别的都不变，安全策略照发。读不了的页面原样转过去。
+- **它修正一个回答**：web UI 的 Settings → Phone 关于它自己链接的说法（`GET /api/access`）。web UI 通过查找指向自己端口的 `tailscale serve` 条目来发现自己的链接。经前门时条目指向前门的端口，web UI 会说它没有链接并给出再建一个的命令。回答被补上它已有的那个链接。回答里的其他内容，以及已经写着链接或读不懂的回答本身，都原样转过去。
+- **它在一个 web UI 不用的路径下回答**，`/omh/`：看板的页面文件和它的调用。
+- **看板的故障绝不会弄坏 web UI。** 看板这边无论出什么问题，不是看板的请求照常通过。看板的工作在自己的线程里做，所以读任务绝不会拖住终端击键的传递。
+- **它显示 web UI 显示的那个 Herdr**，像 web UI 自己的启动那样推断：启动两个插件的会话优先（Herdr 给每个插件它的 socket），然后是 web UI 设置里写的 socket。不总是默认会话。
+- **它跟随 web UI**：穿过它的重启和自更新（端口不变），换了端口也跟过去。web UI 挂着时它的地址回答「not answering right now」，看板谁都不放进来。
 
-The front door is part of the board's one page server (`omh serve`, which also serves
-[evidence pages](task-panel.md)): one long-lived process, not two. Its bookkeeping (its process, its port, where it passes
-things on to) is `data/front-door.json` in [the home folder](home-folder.md). When the plugin is updated, the process
-hands over to a new one on the same port; a terminal open in the web UI reconnects by itself.
+前门是看板单页服务器的一部分（`omh serve`，它也服务[证据页](task-panel.md)）：一个长期进程，不是两个。它的账目（进程、端口、转交目标）在[主文件夹](home-folder.md)的 `data/front-door.json`。插件更新时，进程移交给同端口上的新进程；web UI 里开着的终端自己重连。
 
-## What the link step changes, and how it goes back
+## 链接步骤改了什么，怎么改回去
 
-The web UI does not share itself: it shows the command, then recognises its link by where that `tailscale serve` entry
-points. The board changes exactly that: each private HTTPS entry whose root goes to the web UI's port goes to the front
-door's port instead.
+web UI 自己不做共享：它给出命令，然后靠 `tailscale serve` 条目指向哪来认出自己的链接。看板恰好改的就是这个：每个根指向 web UI 端口的私有 HTTPS 条目改为指向前门的端口。
 
-- What it changed is written down (`data/extras.json`).
-- Going back only touches an entry that still points at the front door, and points it at where the web UI listens *now*,
-  also when the web UI took another port since.
-- An entry for another app, one for a sub-path, and one open to the internet are never touched.
+- 改了什么记下来（`data/extras.json`）。
+- 改回去只动仍指向前门的条目，把它指向 web UI *现在*监听的地方，哪怕 web UI 后来换了端口。
+- 别的 app 的条目、子路径的条目、对互联网开放的条目绝不动。
 
-**The two do not pull one link back and forth.** Only your yes (or `web-ui link`) takes a link; the front door never takes
-one by itself afterwards. The web UI's Settings → Phone, opened at the link, keeps showing that link as its own (the one
-corrected answer above). Its Phone setup run from Herdr on the machine reads Tailscale itself, finds no entry at its own
-port, and makes one more link on another port: that one goes straight to the web UI, is the one it finds from then on,
-and is left alone. `omh web-ui` lists both and says which has the Board.
+**两者不会把一个链接抢来抢去。** 只有你的 yes（或 `web-ui link`）拿走链接；此后前门绝不自己拿。web UI 的 Settings → Phone 在链接处打开时，仍把那个链接显示为它自己的（上面那个被修正的回答）。它从 Herdr 上跑的 Phone 设置会自己读 Tailscale，在自己端口找不到条目，于是在另一个端口再建一个链接：那个直达 web UI，是它此后发现的那个，没人动它。`omh web-ui` 列出两个并说明哪个带着 Board。
 
-The front door has a port of its own because Tailscale proxies to `127.0.0.1` only (checked on 1.102: a target on the
-other loopback address is refused), so it cannot stand at the web UI's port number.
+前门有自己的端口，因为 Tailscale 只代理到 `127.0.0.1`（在 1.102 上核实：另一个回环地址的目标被拒），所以它不能占 web UI 的端口号。
 
-A browser that saved the web UI's page while the link went through the front door (the web UI's own offline copy) still
-has the one script line in it after the link was pointed back. The script is then not found, nothing shows, and the next
-load online replaces the copy.
+链接经前门期间保存了 web UI 页面的浏览器（web UI 自己的离线副本），链接指回去后里面仍有那一行脚本。脚本于是找不到，什么都不显示，下次在线加载会替换副本。
 
-## When the web UI changes
+## web UI 变化时
 
-- **It updates itself**: nothing to do. The front door changes none of its files.
-- **It moves to its new plugin id** (Ovis's installer does that): the board finds it under the new one by itself, within
-  half a minute, and the front door follows ([its two names](#its-two-names)).
-- **It was redesigned and the sidebar's foot is gone**: a small floating **Board** button shows instead of the Boards
-  section, and says once why. The board itself is unchanged.
-- **It gets an add-on slot of its own**: the front door can go. Until then, check these on a new version of the web UI:
-  - the sidebar foot (`.sidebar-footer`);
-  - the Agents section's classes the Boards section is built of (`AgentSidebar.tsx` and `.css` there:
-    `agent-section-toggle`, `agent-section-caret`, `agent-list-contents`, `agent-item`, `agent-row`, `agent-copy`,
-    `agent-title`, `agent-context`);
-  - the drawer's scrim (`.scrim.is-open`);
-  - its address parameters `ws`, `pane` and `view` (`src/lib/deepLink.ts`), and its `machine` address parameter;
-  - `/api/health?scope=bridge` saying who asks, and that `/omh/` is still free;
-  - what `/api/access` says about its link (`server/tailscale.ts`);
-  - `/api/machines` naming each PC's `id`, `kind`, `target` and `state`;
-  - its plugin id, its state folder, its paste folder and its settings record ([its two names](#its-two-names)).
-- **It changes its chat input**: the Board's box is measured against it again, with one command
-  ([the web board's chat box](web-chat-box.md)).
+- **它自己更新**：什么都不用做。前门不动它的任何文件。
+- **它迁到新插件 id**（Ovis 的安装器会做）：看板自己在半分钟内于新 id 下找到它，前门跟随（[它的两个名字](#它的两个名字)）。
+- **它重新设计、侧栏底部没了**：改为显示一个小的浮动 **Board** 按钮，并说明一次原因。看板本身不变。
+- **它有了自己的扩展槽**：前门可以撤了。在那之前，新版本 web UI 要核对这些：
+  - 侧栏底部（`.sidebar-footer`）；
+  - Boards 部分所用的 Agents 部分类（那边的 `AgentSidebar.tsx` 和 `.css`：`agent-section-toggle`、`agent-section-caret`、`agent-list-contents`、`agent-item`、`agent-row`、`agent-copy`、`agent-title`、`agent-context`）；
+  - 抽屉的遮罩（`.scrim.is-open`）；
+  - 它的地址参数 `ws`、`pane`、`view`（`src/lib/deepLink.ts`），以及 `machine` 地址参数；
+  - `/api/health?scope=bridge` 说明来者是谁，`/omh/` 仍空着；
+  - `/api/access` 关于它链接的说法（`server/tailscale.ts`）；
+  - `/api/machines` 点名每个 PC 的 `id`、`kind`、`target`、`state`；
+  - 它的插件 id、状态文件夹、粘贴文件夹和设置记录（[它的两个名字](#它的两个名字)）。
+- **它改了聊天输入**：Board 的输入框要重新对照测量，一条命令的事（[web 看板的输入框](web-chat-box.md)）。
 
-## Trying it against a copy
+## 对着副本试用
 
-`OMH_WEBUI=<port>` (or `host:port`) names a web UI that Herdr does not list as a plugin. That is how a copy of
-it is tried out, with a scratch Herdr and a scratch [home folder](home-folder.md). `off` there means none.
+`OMH_WEBUI=<port>`（或 `host:port`）指定一个 Herdr 没列为插件的 web UI。就用这办法试它的副本，配一个试验 Herdr 和试验[主文件夹](home-folder.md)。那里写 `off` 表示没有。
 
-## Checked
+## 检查记录
 
-On herdr-web-ui 0.4.8 with Herdr 0.9.3, a real web UI behind the front door, in a browser at a phone's and a desktop's
-size, in dark and light:
+在 herdr-web-ui 0.4.8、Herdr 0.9.3 上，真实 web UI 站在前门后面，浏览器按手机和桌面尺寸、深浅两色：
 
-- its chat and terminal, files (also ranged), its service worker and manifest, its push and update calls answer the same
-  bytes through the front door as directly;
-- the board lists, opens, sends, asks and acts;
-- a restart of the web UI is followed;
-- the link step and its way back change only the web UI's own private link, and its Settings → Phone, at the link, still
-  names that link.
+- 它的聊天和终端、文件（含 range 请求）、service worker 和 manifest、推送和更新调用经前门回答的字节与直连一致；
+- 看板列出、打开、发送、询问和操作；
+- web UI 的重启被跟随；
+- 链接步骤和改回去只动 web UI 自己的私有链接，且在链接处打开的 Settings → Phone 仍写着那个链接。
 
-Its self-update was not run for real: the front door changes none of its files and keeps none of its state, and a restart
-is what an update ends in.
+它的自更新没真跑：前门不动它的任何文件、不留它的任何状态，而更新最终就是一次重启。
 
-**Other machines and the terminal view**, checked on 2026-10-13, herdr-web-ui 0.4.8 with Herdr 0.9.3. Two separate Herdrs
-on one computer stood in for two machines: each with its own settings, state and board, both plugins installed in each,
-the second reached only over SSH, saved in the first with `herdr machine add`, and added in the first web UI as a PC. A
-real browser went through the front door at a phone's (390×800) and a desktop's (1280×800) size.
+**其他机器和终端视图**，2026-10-13 检查，herdr-web-ui 0.4.8、Herdr 0.9.3。一台电脑上两个独立 Herdr 扮演两台机器：各有自己的设置、状态和看板，两边都装两个插件，第二台只能经 SSH 到达，用 `herdr machine add` 保存在第一个里，并作为 PC 加进第一个 web UI。真实浏览器经前门按手机（390×800）和桌面（1280×800）尺寸。
 
-| What | Result |
+| 项目 | 结果 |
 |---|---|
-| The web Board: every machine, one machine, back | the other machine's tasks show with its name; the chip says which |
-| The web Board on another machine's task: pin, archive, undo, talk to its agent, approve and merge | each done on that machine (the merge at the phone's size); the answer shows on the board |
-| What is typed while one machine shows | went to that machine's Coordinator, which added the task there |
-| Open this task's agent, on another machine's task | landed in that agent's chat in the web UI, on that PC |
-| The Board opened while the web UI shows a pane of the other PC | that machine's board by itself; back on this machine, what it showed before |
-| The terminal board in the terminal view, before the change | the web UI's view and the board took the terminal from each other every four seconds, with a herdr window on the session and with none; no `Alt` key did anything |
-| The terminal board there now, this machine's and the other PC's, desktop | stays; every `Alt` and `Ctrl` key, `?`, `Shift+Enter`, drafts, find, the arrows did what they do in a terminal |
-| The same on the phone layout | `?` from the input line opens the menu and it stays open; the key bar's arrows move in it; `Alt` then `m` with direct typing shows every machine; a message from the input line reached the Coordinator |
-| From the terminal board there: an agent put on the other machine's task with `Tab`, then into it with `Enter` | the agent started there. Going in showed its screen, and `ctrl+b q` did not come back: the web UI's own view detached instead. Hence the board no longer goes in from there |
-| The mouse on the terminal board there (desktop) | the wheel over the list moves the selection a task a step; a drag over text is highlighted by the board; the selected row has its colour |
-| The board as herdr's popup (`board.open popup`), in the terminal view | the popup is a pane the web UI lists: it stays, and `Alt+M`, `?` and `Shift+Enter` work in it as in the tab |
-| The other machine on the plugin as it was before this change | Open this task's agent still lands in that agent's chat: its answer names no space, and a pane's id starts with its space's |
-| The web UI's address with a PC and no pane (`?machine=<pc>#board`) | the web UI goes to a pane of this machine by itself, so the Board is this machine's: it follows a pane, not a bare PC |
-| What a program gets from the terminal view | desktop: old bytes (`esc m` for `Alt+M`, `esc return` for `Shift+Enter`), also after it asked for the newer keyboard protocol; `ctrl+b` is held and sent with the next key. Phone: the input line sends the text, then a lone return 120 ms later, and ignores the key bar's `Ctrl` and `Alt`; the key bar and direct typing send the newer protocol's sequences. A click and the wheel arrive as mouse reports |
+| web Board：所有机器、一台机器、返回 | 别的机器的任务带着它的名字显示；片说明是哪个 |
+| web Board 上别的机器的任务：置顶、归档、撤销、和它的代理说话、批准和合并 | 各自在那台机器上完成（合并在手机尺寸下）；回答显示在看板上 |
+| 显示一台机器时打的字 | 去了那台机器的协调者，它在那里加了任务 |
+| Open this task's agent，别的机器的任务 | 落到 web UI 里那个代理的聊天，在那台 PC 上 |
+| web UI 显示另一台 PC 的面板时打开 Board | 就是那台机器的看板；回到本机，显示之前显示的 |
+| 终端视图里的终端看板，改动前 | web UI 的视图和看板每四秒互相抢终端，有无 herdr 窗口都一样；`Alt` 键全都不管用 |
+| 现在的它，本机和另一台 PC，桌面 | 待得住；每个 `Alt` 和 `Ctrl` 键、`?`、`Shift+Enter`、草稿、查找、方向键都做它们在终端里做的事 |
+| 手机布局同样 | 输入行的 `?` 打开菜单且保持打开；按键条的方向键在里面移动；直接输入开着时 `Alt` 再 `m` 显示所有机器；输入行的消息到达了协调者 |
+| 从那里的终端看板：用 `Tab` 给别的机器的任务放上代理，再用 `Enter` 进去 | 代理在那里启动。进去显示它的屏幕，而 `ctrl+b q` 没回来：换成了 web UI 自己的视图脱离。所以看板不再从那里进去 |
+| 终端看板上的鼠标（桌面） | 列表上的滚轮把选中移动一格；文字上的拖动由看板高亮；选中的行有它的颜色 |
+| 看板作为 herdr 的弹窗（`board.open popup`），终端视图里 | 弹窗是 web UI 列出的面板：它待得住，`Alt+M`、`?` 和 `Shift+Enter` 在里面和在标签页里一样能用 |
+| 另一台机器上还是改动前的插件 | Open this task's agent 仍落到那个代理的聊天：它的回答不点名空间，而面板 id 以它的空间开头 |
+| web UI 带 PC 不带面板的地址（`?machine=<pc>#board`） | web UI 自己前往本机的一个面板，所以 Board 是本机的：它跟面板，不跟裸 PC |
+| 程序从终端视图收到什么 | 桌面：旧字节（`esc m` 表示 `Alt+M`，`esc return` 表示 `Shift+Enter`），即便它要过更新的键盘协议；`ctrl+b` 被扣住随下一个键一起发。手机：输入行先发文字，120 ms 后单独一个 return，忽略按键条的 `Ctrl` 和 `Alt`；按键条和直接输入发更新协议的序列。点击和滚轮以鼠标报告到达 |
 
-Not checked: a browser's own reserved keys (the test browser has none: `Ctrl+N` and the like are Chrome's known ones), a
-Mac's Option key, the wheel over the chat and the mouse on a phone, a plugin so old that it sends no version (its message
-is covered by a test only), a machine with no web UI or front door of its own, a web UI newer than 0.4.8 that takes its
-PCs from Herdr's own list, and real separate computers: everything above was two Herdrs on one computer.
+没检查：浏览器自己保留的按键（测试浏览器没有：`Ctrl+N` 之类是 Chrome 的已知项）、Mac 的 Option 键、聊天上的滚轮和手机上的鼠标、旧到不发版本的插件（它的消息只有测试覆盖）、没有自己的 web UI 或前门的机器、比 0.4.8 新且从 Herdr 自己的列表取 PC 的 web UI、以及真正分开的电脑：以上全是一台电脑上的两个 Herdr。
 
-**The Boards section**, checked on 2026-10-14 on herdr-web-ui's newest code then (0.4.8 and later, `38d6863`) with Herdr
-0.9.3: a scratch Herdr with two agents, the web UI in front of it, the front door in front of that, a board with tasks on
-this machine, one other machine that answered with its tasks, and one that refused the connection (a stand-in for SSH).
-In a real browser at a desktop's size (1280×800) and a phone's (390×800):
+**Boards 部分**，2026-10-14 检查，当时 herdr-web-ui 的最新代码（0.4.8 及以后，`38d6863`）配 Herdr 0.9.3：一个试验 Herdr 带两个代理，web UI 在它前面，前门在那前面，本机有任务的看板，一台回答任务的其他机器，和一台拒绝连接的（扮演 SSH 不通）。真实浏览器按桌面（1280×800）和手机（390×800）尺寸：
 
-| What | Result |
+| 项目 | 结果 |
 |---|---|
-| The sidebar | Boards under Agents, above Install app and Settings, in the same type, spacing and caret as Agents; this machine, the two others and All machines, each with its dot and line |
-| The machine that refused | dimmed, `not reachable`, a ring for its dot; All machines says `· 1 not reachable` |
-| Picking the other machine's entry | its board opened (`Only vm-str`, its Coordinator in the box), the entry highlighted |
-| On the phone | folded at the start as Agents is, its dot beside the heading; unfolded, the same entries; a pick closed the drawer and opened that board over the page |
+| 侧栏 | Boards 在 Agents 之下、Install app 和 Settings 之上，字体、间距和光标与 Agents 相同；本机、另外两台和 All machines，各带圆点和行 |
+| 拒绝的那台 | 变暗，`not reachable`，圆点是空环；All machines 说 `· 1 not reachable` |
+| 选另一台机器的条目 | 打开它的看板（`Only vm-str`，框里是它的协调者），条目高亮 |
+| 手机上 | 开始像 Agents 一样折叠，圆点在标题旁；展开后同样的条目；选一个关掉抽屉并把那台看板开在页面上 |
 
-Not checked: a web UI that serves real other PCs (the PCs' names were checked by a test), and the section through the web
-UI's own restart and update (the script and the place it goes are the ones the Board entry had).
+没检查：真带着别的 PC 的 web UI（PC 的名字由测试核对），以及经 web UI 自己重启和更新的这个部分（脚本和落点就是 Board 条目原来那些）。
 
-**All machines first**, checked on 2026-10-19 the same way (herdr-web-ui 0.4.12, Herdr 0.9.3, one other machine that
-answered and one that refused), at a phone's size (390×844) and a desktop's (1280×800): All machines stood at the top of
-the Boards section and of the board's **Whose tasks to show**, and the machines under it kept their order. The terminal
-board was the same as before: it lists no boards, and `Alt+M` still goes this machine, every machine, then each other one.
+**All machines 排最前**，2026-10-19 同法检查（herdr-web-ui 0.4.12、Herdr 0.9.3，一台回答一台拒绝），手机（390×844）和桌面（1280×800）：All machines 站在 Boards 部分和看板 **Whose tasks to show** 的顶部，其下的机器保持顺序。终端看板一如既往：它不列看板，`Alt+M` 仍是本机、所有机器、然后逐台。
 
-**Under its new name, Ovis**, checked on 2026-10-23 with Herdr 0.9.3: a scratch Herdr with Ovis's code under its new id
-(its main, `22104941`, `devswha.ovis` 0.4.13) and its release under the old id (0.4.13, `devswha.herdr-web-ui`), each
-with its own port; a board with two tasks, a real Coordinator and a real task's agent (Claude Code); the front door in
-front of it, in Chromium at a desktop's size (1280×800) and a phone's (390×844, touch):
+**新名字 Ovis 之下**，2026-10-23 检查，Herdr 0.9.3：一个试验 Herdr 装着 Ovis 新 id 下的代码（它的 main，`22104941`，`devswha.ovis` 0.4.13）和旧 id 下的发布版（0.4.13，`devswha.herdr-web-ui`），各有自己的端口；一个带两个任务的看板，真实的协调者和真实的任务代理（Claude Code）；前门在前面，Chromium 按桌面（1280×800）和手机（390×844，触屏）：
 
-| What | Result |
+| 项目 | 结果 |
 |---|---|
-| `omh web-ui`, the program before this change, Ovis installed | `not found: the plugin devswha.herdr-web-ui is not installed in herdr` |
-| `omh web-ui` now, Ovis only, then both listed | `found at http://127.0.0.1:17417 (devswha.ovis 0.4.13)` both times |
-| Ovis turned off in Herdr, the old id on | `found at … (devswha.herdr-web-ui 0.4.13)`; the front door followed it by itself within half a minute |
-| The Boards section | under Agents, above Install app and Settings, under both ids; on the phone (Ovis) folded as Agents is, with its dot |
-| A pick in it (Ovis at both sizes, the old id on the desktop) | the board opened over the page, docked on Ovis's own chat of the Coordinator, the Call button in its box; on the phone the drawer closed |
-| A message typed in Ovis's box while docked | went through the board to the Coordinator, which answered in that chat; Back closed the board and gave the page back |
-| A picture attached in Ovis's box, docked on the task's agent | kept in the task's worktree in `.ovis/`, which git leaves out (`!! .ovis/`); the box held its `@path` |
-| A browser whose settings were under the old key (Enter as a new line, 3 files at once) | Ovis moved them to `ovis:settings`; the board's box read Enter as a new line and 3 files at once there, and from `herdr-web-ui:settings` in front of the old id |
+| `omh web-ui`，这次改动前的程序，装了 Ovis | `not found: the plugin devswha.herdr-web-ui is not installed in herdr` |
+| 现在的 `omh web-ui`，只有 Ovis，然后两个都列 | 两次都是 `found at http://127.0.0.1:17417 (devswha.ovis 0.4.13)` |
+| Herdr 里关掉 Ovis、开着旧 id | `found at … (devswha.herdr-web-ui 0.4.13)`；前门半分钟内自己跟了过去 |
+| Boards 部分 | Agents 之下、Install app 和 Settings 之上，两个 id 下都有；手机上（Ovis）像 Agents 一样折叠，带圆点 |
+| 里面选一个（两种尺寸的 Ovis，桌面上的旧 id） | 看板开在页面上，停靠在 Ovis 自己的协调者聊天上，Call 按钮在框里；手机上抽屉关闭 |
+| 停靠时在 Ovis 的框里打的消息 | 经看板去了协调者，它在那个聊天里回答；Back 关掉看板把页面还回去 |
+| Ovis 框里附的图片，停靠在任务代理上 | 保存在任务工作树的 `.ovis/` 里，git 不理会（`!! .ovis/`）；框里留着它的 `@path` |
+| 设置在旧键下的浏览器（Enter 换行，3 个文件同时） | Ovis 把它们迁到 `ovis:settings`；看板的框在那里读到 Enter 换行和 3 个文件同时，旧 id 前则从 `herdr-web-ui:settings` 读 |
 
-Not checked: Ovis's installer moving a real install from the old id to the new one (both were linked by hand), and
-other machines under the new name (their PCs come from the same `/api/machines` as before).
+没检查：Ovis 的安装器把真安装从旧 id 迁到新 id（两者都是手动 link 的），以及新名字下的其他机器（它们的 PC 来自同一个 `/api/machines`）。
 
-**Opening a task's agent whose space was closed** ([#356](https://github.com/eliasstravik/omh/issues/356)),
-checked on 2026-10-23 with Herdr 0.9.3: a scratch Herdr with Ovis 0.4.13 (its release, `devswha.herdr-web-ui`), the front
-door in front of it, a real task's agent (Claude Code) whose task was ready to approve, in Chromium at a desktop's size
-(1280×860):
+**打开空间已关闭的任务的代理**（[#356](https://github.com/nrtzhou/oh-my-herdr/issues/356)），2026-10-23 检查，Herdr 0.9.3：一个试验 Herdr 装 Ovis 0.4.13（它的发布版，`devswha.herdr-web-ui`），前门在前面，一个任务待批准的真实任务代理（Claude Code），Chromium 按桌面（1280×860）：
 
-| What | Result |
+| 项目 | 结果 |
 |---|---|
-| Open this task's agent, its space open | the page went to the agent's pane |
-| The same, its space closed, the program before this change | the space came back as a new workspace (`w3`) and the page was sent there at once; Ovis did not know it yet, put its address back to the pane it was on, and nothing said why |
-| The same now | the board waited for Ovis to list the new pane (about a second), and the page went there; done three times, each time a new workspace |
-| Ovis sent to a pane it never shows (the board's answer changed on its way to the page) | the address was written again three times, then put back; the Board came back with *The web UI (Ovis) did not go to “DEMO-1 Write f.txt with the word hello”…* |
+| Open this task's agent，它的空间开着 | 页面去了代理的面板 |
+| 同上，空间关着，改动前的程序 | 空间以新 workspace（`w3`）回来，页面立刻被送过去；Ovis 还不认识它，把地址退回原来的面板，没人说明为什么 |
+| 现在 | 看板等 Ovis 列出新面板（约一秒），页面过去了；做了三次，每次都是新 workspace |
+| Ovis 被送去一个它从不显示的面板（看板的回答在去页面的路上被改） | 地址重写三次，然后退回；Board 带着 *The web UI (Ovis) did not go to “DEMO-1 Write f.txt with the word hello”…* 回来 |
 
-Not checked: another machine's task whose space was closed (the same wait, on that PC's list of panes: covered by tests),
-and Ovis's newest code, which handles that address the same way (`resolveLink`).
+没检查：别的机器上空间已关闭的任务（同样的等待，在那台 PC 的面板列表上：有测试覆盖），以及 Ovis 的最新代码，它同样方式处理那个地址（`resolveLink`）。

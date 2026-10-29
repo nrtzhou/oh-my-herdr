@@ -1,28 +1,20 @@
-# Several boards: repos, machines, sessions, Coordinators
+# 多块看板：仓库、机器、会话、协调者
 
-**Short answer: one board per machine, and it holds every repo.** You don't need a board per project. Each other
-machine has a board of its own, and you can look at its tasks from yours. Each herdr session on a machine has its own
-Coordinator, but they all share the machine's one list.
+**短答：一台机器一块看板，装下所有仓库。** 不需要每个项目一块看板。每台别的机器有自己的看板，你可以在自己的看板上看它的任务。一台机器上每个 Herdr 会话有自己的协调者，但它们共用这台机器的同一个列表。
 
-| You want | What happens |
+| 你想要 | 会怎样 |
 |---|---|
-| several repos | one board, one list. Every task's tag names its repo (`PW-12`, `HSW-3`), `Alt+S` groups the list by repo, and the header names the repo new tasks go to: the one you opened the board in ([task numbers and repo keys](task-numbers.md)) |
-| several machines | each machine keeps its own tasks, agents and Coordinator. `Alt+M` shows another machine's tasks, or every machine's, on the board you have open, and acts on them there. Work never moves between machines ([other machines](other-machines.md)) |
-| several herdr sessions on one machine | one list, shared: every session's board shows every task. A task's agent runs in the session it was started in; a board in another session shows that task as `In session <name>` with what was last known, and asks you to open the board there to act on it. The keeper looks after the tasks of every session |
-| several Coordinators | one per herdr session, never two in one session, and not one per repo: the one Coordinator works on every repo, and each message carries the repo you were in ([the Coordinator](coordinator.md)) |
-| to open the board twice | the board key never opens a second board: it goes to the one that runs ([the board](board.md)). A popup and a board in a tab can run side by side, and a board you start yourself with `omh` in a pane works too: they all show the same tasks, each with its own selection and filter |
-| two separate lists on one machine (say, work and personal) | there is no built-in way. Keep one board and use the repo groups (`Alt+S`) or find (`Ctrl+F`). `OMH_HOME` moves the board's folder ([the home folder](home-folder.md)); it is not made for running a second board beside the first: herdr's board key and its events use the folder herdr itself was started with |
+| 多个仓库 | 一块看板、一个列表。每个任务的标签写明它的仓库（`PW-12`、`HSW-3`），`Alt+S` 按仓库分组列表，标题写明新任务进哪个仓库：你打开看板时所在的那个（[任务号与仓库键](task-numbers.md)） |
+| 多台机器 | 各机器各管各的任务、代理和协调者。`Alt+M` 在你打开的看板上显示另一台机器、或所有机器的任务，并就地操作它们。工作从不在机器间移动（[其他机器](other-machines.md)） |
+| 一台机器上多个 Herdr 会话 | 一个列表，共享：每个会话的看板都显示所有任务。任务的代理跑在它被启动的那个会话里；另一个会话里的看板把这个任务显示为 `In session <name>` 加上最后已知的信息，并让你到那边的看板上去操作它。看守照看所有会话的任务 |
+| 多个协调者 | 每个 Herdr 会话一个，一个会话里绝不会有第二个，也不是每仓库一个：同一个协调者处理所有仓库，每条消息带上你当时所在的仓库（[协调者](coordinator.md)） |
+| 打开两次看板 | 看板按键绝不会开第二块看板：它跳到正在运行的那块（[看板](board.md)）。弹窗和标签页里的看板可以并排跑，你自己在面板里用 `omh` 起的看板也行：它们显示同样的任务，各有各的选中项和过滤器 |
+| 一台机器上两个独立列表（比如工作和个人） | 没有内置做法。用一块看板，靠仓库分组（`Alt+S`）或查找（`Ctrl+F`）。`OMH_HOME` 会移动看板的文件夹（[home 文件夹](home-folder.md)）；它不是为了在第一块旁边跑第二块而设的：Herdr 的看板按键和它的事件用的是 Herdr 自己启动时那个文件夹 |
 
-## Sending new tasks to another repo
+## 把新任务发到别的仓库
 
-The header names the repo new tasks go to. Three ways to send one to another repo, without a second board:
+标题写明新任务进哪个仓库。不开第二块看板，有三种办法发到别的仓库：
 
-- **The popup follows you.** With `board.open popup`, the board opens in the repo of the pane you are in: go to a pane of
-  that repo, press the board key, type ([the board as a popup](board.md#the-board-as-a-popup)). It is the folder the
-  pane is in now: a pane that `cd`'d into another repo is in that repo, also in a space that started in another one. A
-  task's worktree is its repo. A board in a tab keeps the repo it opened in.
-- **Tell the Coordinator which repo**: "add this to gtm-agent" works from any repo. It adds the task with `--repo`, as
-  you can yourself: `omh add "Fix the login" --repo gtm-agent`.
-- **Talk to the repo's own coordinator.** Group by repo (`Alt+S`) and press `Space` on the repo's row. What you say
-  goes to that repo's project coordinator, and the tasks it adds are that repo's
-  ([machine and project coordinators](machine-and-project-coordinators.md)).
+- **弹窗跟着你走。** 设了 `board.open popup` 时，看板在你所在面板的仓库里打开：走到那个仓库的面板，按看板按键，开写（[弹窗看板](board.md#作为弹窗的看板)）。它用的是面板现在所在的文件夹：`cd` 进了别的仓库的面板就在那个仓库里，从别的仓库启动的空间（space）里也一样。任务的工作树（worktree）就是它的仓库。标签页里的看板保持它打开时的仓库。
+- **告诉协调者去哪个仓库**：「add this to gtm-agent」在哪个仓库都行。它用 `--repo` 加任务，你自己也可以：`omh add "Fix the login" --repo gtm-agent`。
+- **找那个仓库自己的协调者聊。** 按仓库分组（`Alt+S`），在仓库的行上按 `Space`。你说的话进那个仓库的项目协调者，它加的任务就属于那个仓库（[机器与项目协调者](machine-and-project-coordinators.md)）。

@@ -1,41 +1,41 @@
-# Get started
+# 上手
 
-You need [Herdr](https://herdr.dev) 0.9.3+ on macOS or Linux, and Claude Code, Codex, pi or another agent herdr supports.
+你需要 macOS 或 Linux 上的 [Herdr](https://herdr.dev) 0.9.3 或更新版本，以及 Claude Code、Codex、pi 或 Herdr 支持的其他代理程序。
 
-## Option A: do it yourself
+## 选项 A：自己动手
 
-1. Install:
+1. 安装：
 
    ```sh
-   herdr plugin install eliasstravik/omh
+   herdr plugin install nrtzhou/oh-my-herdr
    ```
 
-2. In Herdr, run the action **Open the work board**. Say yes to the key it offers (`prefix+a`).
-3. Optional: add `~/.omh/data/bin` to your PATH so you can type `omh`.
+2. 在 Herdr 里运行动作 **Open the work board**（打开工作看板）。它给出的按键（`prefix+a`）选 yes。
+3. 可选：把 `~/.omh/data/bin` 加进 PATH，就能直接敲 `omh`。
 
-## Option B: let an agent do it
+## 选项 B：让代理来做
 
-Paste this into Claude Code, Codex or pi, running inside Herdr:
+把下面这段贴进运行在 Herdr 里的 Claude Code、Codex 或 pi：
 
 ```text
 Install the omh plugin for Herdr and set it up for me.
 1. Check `herdr --version` is 0.9.3 or newer, and that git and curl (or wget) exist. Stop and tell me if not.
-2. Run `herdr plugin install eliasstravik/omh`.
+2. Run `herdr plugin install nrtzhou/oh-my-herdr`.
 3. Find the plugin's folder with `herdr plugin list` and run `sh <that folder>/bin/run.sh install`.
 4. Add ~/.omh/data/bin to my PATH in my shell's start-up file, so `omh` works in new shells.
 5. Run `omh doctor` and fix anything it reports.
 6. Open the board: `herdr plugin action invoke open --plugin omh`.
 Then tell me in two lines: it is ready, and to say yes to the key it offers (prefix+a) on its first screen.
-Details if you need them: https://github.com/eliasstravik/omh/blob/main/docs/install.md
+Details if you need them: https://github.com/nrtzhou/oh-my-herdr/blob/main/docs/install.md
 ```
 
-## Start it
+## 启动
 
-- Press `prefix+a` in Herdr, or type `omh` in any pane.
-- Type what needs doing and press `Enter`. The Coordinator makes it a task.
-- Press `Ctrl+S` instead of `Enter` to put an agent on it right away.
-- Press `?` to see everything else.
+- 在 Herdr 里按 `prefix+a`，或在任意面板里敲 `omh`。
+- 输入要做的事，按 `Enter`。协调者（Coordinator）会把它变成任务。
+- 按 `Ctrl+S` 代替 `Enter`，立刻派发（delegate）代理去做。
+- 按 `?` 看其余全部功能。
 
-Update later with `omh update`.
+以后更新用 `omh update`。
 
-More detail (building from source, older installs, uninstalling): [installing](install.md).
+更多细节（从源码构建、旧安装、卸载）：[安装](install.md)。

@@ -1,78 +1,63 @@
-# Installing, the first run, and taking it out again
+# 安装、首次运行与卸载
 
-**Install with one command, then open the board once.** The short version is [get started](get-started.md). This page
-has the details. Something not working: [troubleshooting](troubleshooting.md).
+**一条命令安装，然后打开一次看板。**简版见[上手](get-started.md)。本页是细节。出问题看[排查问题](troubleshooting.md)。
 
 ```sh
-herdr plugin install eliasstravik/omh
+herdr plugin install nrtzhou/oh-my-herdr
 ```
 
-## What you need
+## 前置条件
 
-- Linux or macOS, on x86_64 or aarch64.
-- Herdr 0.9.3 or newer. Your **running** Herdr server must be 0.9.3 or newer too: an older one refuses the plugin until
-  it is restarted.
-- `git`, and `curl` or `wget` to download the program.
-- Optional: `gh` (pull requests) and `tailscale` (private review links).
+- Linux 或 macOS，x86_64 或 aarch64。
+- Herdr 0.9.3 或更新。你**正在运行**的 Herdr 服务器也必须是 0.9.3 或更新：旧的会拒绝该插件，直到重启。
+- `git`，以及 `curl` 或 `wget`（用来下载程序）。
+- 可选：`gh`（PR）和 `tailscale`（私有评审链接）。
 
-No Node, no npm: the board is one program.
+不需要 Node，不需要 npm：看板就是一个程序。
 
-## What the install does
+## 安装做了什么
 
-Herdr clones the repo's main branch into its own plugins folder (`herdr plugin list` shows where) and runs the plugin's
-build step there, which downloads the program. `--ref v1.2.27` takes a given release.
+Herdr 把仓库的 main 分支克隆进自己的插件目录（`herdr plugin list` 显示位置），在那里运行插件的构建步骤，下载程序。`--ref v1.2.27` 可以取指定发布版。
 
-To keep a checkout of your own instead:
+想自己留一份检出：
 
 ```sh
-git clone https://github.com/eliasstravik/omh && cd omh
+git clone https://github.com/nrtzhou/oh-my-herdr && cd omh
 herdr plugin link "$PWD"          # hooks, the board's tab and the actions
 sh bin/run.sh install             # gets the program, writes its launcher, says how to put it on your PATH
 ```
 
-## The first run
+## 首次运行
 
-Open the board: the plugin's action "Open the work board", or type `omh` in any pane. The first time it
-opens inside Herdr, it shows one screen with two things it can add to your Herdr `config.toml`. Each is your choice:
+打开看板：用插件动作 "Open the work board"，或在任意面板敲 `omh`。首次在 Herdr 内打开时会显示一个界面，列出两项可以写进 Herdr `config.toml` 的内容。每项都由你决定：
 
-| Key | Does |
+| 按键 | 作用 |
 |---|---|
-| `1`, `2` | switch each one on or off |
-| `k` | pick another key |
-| `enter` | save |
-| `esc` | ask again next time |
+| `1`、`2` | 开关每一项 |
+| `k` | 换一个按键 |
+| `enter` | 保存 |
+| `esc` | 下次再问 |
 
-The file is backed up first, each block sits between two marker lines, and a change Herdr rejects is rolled back.
+修改前先备份文件；每个块位于两行标记之间；Herdr 拒绝的改动会回滚。
 
-**1. A key that opens the board.** It offers `prefix+a`, which Herdr does not use itself.
+**1. 打开看板的按键。**它建议 `prefix+a`，Herdr 自己不用这个键。
 
-- If your config already binds `prefix+a`, it offers the next free key (`prefix+y`, then `prefix+u`, `prefix+i`,
-  `prefix+m`) and says why.
-- A key that Herdr binds by default, or that your config already binds, is never taken. The screen refuses it and says
-  what the key does today (`prefix+w`, for one, is Herdr's own workspace picker). This holds for the offered key and for
-  one you type with `k`, however your config writes a binding (one key, a list of keys, the older `[keys.indexed]`).
-- A key already set up for the board is left as it is, however your config writes it (`[[keys.command]]`, or
-  `command = [{…}]` under `[keys]`).
-- The key opens the board in a tab of its own. To open it as a popup over Herdr's window instead (and close it again
-  with the same key): `omh set board.open popup` ([the board](board.md)). The key itself stays.
+- 如果你的配置已经绑定 `prefix+a`，它会建议下一个空闲键（`prefix+y`，然后 `prefix+u`、`prefix+i`、`prefix+m`），并说明原因。
+- Herdr 默认绑定的键、或你的配置已绑定的键，绝不会占用。界面会拒绝并说明该键现在的用途（比如 `prefix+w` 是 Herdr 自己的工作区选择器）。对建议的键和你用 `k` 输入的键都如此，无论配置里按键怎么写（单键、键列表、旧式 `[keys.indexed]`）。
+- 已为看板设置的键保持原样，无论配置怎么写（`[[keys.command]]`，或 `[keys]` 下的 `command = [{…}]`）。
+- 该键在独立标签页里打开看板。想以浮层方式盖在 Herdr 窗口上打开（再按同一键关闭）：`omh set board.open popup`（[看板](board.md)）。按键本身不变。
 
-**2. Sidebar rows**, so an agent's entry in Herdr's sidebar is a small copy of its task's row on the board
-([Herdr's sidebar](sidebar.md)):
+**2. 侧栏行**，让代理在 Herdr 侧栏（sidebar）里的条目成为其看板任务行的小缩影（[Herdr 的侧栏](sidebar.md)）：
 
-- the task's number and title;
-- who is on it and where it stands, with the review round and pull request (`agent · working · R#1 PR#113`);
-- the percent and time to go (`8% 16m`).
+- 任务编号与标题；
+- 谁在做、进展到哪，含评审轮次和 PR（`agent · working · R#1 PR#113`）；
+- 百分比与剩余时间（`8% 16m`）。
 
-Without them, Herdr shows the first two, with the tab's name (`Agent`) after the title, and not the third: its default
-sidebar shows no custom value. Rows an older version of the plugin wrote are updated by themselves, between the same
-marker lines. Rows of your own are never touched: when your config already sets `ui.sidebar`, however it writes it
-(`[ui.sidebar.agents]`, `sidebar = {…}` under `[ui]`, or a dotted key), the plugin's rows are not offered. The first
-run says in one line that yours are kept and shows the plugin's rows, to merge into yours by hand (in a small window,
-`↑` `↓` and `pgup` `pgdn` scroll them; any other key goes on).
+没有它们时，Herdr 只显示前两项（标题后跟标签页名 `Agent`），不显示第三项：默认侧栏不显示自定义值。旧版插件写入的行会在同样的标记行之间自动更新。你自己写的行绝不动：若配置已设置 `ui.sidebar`（无论 `[ui.sidebar.agents]`、`[ui]` 下的 `sidebar = {…}`，还是点号键），就不会提供插件的行。首次运行会用一行说明保留了你的行，并显示插件的行，供你手动合并（小窗口里 `↑` `↓` 和 `pgup` `pgdn` 滚动，按其他键继续）。
 
-Nothing else is needed: no Herdr integration, no hooks in your own agent settings.
+其余什么都不需要：不用 Herdr 集成（integration），不用在你自己的代理设置里加钩子（hook）。
 
-### Adding the blocks by hand
+### 手动添加这些块
 
 ```toml
 [[keys.command]]
@@ -87,92 +72,67 @@ rows = [["state_icon", "machine", "workspace", { token = "tab", rules = [{ equal
 rows = [["state_icon", "workspace"], ["branch", "git_status"], [{ token = "$summary", dim = true }, "$progress"]]
 ```
 
-**Careful with the key.** A `[[keys.command]]` beats Herdr's own binding of the same key, with no warning. Written by
-hand on a key Herdr uses, it switches Herdr's action off. (An early version of this page showed `prefix+w` here, which
-took away Herdr's workspace picker.) `herdr --default-config` lists most of the keys Herdr binds (not copy mode,
-`prefix+[`, nor swapping panes, `prefix+shift+h` `j` `k` `l`). To move the board's key, change the `key` line and run
-`herdr server reload-config`.
+**小心按键。**`[[keys.command]]` 会无警告地覆盖 Herdr 对同键的绑定。手写在 Herdr 在用的键上，会关掉 Herdr 的动作。（本页早期版本在这里写了 `prefix+w`，夺走了 Herdr 的工作区选择器。）`herdr --default-config` 列出 Herdr 绑定的大部分按键（不含复制模式 `prefix+[` 和交换面板的 `prefix+shift+h` `j` `k` `l`）。要移动看板的按键，改 `key` 行并运行 `herdr server reload-config`。
 
-Optionally bind `omh.approve-current` too. For the task that owns the focused pane, it opens the board on
-that task with the merge question up (`y` = yes, `n` or `esc` = no). Anywhere else it does nothing.
+也可以绑定 `omh.approve-current`。对拥有当前焦点面板的任务，它会在看板上打开该任务并弹出合并（merge）问题（`y` = yes，`n` 或 `esc` = no）。其他位置没有作用。
 
-## The command on your PATH
+## PATH 里的命令
 
-Agents and hooks are handed the launcher `~/.omh/data/bin/omh`, which runs the program.
+代理和钩子拿到的是启动器 `~/.omh/data/bin/omh`，它运行真正的程序。
 
-- The board writes it when it opens. With `herdr plugin install`, open the board first, with the plugin's action "Open
-  the work board".
-- `omh install` writes it again, and says if something else named `omh` comes first on your PATH.
-- To type `omh` in a shell, put that folder on your PATH (in `~/.profile` or your shell's start-up file).
+- 看板打开时会写入它。用 `herdr plugin install` 的话，先用插件动作 "Open the work board" 打开一次看板。
+- `omh install` 会重新写入，并提示 PATH 里是否有别的同名 `omh` 排在前面。
+- 想在 shell 里敲 `omh`，把那个目录加进 PATH（`~/.profile` 或你 shell 的启动文件）。
 
-**On a machine other machines will ask for its tasks** ([other machines](other-machines.md)), `omh` must be
-found by a login shell that nobody types into, which is what SSH starts. A PATH set only in `~/.bashrc` is often not
-enough. `omh machines` checks it on the machine itself and says how to fix it. From the other machine, the
-test is this; it ends with a line of JSON when all is well:
+**在会被其他机器索取任务的机器上**（[其他机器](other-machines.md)），`omh` 必须能被无人交互的登录 shell 找到，也就是 SSH 启动的那种 shell。只在 `~/.bashrc` 设 PATH 往往不够。`omh machines` 会在本机检查并告诉你怎么修。从另一台机器这样测；一切正常时末行是一行 JSON：
 
 ```sh
 ssh <machine> 'exec $SHELL -lc "omh remote list"' | tail -c 200
 ```
 
-## Updating
+## 更新
 
 ```sh
 omh update           # the newest release
 omh update 0.3.1     # a given version
 ```
 
-- It puts the release in place of the downloaded program, in one step.
-- An open board and the keeper see the file change and load it by themselves ([the board's size](board-size.md)).
-- Pulling a newer plugin (`git pull`) does the same at the next command Herdr runs: `bin/run.sh` downloads that version.
-- A program you built yourself is updated with `git pull` and `cargo build --release`, never by a download.
+- 一步把发布版放进下载程序的位置。
+- 打开的看板和看守（keeper）会发现文件变化并自行加载（[看板的尺寸](board-size.md)）。
+- 拉取更新的插件（`git pull`）会在 Herdr 下次运行命令时做同样的事：`bin/run.sh` 下载那个版本。
+- 自己构建的程序用 `git pull` 和 `cargo build --release` 更新，绝不下载覆盖。
 
-**The keeper updates itself.** Once the new file has stopped changing (a build still being linked is waited for), with
-no board open and no agent running, the keeper starts its successor on the new file, and goes only once the successor
-runs. A new file that does not start leaves the old keeper running; it tries again a little later (`keeper.log` in the
-data folder says so).
+**看守会自我更新。**新文件停止变化后（还在链接的构建会等它完成），若没有打开的看板、没有运行中的代理，看守就在新文件上启动后继者，等后继者跑起来才退出。新文件起不来就留下旧看守继续跑，稍后重试（数据目录里的 `keeper.log` 有记录）。
 
-## Building from source
+## 从源码构建
 
-`cargo build --release` in the checkout (Rust: https://rustup.rs). `bin/run.sh` then runs that build, and later builds
-are picked up the same way.
+在检出目录里运行 `cargo build --release`（Rust：https://rustup.rs）。`bin/run.sh` 会运行那个构建，之后的构建也会被同样拾取。
 
-## Coming from an older version
+## 从旧版本升级
 
-- **From herdr-superwork or the old omh 0.2:** the first run takes them over by itself (their data moved or
-  set aside, their extras in Herdr's config, the agents' settings and skills folders made right, their processes
-  replaced) and says so. `omh doctor` looks again and says where things stand ([older installs](old-installs.md)).
-- **From the older Node version:** `npm unlink -g omh` takes the Node program off your PATH. The first run of
-  this version keeps a copy of the data folder as it was (`~/.omh/data-0.2.0`) before it changes anything.
-  The data's form is the same, so nothing is converted.
-- **From a version that kept its files in `~/.local/state`, `~/.config` and `~/.local/share`:** nothing to do. The first
-  run moves them and says so in one line.
+- **从 herdr-superwork 或旧 omh 0.2：**首次运行会自动接管（数据迁移或搁置、Herdr 配置里的附加内容改好、代理的设置和技能（skills）目录改好、旧进程替换），并说明做了什么。`omh doctor` 会再查一遍并汇报现状（[旧安装](old-installs.md)）。
+- **从旧的 Node 版本：**`npm unlink -g omh` 把 Node 程序从 PATH 移除。本版首次运行会在改动前原样保留一份数据目录副本（`~/.omh/data-0.2.0`）。数据格式相同，不做转换。
+- **从文件放在 `~/.local/state`、`~/.config` 和 `~/.local/share` 的版本：**什么都不用做。首次运行会把它们移过来并用一行说明。
 
-Everything the board keeps for you is in one folder, `~/.omh/`: [the home folder](home-folder.md).
+看板为你保存的一切都在一个目录 `~/.omh/` 里：[主目录](home-folder.md)。
 
-## Taking it out again
+## 卸载
 
-**Before unlinking the plugin, run `omh remove-extras`.** Herdr gives a plugin no uninstall hook, so this is
-what takes the marked blocks out of `config.toml` and removes the how-to files ([roles and commands](roles-and-commands.md)).
-With the web UI (Ovis) installed, it also points the web UI's shared link back at the web UI and stops the board's
-front door ([the board in the web UI (Ovis)](web-ui.md)).
+**解除插件链接前，先运行 `omh remove-extras`。**Herdr 不给插件卸载钩子，所以由它把标记块从 `config.toml` 移除，并删掉 how-to 文件（[角色与命令](roles-and-commands.md)）。装了 Web UI（Ovis）时，它还会把 Web UI 的共享链接指回 Web UI，关掉看板的前门（[Web UI（Ovis）里的看板](web-ui.md)）。
 
-## Details: which program runs
+## 细节：运行的是哪个程序
 
-The program is one file per platform: `omh-linux-x86_64`, `-linux-aarch64`, `-macos-x86_64`,
-`-macos-aarch64`. The Linux ones run on any Linux.
+程序每平台一个文件：`omh-linux-x86_64`、`-linux-aarch64`、`-macos-x86_64`、`-macos-aarch64`。Linux 版在任何 Linux 上都能跑。
 
-Every command Herdr runs for the plugin goes through `bin/run.sh`, which runs the first of these it finds:
+Herdr 为插件运行的每条命令都经过 `bin/run.sh`，它按顺序运行找到的第一个：
 
-1. a program built in this checkout (`target/release/omh`) that no source file is newer than;
-2. the downloaded one in `bin/`, when it is this checkout's version (`Cargo.toml`) or newer;
-3. that file, downloaded now from the project's GitHub release of this checkout's version: its checksum checked, put in
-   place in one step, one download at a time;
-4. failing all that, an older build or an older download, with a line saying so. A download that failed is tried again
-   ten minutes later, not on every command (each of Herdr's hooks would wait for it).
+1. 本检出构建的程序（`target/release/omh`），且没有比它新的源文件；
+2. `bin/` 里下载的那个，当它是本检出的版本（`Cargo.toml`）或更新时；
+3. 现在从项目的 GitHub 发布页下载本检出版本的该文件：校验 checksum，一步就位，同时只跑一个下载；
+4. 以上都不行时，用旧构建或旧下载，并输出一行说明。失败的下载十分钟后重试，不逐条命令重试（否则 Herdr 的每个钩子都要等它）。
 
-With none, it says what to do and stops at once, so Herdr is never held up.
+一个都没有时，它说明怎么办并立即退出，绝不拖住 Herdr。
 
-- The plugin's build step (`sh bin/run.sh --fetch`) only gets the program, and builds it from source when it cannot
-  download it.
-- `OMH_RELEASES` names another place for the releases (a fork, a mirror, a folder as `file:///…`).
-- The release files are built for every version tag by `.github/workflows/release.yml`.
+- 插件的构建步骤（`sh bin/run.sh --fetch`）只获取程序，下载不了才从源码构建。
+- `OMH_RELEASES` 指定发布版的另一个来源（fork、镜像、`file:///…` 形式的目录）。
+- 发布文件由 `.github/workflows/release.yml` 为每个版本标签构建。

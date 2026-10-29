@@ -1,7 +1,6 @@
-# Skills in the chat
+# 聊天里使用技能
 
-**Type `/` in the board's text box to use a skill**, as in the web UI's (Ovis's) chat box. A list over the box shows the
-skills and commands of whoever the chat talks to, with what each does. Pick one and send: its program runs it.
+**在看板的输入框里敲 `/` 用技能**，和 web 界面（Ovis）的聊天框一样。输入框上方的列表显示聊天对象的技能和命令及用途。选一个发送：它的程序执行它。
 
 ```
  ◐ PRJ-34 Fix the login  working
@@ -15,56 +14,47 @@ skills and commands of whoever the chat talks to, with what each does. Pick one 
   ↑↓ pick a skill · tab enter put it in the box · esc close the list
 ```
 
-## Using it
+## 用法
 
-- **Type `/`** at the start of your message. The list shows what that program offers. Keep typing to narrow it: `/rev`
-  lists `/review-pr`. Names that start with what you typed come first, then names with a word that does, then names that
-  hold it. A plugin's name (`/tools:lint`) is found by its own part too (`/lint`).
-- **`↑` `↓`** pick one. The picked one is highlighted.
-- **`Tab`**, or **`Enter`**, puts it in the box with a space after it. Type what it should work on, if anything, and
-  press `Enter` to send.
-- **`Enter` on a word that already is the picked one** (`/ship`, typed whole) sends it at once.
-- **`Esc`** closes the list and keeps what you typed. Change the word and it lists again. A second `Esc` puts the draft
-  away, as always.
-- The list is only for a message that starts with `/` and is still one word. A `/` further on (`look at /tmp`) lists
-  nothing.
+- **在消息开头敲 `/`**。列表显示该程序提供的东西。继续敲缩小范围：`/rev` 列出 `/review-pr`。以你敲的字开头的名字排最前，然后是某个词以它开头的，最后是包含它的。插件的名字（`/tools:lint`）按自己的部分也能搜到（`/lint`）。
+- **`↑` `↓`** 选择。选中的高亮。
+- **`Tab`** 或 **`Enter`** 把它放进输入框，后面带个空格。要指定作用对象就接着敲，再按 `Enter` 发送。
+- **对已经选中的词按 `Enter`**（整词敲完的 `/ship`）立即发送。
+- **`Esc`** 关掉列表，保留你敲的字。改词会重新列。再按一次 `Esc` 收起草稿，一如既往。
+- 列表只对以 `/` 开头、且还只有一个词的消息出现。靠后的 `/`（`look at /tmp`）不列任何东西。
 
-What you send goes to the agent word for word, so `/review-pr the login branch` reaches it as you typed it. A skill or
-command you know works without the list too: type it and send.
+你发的字逐字送到代理，`/review-pr the login branch` 原样到达。认识的技能或命令不用列表也行：敲了就发。
 
-## Whose skills
+## 用谁的技能
 
-The list is of the program the words go to, read in the folder it runs in:
+列表属于字要送去的程序，在它运行的文件夹里读：
 
-| You talk to | Its list |
+| 你和谁说话 | 它的列表 |
 |---|---|
-| a task's agent (`Space` on the task) | its program's skills, read in the task's worktree (and the repo's main folder, for skills not committed yet) |
-| the Coordinator | its program's skills, in the Coordinator's own folder (no repo's) |
-| a repo's coordinator (`Space` on a repo's heading) | its program's skills, with that repo's |
-| a machine's coordinator | its program's skills, in its own folder |
+| 任务的代理（任务上按 `Space`） | 它程序的技能，在任务的工作树里读（还没提交的技能也从仓库主目录读） |
+| 协调者 | 它程序的技能，在协调者自己的文件夹（不含仓库的） |
+| 仓库的协调者（仓库标题上按 `Space`） | 它程序的技能，带那个仓库的 |
+| 机器的协调者 | 它程序的技能，在它自己的文件夹 |
 
-No list shows for words that go to another machine (its skills are on that machine), for a task with no agent yet, or
-with no Coordinator (your words are added as a task). What you type still goes as typed.
+字要送去另一台机器（技能在那台机器上）、还没有代理的任务、或没有协调者（你的字会加成一个任务）时不显示列表。你敲的字照样原样送出。
 
-## What each program offers
+## 各程序提供什么
 
-The same as the web UI (Ovis) lists, read from the same places:
+和 web 界面（Ovis）列的一样，从同样的地方读：
 
-| Program | What it lists |
+| 程序 | 它列什么 |
 |---|---|
-| Claude Code | `/name`: your skills (`~/.claude/skills`, or `$CLAUDE_CONFIG_DIR`), the project's (`.claude/skills` in the folders up to the repo's top), your and the project's commands (`git/commit.md` is `/git:commit`), and those of the plugins turned on (`/plugin:name`). A skill marked `user-invocable: false` is left out |
-| Codex | `$name`: the project's `.agents/skills`, yours in `~/.agents/skills` and `~/.codex/skills` (or `$CODEX_HOME`), the ones it comes with, and those of the plugins turned on in its `config.toml` (from its plugin cache). A skill turned off there (`[[skills.config]]`, `enabled = false`) is left out. Your prompts as `/prompts:name` |
-| pi | `/skill:name`: yours (`~/.pi/agent/skills`, `~/.agents/skills`) and the project's (`.pi/skills`, `.agents/skills`); prompt templates as `/name` |
-| OpenCode | `/name`: the commands of its `opencode.json(c)` and `commands` folders, the skill it comes with (`customize-opencode`), and the skills of its own folders, `~/.claude/skills`, `~/.agents/skills` and the project's |
-| Devin | `/name` by the skill's folder: Devin's own skills folders, Windsurf's, Claude Code's and Copilot's (as its `config.json` lets it read them), and its plugins' as `/plugin:name`. A name two places have says the place: `/claude:review` |
-| Grok | `/name`: the project's `.grok/skills` and `.claude/skills`, yours in `~/.grok/skills` (or `$GROK_HOME`) and `~/.claude/skills`, the paths of its `config.toml`, and its plugins'. What git or its `[skills] ignore` leaves out is left out |
-| Hermes | `/name` in its own spelling (`Web Tool` is `/web-tool`): `~/.hermes/skills` (or `$HERMES_HOME`) and its other skill folders, a project's only where its `config.yaml` trusts it, its skill bundles and its quick commands |
-| omp | `/skill:name` from every place it reads (its own folders, Claude Code's, `.agents`, Codex's, OpenCode's, `.github`, the Claude Code plugins turned on, the extensions its `settings.json` names and its npm plugins), as its `config.yml` lets it; its commands and prompts as `/name` |
-| Antigravity (agy) | `/name`: the project's `.agents` skills (and those its `skills.json` names), yours in `~/.gemini/config/skills` and its plugins', and the ones it comes with |
+| Claude Code | `/name`：你的技能（`~/.claude/skills`，或 `$CLAUDE_CONFIG_DIR`）、项目的（到仓库顶层各层的 `.claude/skills`）、你和项目的命令（`git/commit.md` 就是 `/git:commit`），以及启用的插件的（`/plugin:name`）。标了 `user-invocable: false` 的技能不列 |
+| Codex | `$name`：项目的 `.agents/skills`、你的 `~/.agents/skills` 和 `~/.codex/skills`（或 `$CODEX_HOME`）、它自带的，以及 `config.toml` 里启用的插件的（从插件缓存）。在那里关掉的技能（`[[skills.config]]`，`enabled = false`）不列。你的提示词作 `/prompts:name` |
+| pi | `/skill:name`：你的（`~/.pi/agent/skills`、`~/.agents/skills`）和项目的（`.pi/skills`、`.agents/skills`）；提示词模板作 `/name` |
+| OpenCode | `/name`：`opencode.json(c)` 和 `commands` 文件夹的命令、自带的技能（`customize-opencode`）、它自己文件夹的技能、`~/.claude/skills`、`~/.agents/skills` 和项目的 |
+| Devin | 按技能文件夹定的 `/name`：Devin 自己的技能文件夹、Windsurf 的、Claude Code 的和 Copilot 的（按它的 `config.json` 允许读的），插件的作 `/plugin:name`。两处同名的会标明出处：`/claude:review` |
+| Grok | `/name`：项目的 `.grok/skills` 和 `.claude/skills`、你的 `~/.grok/skills`（或 `$GROK_HOME`）和 `~/.claude/skills`、`config.toml` 里的路径、插件的。git 或它的 `[skills] ignore` 排除的不列 |
+| Hermes | 用它自己拼法的 `/name`（`Web Tool` 是 `/web-tool`）：`~/.hermes/skills`（或 `$HERMES_HOME`）和其他技能文件夹、项目仅在其 `config.yaml` 信任时、技能包和快捷命令 |
+| omp | `/skill:name`，来自它读的每个地方（自己的文件夹、Claude Code 的、`.agents`、Codex 的、OpenCode 的、`.github`、启用的 Claude Code 插件、它的 `settings.json` 指名的扩展和 npm 插件），按它的 `config.yml` 允许；命令和提示词作 `/name` |
+| Antigravity（agy） | `/name`：项目的 `.agents` 技能（和它 `skills.json` 指名的）、你的 `~/.gemini/config/skills` 和插件的，以及它自带的 |
 
-- Each shows what it does in its first sentence: the rest of a skill's description says when to use it, which is for the
-  agent.
-- A program's own built-in commands (`/model`, `/compact`, …) are not listed. They work when typed.
-- The other programs (Copilot, Cursor, Droid, Kilo, Kimi, Letta, Mastra Code, Qoder, Qwen) list nothing, as in the web
-  UI. What you type still goes to them as typed.
-- A skill added or changed shows within a few seconds.
+- 每个技能第一句就是用途：描述的其余部分说何时用，那是给代理的。
+- 程序自带的命令（`/model`、`/compact` 等）不列。敲了能用。
+- 其他程序（Copilot、Cursor、Droid、Kilo、Kimi、Letta、Mastra Code、Qoder、Qwen）什么都不列，和 web 界面一样。你敲的字照样原样送给它们。
+- 新增或修改的技能几秒内就会出现。

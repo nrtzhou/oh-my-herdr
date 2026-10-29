@@ -1,7 +1,6 @@
-# How work gets done
+# 工作如何完成
 
-**You delegate a task. An agent works on it in its own worktree. When it says it is done, the board checks it, opens a
-pull request, has a second agent review it, and waits for your yes. Then it merges and cleans up.**
+**你派发（delegate）一个任务。代理在自己的工作树里干活。它说完成后，看板检查它、开一个 PR、让第二个代理评审，然后等你点头。随后合并、清理。**
 
 ```
 delegate ─► agent works ─► finish line: commit, catch up with main, check ─► pull request ─► review ─► your yes ─► merge ─► clean-up
@@ -9,398 +8,223 @@ delegate ─► agent works ─► finish line: commit, catch up with main, chec
                  └──────── a failed check, a failed review or a conflict goes back ◄────────────┘
 ```
 
-All of this runs with the board open or closed.
+这一切在看板打开或关闭时都会运行。
 
-## Delegating
+## 派发
 
-- **In a git repo**, the plugin asks Herdr for a worktree space (`herdr worktree create`), on its own branch
-  (`work/<n>-<title>`), started from the remote's default branch (or from your commit, with `--workspace.from here`, or
-  from another branch at the remote, with `--workspace.from develop`). A task in a repo never works in your checkout.
-- **Tasks of one repo can start at the same moment.** Herdr is handed the commit the task starts from, not
-  `origin/main`, so git writes no upstream into the repo's shared `.git/config` at the start (the push at the finish
-  sets it). Another git command holding that file anyway (`could not lock config file`) is waited out, five tries in
-  under four seconds, and a start that fails still removes the empty branch it made, so the next start takes the name.
-- **The branch's name is `workspace.branch`**, `work/{n}-{slug}` unless you set it: for you, for one repo, or for one
-  task, never in the repo's own file. `{n}` is the task's number (`7`, or `7b` for an attempt), `{slug}` its title
-  (`fix-the-login`), `{key}` its repo's key and number (`KIC-7`). So `feat/{key}-{slug}` makes `feat/KIC-7-fix-the-login`.
-  A name git would not take is refused, with the nearest one it does. A name already taken gets `-2` after it.
-- **Started from a named branch** (`workspace.from develop`, for a long branch with small tasks on top), the task lands
-  there too. The branch is fetched from origin on every start (10 seconds at most, never asking for a password); one
-  origin does not have is refused with the reason, and the task waits as failed. If origin cannot be reached, the copy it
-  last gave is used. The task keeps up with that branch, its pull request merges into it (`gh pr create --base develop`),
-  a pull request the agent opened itself is taken on only while it merges into it, and `merge.checks` reads the checks of
-  a pull request into it.
-- **A named branch with `merge.pr` off** (a host with no GitHub, so no `gh`) lands there with no pull request, also when
-  it is origin's main branch, so one repo can take tasks on several feature branches at once. The commit is built from
-  the one that was reviewed, as `merge.method` says (squash: one commit on top of the branch; merge: a merge commit of
-  the two; rebase: the reviewed commit itself), and pushed to that branch at origin
-  (`git push origin <commit>:refs/heads/develop`, within `merge.pushTimeout`). No checkout is touched, yours included, and nothing is forced: when the branch moved at origin,
-  git refuses the push, and the task catches up with it, is checked again and pushed under the same approval. A push
-  origin refuses for another reason (a protected branch, a hook) waits for you with git's own words.
-- `workspace.setup` runs. Then the agent starts in that space's root pane, with the task and its rules.
-- **Outside git**, the agent works in place, in a plain Herdr space.
-- **At most `board.agents` (4) agents work at once.** More wait their turn. Tasks that wait for you hold no slot, nor
-  does one waiting in line to merge behind another.
+- **在 git 仓库里**，插件向 Herdr 要一个工作树空间（`herdr worktree create`），在它自己的分支上（`work/<n>-<title>`），从远程的默认分支开始（或用 `--workspace.from here` 从你的提交开始，或用 `--workspace.from develop` 从远程的另一个分支开始）。仓库里的任务从不在你的检出里干活。
+- **同一仓库的任务可以同时启动。** Herdr 拿到的是任务起点的那个提交，而不是 `origin/main`，所以启动时 git 不会把 upstream 写进仓库共享的 `.git/config`（收尾时的推送会写入）。若另一个 git 命令正占着那个文件（`could not lock config file`），就等它放手，不到四秒试五次；启动失败仍会删掉它建出的空分支，好让下一次启动能用这个名字。
+- **分支名由 `workspace.branch` 决定**，默认 `work/{n}-{slug}`，除非你另行设置：为你自己、为某个仓库、或为某个任务设置，绝不在仓库自己的文件里。`{n}` 是任务的编号（`7`，并行尝试是 `7b`），`{slug}` 是它的标题（`fix-the-login`），`{key}` 是它仓库的 key 加编号（`KIC-7`）。所以 `feat/{key}-{slug}` 会得到 `feat/KIC-7-fix-the-login`。git 不接受的名字会被拒绝，并给出最接近的可用名。名字已被占用时在后面加 `-2`。
+- **从指定分支启动**（`workspace.from develop`，适合在一条长分支上放小任务），任务也落在那里。每次启动都从 origin 拉取该分支（最多 10 秒，绝不询问密码）；origin 上没有该分支时会带着原因拒绝，任务以失败状态等待。连不上 origin 时，使用它上次给出的副本。任务跟着该分支走，它的 PR 合并进它（`gh pr create --base develop`）；代理自己开的 PR 只有在也合并进它时才接手，`merge.checks` 读的也是往它里面合并的 PR 的检查。
+- **指定分支且 `merge.pr` 关闭**（没有 GitHub 的主机，也就没有 `gh`）：不走 PR，直接落在那里，即使它是 origin 的主分支也一样，这样一个仓库可以同时在多个功能分支上接任务。提交由评审过的那个按 `merge.method` 构建（squash：分支顶端一个提交；merge：两者的合并提交；rebase：评审过的提交本身），推送到 origin 的那个分支（`git push origin <commit>:refs/heads/develop`，限时 `merge.pushTimeout`）。不碰任何检出，包括你的；绝不强推：origin 上分支动过时，git 会拒绝推送，任务就追上它、重新检查，在同一次批准下再推。origin 因其他原因拒绝推送（受保护分支、钩子）时，用 git 自己的话等你处理。
+- 运行 `workspace.setup`。然后代理在该空间的根面板里启动，带着任务和它的规则。
+- **git 之外**，代理就地干活，在一个普通的 Herdr 空间里。
+- **同时最多 `board.agents`（4）个代理干活。** 更多的排队等位。等你的任务不占名额，排在别的任务后面等合并的也不占。
 
-## Agents run with full access by default
+## 代理默认以完全权限运行
 
 ```
 claude --dangerously-skip-permissions
 codex --dangerously-bypass-approvals-and-sandbox --no-daemon
 ```
 
-(`--no-daemon` only from Codex 0.156.0, the first that has it: an older one quits on it.) This is as pi-work's agents
-did. They can run anything as you, without asking: the rules and the review brief are guidance, not a sandbox.
+（`--no-daemon` 仅从 Codex 0.156.0 起可用，那是第一个有它的版本：更早的版本遇到它会退出。）这与 pi-work 的代理一样。它们能以你的身份做任何事，不询问：规则和评审说明只是指导，不是沙箱。
 
-- `worker.access ask` (and `reviewer.access`, `coordinator.access`) starts a program without those flags, so it asks
-  before it acts. pi cannot ask, and the value is refused for it.
-- `worker.access auto` starts it in its program's own auto mode, which does the safe actions without asking and stops
-  the risky ones: `claude --permission-mode auto`, `codex --approve-for-me` (and Cursor's, Qwen Code's, Qoder's).
-  Refused for every other program ([auto mode](auto-mode.md)).
-- So a new task does not wait behind a "trust this folder?" dialog, the plugin marks the task's repo as trusted in the
-  agent's own settings (`~/.claude.json`, `~/.codex/config.toml`; for pi, the task's worktree in
-  `~/.pi/agent/trust.json`) before starting it. Only for a role with full or auto
-  access.
+- `worker.access ask`（以及 `reviewer.access`、`coordinator.access`）启动程序时不带这些旗标，于是它行动前会先问。pi 不能询问，这个值对它会被拒绝。
+- `worker.access auto` 以程序自己的 auto 模式启动，安全动作不问就做，危险动作会停下：`claude --permission-mode auto`、`codex --approve-for-me`（以及 Cursor、Qwen Code、Qoder 的对应方式）。其他程序一律拒绝（[auto 模式](auto-mode.md)）。
+- 所以新任务不会卡在「信任这个文件夹？」对话框后面：插件会在启动前把任务的仓库在代理自己的设置里标为受信任（`~/.claude.json`、`~/.codex/config.toml`；pi 则把任务的工作树写进 `~/.pi/agent/trust.json`）。只对完全权限或 auto 权限的角色生效。
 
-## How the board knows a turn ended
+## 看板怎么知道一个回合结束了
 
-The plugin starts every agent itself, and passes at launch:
+插件自己启动每个代理，并在启动时传给它：
 
-- **a turn-end hook** on the command line: Claude Code `--settings <a file in the task's own folder>`, Codex
-  `-c notify=[…]`, pi `-e <a one-file extension>`;
-- **a session id** of its own choosing, where the program takes one;
-- **the task's rules** as a standing system prompt: a file, or for Codex inline when short
-  ([long rules and long messages](could-not-start.md#long-rules-and-long-messages)).
+- **一个回合结束钩子（hook）**，通过命令行：Claude Code `--settings <任务自己文件夹里的一个文件>`，Codex `-c notify=[…]`，pi `-e <一个单文件扩展>`；
+- **一个自选的会话 id**，程序肯接受的话；
+- **任务的规则**作为常驻的系统提示词：一个文件，或对 Codex 在不长时内联（[长规则和长消息](could-not-start.md#超长规则与超长消息)）。
 
-Nothing is written to your own agent settings, and your own hooks keep running. Claude Code's launch settings also turn
-its idle compaction off (`"idleCompaction": false`): it would shrink the session of a finished task left waiting about
-an hour, which Herdr counts as a turn. A compaction in the saved conversation is never read as a new prompt either.
+不写入你自己的代理设置，你自己的钩子照常运行。Claude Code 的启动设置还会关掉它的空闲压缩（`"idleCompaction": false`）：它会把一个已完成、闲置了约一小时的任务的会话缩小，而 Herdr 会把那算作一个回合。已保存会话里的压缩也绝不会被读成新的提示词。
 
-At each turn's end, the hook runs `omh turn-ended` (silent, at most two seconds, protected by a per-launch
-secret). The finish line then reads the end of that agent's saved conversation: its last message, an API or login error,
-its token use.
+每个回合结束时，钩子运行 `omh turn-ended`（静默，最多两秒，由每次启动的密钥保护）。收尾流水线随后读取那个代理已保存会话的结尾：它最后一条消息、API 或登录错误、token 用量。
 
-**An agent that stopped to wait for you** (a question, a permission, a sign-in) has not finished, however often it asks:
-none of the finish line runs. How an agent says so, and what the board does:
-[an agent that waits for you is not finished](waiting-for-you.md).
+**停下来等你的代理**（提问、要权限、要登录）并没有完成，无论它问多少次：收尾流水线一步都不跑。代理怎么表达、看板怎么处理：[等你的代理不算完成](waiting-for-you.md)。
 
-### Without a hook
+### 没有钩子时
 
-A crash, a program older than its adapter's minimum version, another kind of agent, Codex when you have your own `notify`
-set, or a hook that failed three turns in a row: then Herdr's status is only a guess from the screen, so "idle" alone
-never finishes a task. The turn counts as ended when:
+崩溃、程序比适配器的最低版本还老、另一种代理、你自己设了 `notify` 的 Codex、或钩子连续三个回合失败：这时 Herdr 的状态只是从屏幕猜出来的，所以单凭「idle」绝不结束任务。以下情况算回合结束：
 
-- the saved conversation ends in a finished message or an error; or
-- a closing note was written to the task's own folder (`closing-note.md`,
-  [where it is](home-folder.md#nothing-of-the-boards-goes-into-the-folder-an-agent-works-in)). The rules still ask for
-  one, as the fallback.
+- 已保存的会话以完成消息或错误结尾；或
+- 收尾小结（closing note）已写进任务自己的文件夹（`closing-note.md`，[它在哪](home-folder.md#看板的东西不进代理工作目录)）。规则仍然要它写，作为兜底。
 
-Otherwise the task is held as "Stopped without a summary": `Ctrl+R` tells the agent to continue, `Ctrl+L` takes the work
-as it is. Its message is the agent's last words on its screen: what stands above the program's input box, never the
-status line or mode line drawn under it.
+否则任务被挂为「Stopped without a summary」：`Ctrl+R` 让代理继续，`Ctrl+L` 按原样收下工作。它的消息是代理屏幕上的遗言：程序输入框上方的内容，绝不是画在下面的状态行或模式行。
 
-A task whose finish the board missed (its agent at rest, the row still "Finishing") is finished with `Ctrl+L` or
-`omh finish <id>`. What the agent said last is the summary.
+看板漏掉收尾的任务（代理已静止，行上还是「Finishing」）用 `Ctrl+L` 或 `omh finish <id>` 收尾。代理最后说的话就是总结。
 
-## The finish line
+## 收尾流水线
 
-When the agent's turn ends, the board:
+代理的回合结束时，看板：
 
-1. **Commits** anything left over, **brings the branch up to date with main** in the task's own worktree
-   ([below](#staying-current-with-main)), and **runs the repo's `check`**. A failure goes straight back to the agent,
-   three tries.
-   - Another Git process holding the worktree's index (`index.lock`: a repo gate's `git status`, an editor) is waited
-     out: a few tries over about four seconds, and nothing left to commit by then is no failure. A lock that stays
-     fails the commit, naming the lock file.
-   - A new round starts clean: the failure of the round before (a failed commit, a reviewer out of credits) is cleared
-     as soon as the check starts, so the row and the details never show it while the work is checked and reviewed.
-2. **Pushes the branch and opens a draft pull request**, when there is an `origin` remote and `gh`.
-   - A pull request the agent already opened for the task's branch is taken on instead, and goes through the review and
-     the merge as usual.
-   - The push may run for `merge.pushTimeout` (2 minutes unless set), the repo's pre-push hook included. A repo whose
-     hook runs its tests needs more: `omh set merge.pushTimeout 10m --repo <name>`, or `none`. A push that
-     runs out of time is stopped and the finish fails, saying so (`git push did not end within 2m
-     (merge.pushTimeout)`); finish again once it is raised.
-   - A branch that brings main nothing gets no pull request: no change was needed, or the work is on main already (the
-     agent merged its own pull request, or pushed to main itself). The task is done, and its row says why: "No change
-     needed", "Already on main" or "Already merged in #133". Nothing is pushed then, so a repo the task archived on
-     GitHub is never pushed to. Work that is not on main is never done, and with the repo archived the task stops,
-     saying so.
-3. **Has a second agent review it**, adversarially, in a tab of its own in the same Herdr space
-   ([a task's tabs](tabs.md)). It says what it found, with evidence. Whatever it changed is put back.
-   - When the repo has a `check`, the reviewer is told the command and that it passed on this commit, and to run tests
-     only through it.
-   - A reviewer that ends its turn with no verdict is started once more by itself, as the same review. If it again gives
-     none, the review fails, with its last message.
-   - Only the reviewer's own turn ending counts. A helper it hands part of the review to (Codex's sub-agents, Claude
-     Code's background agents) finishing is not the review ending, and while a helper is still at work the review is
-     still going. (The same holds for a working agent and its task.) A helper is back when its answer is in the
-     conversation (a message of its own, or a queued one taken into a turn still going), or its own saved conversation
-     ends in its finished reply.
-   - A reviewer whose turn its provider cut off is retried by the board ([a turn cut off by the provider](provider-errors.md)).
-   - The board decides from the findings ([the gate](gate.md)). A review that fails goes straight back to the agent.
-   - The row says the result and a tally (`Pass · 2 minor`). Its `R#2` tag says which review it was and, by its colour,
-     how it went. The task panel has its summary, and every earlier review of the task.
-4. **Waits for your approval** (`Ctrl+L`).
+1. **提交**剩下的东西，在任务自己的工作树里**让分支跟上 main**（[下文](#与-main-保持同步)），并**运行仓库的 `check`**。失败直接退回代理，最多三轮。
+   - 另一个 Git 进程占着工作树的 index（`index.lock`：仓库评审门的 `git status`、某个编辑器）时会等它：约四秒内试几次，到那时没有要提交的东西就不算失败。锁一直不放就让提交失败，并指明锁文件。
+   - 新一轮干干净净地开始：上一轮的失败（提交失败、评审者额度用尽）在检查一开始就清掉，所以工作被检查和评审时，行和详情里绝不会显示它。
+2. **推送分支并开一个 draft PR**，有 `origin` 远程和 `gh` 时。
+   - 代理已经为该任务分支开好的 PR 会被接手，照常走评审和合并。
+   - 推送最多跑 `merge.pushTimeout`（未设置时 2 分钟），包括仓库的 pre-push 钩子。钩子跑测试的仓库需要更多：`omh set merge.pushTimeout 10m --repo <name>`，或 `none`。超时的推送会被停止，收尾失败并说明（`git push did not end within 2m (merge.pushTimeout)`）；调大后再收尾一次。
+   - 没给 main 带来任何东西的分支得不到 PR：不需要改动，或工作已经在 main 上（代理合并了自己的 PR，或自己推到了 main）。任务完成，行上说明原因：「No change needed」、「Already on main」或「Already merged in #133」。这时什么都不推，所以任务在 GitHub 上归档过的仓库绝不会被推送。不在 main 上的工作绝不算完成，仓库被归档时任务会停下并说明。
+3. **让第二个代理评审**，对抗式地，在同一 Herdr 空间里它自己的标签页（[任务的标签页](tabs.md)）中进行。它报告发现，附证据。它改动的任何东西都会放回去。
+   - 仓库有 `check` 时，会告诉评审者命令是什么、它在这个提交上已通过，且只能通过它跑测试。
+   - 结束回合却没有结论的评审者会单独再启动一次，作为同一场评审。若还是没有结论，评审失败，附它最后的消息。
+   - 只有评审者自己的回合结束才算数。它把部分评审交给的帮手（Codex 的子代理、Claude Code 的后台代理）完成不等于评审结束，帮手还在干活时评审仍在进行。（工作代理和它的任务同理。）帮手回来的标志是它的回答进了会话（它自己的一条消息，或排队的消息被纳入仍在进行的回合），或它自己的已保存会话以它完成的回复结尾。
+   - 被服务商（provider）掐断回合的评审者由看板重试（[被服务商掐断的回合](provider-errors.md)）。
+   - 看板根据发现做决定（[评审门](gate.md)）。失败的评审直接退回代理。
+   - 行上显示结果和计数（`Pass · 2 minor`）。它的 `R#2` 标签说明是第几轮评审，颜色说明结果如何。任务面板里有它的总结，以及该任务此前的每场评审。
+4. **等你批准**（`Ctrl+L`）。
 
-## Approving and merging
+## 批准与合并
 
-Your yes makes one last sync with main. If that changed anything, it checks (and reviews, by the same rules) again. Then
-it merges:
+你的点头会与 main 做最后一次同步。若那改了什么，就（按同样的规则）再检查（和评审）一次。然后合并：
 
-- **through the pull request**, only at the commit that was reviewed. A commit pushed to the pull request meanwhile
-  withdraws the approval. On a repo with a merge queue, the task waits until GitHub says the pull request is merged;
-- **by a push to the branch it started from by name**, with no pull request (`workspace.from develop`, `merge.pr` off):
-  the reviewed commit, built by `merge.method`, never forced and never through your checkout;
-- **or locally**, squashed by default.
+- **通过 PR**，只在评审过的那个提交上。期间推到 PR 的新提交会撤回批准。有合并队列的仓库，任务等到 GitHub 说 PR 已合并；
+- **推送到它按名字启动的那个分支**，不走 PR（`workspace.from develop`、`merge.pr` 关闭）：评审过的提交，按 `merge.method` 构建，绝不强推，绝不经过你的检出；
+- **或在本地**，默认 squash。
 
-A conflict found here goes back to the agent the same way, and the merge you approved is retried after its repair. A
-checkout with unsaved files is never forced. Merging without your yes: [merging by itself](gate.md#merging-by-itself).
+这里发现的冲突同样退回代理，你批准的合并在修复后重试。有未保存文件的检出绝不会被强推。不经你点头的合并：[自己合并](gate.md#自行合并)。
 
-### Closing GitHub issues
+### 关闭 GitHub issues
 
-A task added for GitHub issues says which ones its work closes: `omh add "Fix the login" --merge.closes 2203,2204`
-(or later, `set merge.closes 2203 --task <id>`). Only issues of the task's own repo, by number, and only on the task
-itself: never for you or a repo. `show <id>` lists it with the rest.
+为 GitHub issues 添加的任务会说明它的工作关闭哪些 issue：`omh add "Fix the login" --merge.closes 2203,2204`（或之后 `set merge.closes 2203 --task <id>`）。只限任务自己仓库的 issue，按编号，且只在任务本身上设置：绝不在你或仓库上。`show <id>` 会和其余信息一起列出来。
 
-- **Through a pull request**, its body gets a `Closes #2203` line for each, so GitHub closes them when it merges into
-  the default branch. A pull request the agent opened itself gets the lines it lacks added (`gh pr edit`); so does one
-  opened before the setting was said, right before it merges. Changed or cleared since, the board takes its own lines of
-  the issues no longer named off again before it merges; while it cannot, nothing merges (the task says why).
-- **With no pull request** (a local merge, or a push to a named branch), and through one that merges into another branch than the default, the
-  board closes each with `gh issue close` once the merge has landed, with a comment naming the task and the merge commit.
-  So it does for work the agent put on main itself (`Already merged in #133`); work that needed no change closes none.
+- **通过 PR**，正文为每个 issue 加一行 `Closes #2203`，这样 GitHub 在合并进默认分支时会关掉它们。代理自己开的 PR 会补上它缺的行（`gh pr edit`）；在设置说出之前开的也会在合并前补上。此后改动或清除了设置，看板会在合并前把不再列出的 issue 对应的行删掉；删不掉就什么都不合并（任务说明原因）。
+- **不走 PR**（本地合并，或推到指定分支），以及通过合并进非默认分支的 PR，看板在合并落地后用 `gh issue close` 逐个关闭，附一条注明任务和合并提交的评论。代理自己把工作放到 main 上的也照此办理（`Already merged in #133`）；不需要改动的工作不关任何 issue。
 
-Nothing is closed on a merge that failed. A close that fails never fails the merge, and an issue closed already is
-fine: the task's line says what was closed (`Merged into main. Closed #2203, #2204.`), or which could not be and why.
+合并失败时什么都不会关。关闭失败绝不会让合并失败，已经关掉的 issue 也没问题：任务的行说明关了什么（`Merged into main. Closed #2203, #2204.`），或哪些没关成、为什么。
 
-### GitHub's checks must pass first
+### GitHub 的检查必须先通过
 
-With `merge.checks: github`, a pull request merges only once its checks on GitHub pass, by itself or on your yes, in
-every repo the board merges in. `merge.checks: none` does not look at GitHub's checks.
+`merge.checks: github` 时，PR 只有在 GitHub 上的检查通过后才合并，由看板自己或在你点头时，看板在每个仓库都这样做。`merge.checks: none` 不看 GitHub 的检查。
 
-| GitHub's checks are | The board |
+| GitHub 的检查 | 看板 |
 |---|---|
-| still running | waits. The row says how far: `Waiting for GitHub checks · 2 of 3 passed`, with the board's own `◇` (nobody works on it meanwhile). It merges by itself once they pass |
-| failed | merges nothing. The failure goes back to the agent like a failed check of the board's own, with the failing check's name and the end of its log, within `review.rounds` (a merge you approved goes on once GitHub's checks pass on the repair). After that it waits for you, and `approve <id>` refuses and says why, as for a failed review, until `approve <id> --anyway` |
-| not reporting, still running after `check.timeout` | waits for you, with that reason |
-| passed, or there are none | merges |
+| 还在跑 | 等待。行上显示进度：`Waiting for GitHub checks · 2 of 3 passed`，带看板自己的 `◇`（期间没人干活）。检查一过就自己合并 |
+| 失败 | 什么都不合并。失败像看板自己的检查失败一样退回代理，附失败检查的名字和日志结尾，在 `review.rounds` 内（你批准过的合并会在 GitHub 的检查通过修复后继续）。之后等你，`approve <id>` 会拒绝并说明原因，与评审失败一样，直到 `approve <id> --anyway` |
+| 没有报告、`check.timeout` 后还在跑 | 等你，附原因 |
+| 通过，或根本没有 | 合并 |
 
-A failure is of one commit: once a repair is pushed, the old commit's failed checks block nothing (also when main is
-merged in before it merges). Only the checks of the commit that would merge count.
+失败只属于一个提交：修复一推送，旧提交的失败检查就不再挡路（即使在合并前先并了 main）。只有要合并的那个提交的检查算数。
 
-Each check is counted once, a workflow for its jobs until GitHub lists them. `details` names what it waits for
-(`checksWaitingFor`).
+每个检查只计一次，一个 workflow 的检查在 GitHub 列出它的 jobs 前一直算一个。`details` 说明在等什么（`checksWaitingFor`）。
 
-**The board decides from what the repo expects**, not only from what GitHub lists so far:
+**看板按仓库期望的来判断**，不只看 GitHub 目前列出的：
 
-- Each GitHub workflow of the branch that runs for this pull request must have its run on the commit, and that run must
-  be through and passed: every job of it, every member of a matrix, also one GitHub has not listed yet (counted as one
-  check still to pass). The workflows are `.github/workflows`, their triggers read as GitHub reads them: `push` and
-  `pull_request`, their `branches` against the branch, `paths` against the files the pull request changes, `types`.
-- A workflow that cannot run for it (only for other paths, only into another branch, only on tags) is not waited for.
-- Each check the target branch requires (its protection or rulesets) must be listed and pass. A check listed on the
-  commit before and gone from the list now has not passed.
-- With nothing listed at all, the task says `Waiting for GitHub checks to start` where an outside CI reports in the repo
-  (on the newest commit of the target branch, or on its other pull requests). A question GitHub cannot answer counts as
-  yes.
-- All of these wait at most `check.timeout`, then for you, with the reason. A repo with no checks at all merges with none
-  listed.
+- 分支上为这个 PR 运行的每个 GitHub workflow 都必须在该提交上有一次运行，且那次运行必须跑完并通过：它的每个 job、矩阵的每个成员，包括 GitHub 还没列出的（算作一个待通过的检查）。workflow 在 `.github/workflows`，触发条件按 GitHub 的读法解读：`push` 和 `pull_request`，它们的 `branches` 对分支、`paths` 对 PR 改动的文件、`types`。
+- 不能为它运行的 workflow（只为别的路径、只进别的分支、只在 tag 上）不等。
+- 目标分支要求的每个检查（它的保护或 rulesets）必须被列出并通过。之前在提交上列出、现在从列表里消失的检查不算通过。
+- 什么都没列出时，若仓库里有外部 CI 报告（在目标分支的最新提交上，或在它的其他 PR 上），任务显示 `Waiting for GitHub checks to start`。GitHub 答不了的问题算作 yes。
+- 以上等待最多 `check.timeout`，然后等你，附原因。完全没有检查的仓库直接合并。
 
-### A fine-grained GitHub token is enough
+### 细粒度 GitHub token 就够了
 
-Such a token cannot have the Checks permission (GitHub offers it to GitHub Apps only), so GitHub refuses it the list of a
-pull request's checks. The board then reads them from what the token can read:
+这种 token 不能有 Checks 权限（GitHub 只把它给 GitHub Apps），所以 GitHub 拒绝它读取 PR 的检查列表。看板于是从 token 能读的内容里读：
 
-- **Actions**: the runs on the commit, each of their jobs and matrix members, and the log of a failed one;
-- **Commit statuses**: an outside CI, Vercel.
+- **Actions**：提交上的运行、每个 job 和矩阵成员、失败项的日志；
+- **Commit statuses**：外部 CI、Vercel。
 
-Give the token read access to those two. Nothing asks for Checks, and a refused list is not a login problem. The same
-rules hold: running waits, a failure goes back with its log, a workflow not started is waited for, all within
-`check.timeout`.
+给 token 这两项的读权限。不会要求 Checks，列表被拒绝也不是登录问题。同样的规则成立：运行中就等待，失败连日志一起退回，没启动的 workflow 会等，全部在 `check.timeout` 内。
 
-- What such a token cannot read at all is the check runs of another app that posts no commit status. The task merges
-  once everything it can read has passed, and says what it could not read
-  (`Merged: … Not read: check runs of apps other than GitHub Actions …`).
-- A check the branch requires that no job or status of the commit answers is waited for while anything readable still
-  runs, then named there too. GitHub itself still refuses a merge that a required check blocks.
-- A token that may not read Actions or Commit statuses either leaves the task waiting for you with
-  `Could not read GitHub's checks`, naming the two permissions to give it.
-- A check is named once, whichever way it was read (a workflow `Check` and its job `check`; its runs for the push and for
-  the pull request). What was remembered for an earlier commit, or read the other way, is not looked for again.
+- 这种 token 完全读不到的，是其他不发 commit status 的应用的检查运行。任务在能读到的一切都通过后合并，并说明读不到什么（`Merged: … Not read: check runs of apps other than GitHub Actions …`）。
+- 分支要求、但没有任何 job 或状态回应的检查，在可读的东西还在跑时一直等，之后也会在那里点名。GitHub 自己仍会拒绝被必需检查挡住的合并。
+- Actions 和 Commit statuses 都读不了的 token 会让任务带着 `Could not read GitHub's checks` 等你，并指明要给的两项权限。
+- 一个检查只点名一次，无论用哪种方式读到（一个 workflow `Check` 和它的 job `check`；它为 push 和 PR 各自的运行）。之前提交记下的、或换另一种方式读到的，不会再去查。
 
-### When gh cannot read GitHub at all
+### gh 完全读不到 GitHub 时
 
-(Not logged in, no network.) A merge waiting for its checks says so on its row
-(`Waiting for GitHub checks · could not read them (…)`), and goes on by itself once gh reads again. Past `check.timeout`
-it waits for you with `Could not read GitHub's checks`.
+（未登录、无网络。）等检查的合并会在它的行上说明（`Waiting for GitHub checks · could not read them (…)`），gh 恢复后自己继续。超过 `check.timeout` 后带着 `Could not read GitHub's checks` 等你。
 
-Herdr may start the board's keeper (after a reboot) without your login shell's environment. So the board takes your PATH
-and gh's login variables (`GH_TOKEN`, `GH_HOST`, `GH_ENTERPRISE_TOKEN`, …) from a login shell, never writing a token
-down. It takes the SSH agent (`SSH_AUTH_SOCK`, `SSH_AGENT_PID`) the same way, so that its `git fetch` and `git push` over
-SSH work: only when the keeper has no agent of its own and the login shell's socket is there.
+Herdr 可能（重启后）不带你的登录 shell 环境就启动看板的看守。所以看板从登录 shell 取你的 PATH 和 gh 的登录变量（`GH_TOKEN`、`GH_HOST`、`GH_ENTERPRISE_TOKEN`、…），绝不把 token 落盘。同样方式取 SSH agent（`SSH_AUTH_SOCK`、`SSH_AGENT_PID`），好让它的 `git fetch` 和 `git push` 走 SSH：只在看守自己没有 agent、且登录 shell 的 socket 在时才取。
 
-## Staying current with main
+## 与 main 保持同步
 
-Keeping branches up to date is the board's job, not the agent's: nothing in an agent's rules asks for it. Tasks run in
-parallel and touch the same files, so the board itself fetches main and merges it into each task's branch, in that task's
-own worktree:
+让分支保持最新是看板的活，不是代理的：代理的规则里不提这个。任务并行跑、动同样的文件，所以看板自己拉取 main 并合进每个任务的分支，在那个任务自己的工作树里：
 
-- **before review**: when an agent finishes, before the check and the review, so the reviewer sees the work as it will
-  really land;
-- **whenever main moves** (another task merged, a merge on GitHub, your own push; the remote is asked every two minutes):
-  every task waiting for your approval is updated, and a task under review the moment its review ends;
-- **after you approve**, once more, as the last safety net. It should rarely find anything.
+- **评审前**：代理完成后，在检查和评审之前，让评审者看到工作真正落地时的样子；
+- **main 一动就**（另一个任务合并、GitHub 上的合并、你自己推送；每两分钟问一次远程）：每个等你批准的任务都会更新，评审中的任务在评审结束那一刻更新；
+- **你批准后**，再更新一次，作为最后的安全网。它应该很少发现什么。
 
-**Fewer merges while it waits: `merge.sync approve`.** In a busy repo, merging main on every move gives a waiting
-pull request a merge commit, a CI run and a round of bot reviews each time, and only the last merge before landing
-matters. With `omh set merge.sync approve` (for a task, a repo or all), main is merged in before review and
-after your yes only. While the task waits, the board makes a test merge in memory (`git merge-tree`), which changes
-nothing in its worktree, branch or pull request: a conflict is handled as a real one (below), so you know before you
-approve; a clean one changes nothing. After your yes, main is merged, checked again and the work lands, as always.
-`always` (built in) is the behaviour described above.
+**等待期间少合并：`merge.sync approve`。** 在忙碌的仓库里，main 每动一次就合并，会让等待中的 PR 每次都多一个合并提交、一轮 CI、一轮机器人评审，而只有落地前的最后一次合并才重要。用 `omh set merge.sync approve`（对一个任务、一个仓库或全部），main 只在评审前和你点头后合入。任务等待期间，看板在内存里做一次试合并（`git merge-tree`），不改工作树、分支或 PR：冲突按真实冲突处理（下文），你批准前就能知道；干净的合并什么都不改。你点头后，合入 main、再检查，工作照常落地。`always`（内置）就是上面描述的行为。
 
-**A clean update is silent.** If it changed the commit, the check runs again on the result. The review is not repeated
-when taking main in is all that happened to work that already passed ([below](#a-review-that-passed-is-not-repeated-for-a-merge-of-main)),
-or when the update touched none of the files the task itself changed. The verdict you have stands, and the task does not
-ask for your eyes again.
+**干净的更新是无声的。** 若它改了提交，检查会在结果上再跑一遍。当已通过的工作只是被合入 main 时，评审不重跑（[下文](#通过的评审不会因合并-main-而重跑)），或者当更新没碰到任务自己改过的任何文件时也是如此。你已有的结论作数，任务不会再要你看一遍。
 
-**A real conflict is rolled back at once** (your branch and the task's are as they were) and goes straight to the task's
-agent as a plain message: the conflicting files, the target commit, and that it should resolve them in its own worktree
-and finish again.
+**真实的冲突会立刻回滚**（你的分支和任务的分支都回到原样），并作为一条普通消息直接给任务的代理：冲突的文件、目标提交，以及让它在自己的工作树里解决它们再收尾。
 
-- Until it has, the task is not waiting for approval: its row says "resolving a conflict with main".
-- After `review.rounds` repairs in a row that still conflict, you are asked, with the details kept. `review.rounds 0` on a
-  task keeps its conflicts for you to send with `Ctrl+R`.
-- Every conflict leaves one line in `data/conflicts.jsonl` in [the home folder](home-folder.md) once it is repaired: the
-  task, the files, the minutes from found to up to date again, how often the agent was sent back, and whether a new
-  review followed (`crates/flow/src/sync/conflict_log.rs`).
+- 在它做到之前，任务不在等批准：它的行显示「resolving a conflict with main」（正在解决与 main 的冲突）。
+- 连续 `review.rounds` 次修复仍然冲突后，会来问你，并保留详情。任务上设 `review.rounds 0` 会把冲突留给你用 `Ctrl+R` 发回。
+- 每次冲突修复后都会在[主文件夹](home-folder.md)的 `data/conflicts.jsonl` 里留一行：任务、文件、从发现到重新跟上的分钟数、代理被退回几次、是否跟着来了新一轮评审（`crates/flow/src/sync/conflict_log.rs`）。
 
-**Only a task at rest is ever updated**: its worktree clean, on exactly the commit that was reviewed.
+**只有静止的任务才会被更新**：工作树干净，且正好在评审过的那个提交上。
 
-- A fetch that fails is never taken for a sync, and never fails finished work: the turn is checked and reviewed, then
-  held as "behind main" until a fetch works ([troubleshooting](troubleshooting.md#behind-main-main-could-not-be-fetched)).
-  A finished turn whose worktree has left the task's own branch is saved as "Task is on the wrong branch".
-- A waiting task whose main cannot be fetched, or that was not at rest when main moved, is held as "behind main": its row
-  says so, `Ctrl+L` is refused with the reason, and the board tries again every minute until the branch really is up to
-  date.
+- 拉取失败绝不算同步，也绝不会让已完成的工作失败：回合照常检查和评审，然后挂为「behind main」（落后 main），直到一次拉取成功（[故障排查](troubleshooting.md#落后于-main拉不下-main)）。工作树已离开任务自己分支的完成回合会被存为「Task is on the wrong branch」。
+- 拉不到 main 的等待任务，或 main 动时不在静止状态的任务，会挂为「behind main」：行上说明，`Ctrl+L` 带着原因被拒绝，看板每分钟再试一次，直到分支真的跟上。
 
-**"Main" is where the task will land**: the remote's main when it lands through a pull request, or the branch it was
-started from by name (`workspace.from develop`), with or without one. Otherwise (no remote, or `pr` off and no branch
-named), the branch your checkout was on when the task first finished. For those, checking out another branch merges
-nothing into waiting tasks, and they are held as "behind main" until your checkout is back on it.
+**「main」就是任务将要落地的地方**：通过 PR 落地时是远程的 main，或按名字启动它的那个分支（`workspace.from develop`），有无 PR 都一样。否则（没有远程，或 `pr` 关闭且没指定分支），是你检出在任务第一次收尾时所在的分支。对这些情况，检出到别的分支不会合并进等待中的任务，它们会挂为「behind main」，直到你的检出回到那条分支。
 
-### A review that passed is not repeated for a merge of main
+### 通过的评审不会因合并 main 而重跑
 
-When the last review passed and the only change since the commit it looked at is main being merged in, the board runs
-the repo's `check` on the result instead of a new review.
+最后一次评审通过、且从它看过的提交以来唯一的改动就是合入 main 时，看板在结果上运行仓库的 `check`，而不是再来一轮评审。
 
-- **Tests pass**: the task goes on to approval or the merge, as a pass.
-- **Tests fail**: the failure goes back to the agent, as a failed check always does, and its fix is reviewed.
+- **测试通过**：任务作为通过继续走向批准或合并。
+- **测试失败**：失败像检查失败时一样退回代理，它的修复会被评审。
 
-The rule for "only the merge of main" is fixed, and checked in git from the commit the reviewer looked at to the branch
-as it stands:
+「只是合并 main」的规则是固定的，在 git 里从评审者看过的提交检查到分支现状：
 
-1. every commit since is a merge commit with two parents: the branch as it was, and a commit of main. An ordinary commit
-   on top, a rebase, or another branch merged in is new work;
-2. each of those merges is exactly what git makes of its two parents by itself. Only the files git could not merge (the
-   conflicts) may differ, because resolving them is what the merge needed. Any other file touched in the merge commit is
-   new work.
+1. 之后每个提交都是有两个父的合并提交：分支原来的样子，和 main 的一个提交。上面一个普通提交、一次 rebase、或并入了别的分支，都是新工作；
+2. 这些合并中的每一个都恰好是 git 对它两个父自己做出的结果。只有 git 合不了的文件（冲突）可以不同，因为解决它们正是合并之所需。合并提交里动过的任何其他文件都是新工作。
 
-So a conflict the agent resolved in its merge commit, touching only the conflicting files, keeps the review. The agent is
-told this with the conflict. Anything else is reviewed as before, and so is everything the board cannot read for sure: a
-last review that failed or gave no verdict, work outside a worktree.
+所以代理在合并提交里解决的冲突、只动了冲突文件的，保留评审。代理在收到冲突时会被告知这一点。其他一切照旧评审，看板读不准的一切也一样：上一场失败或没有结论的评审、工作树之外的工作。
 
-A repo with no `check` has no tests to prove a merge into the task's own files. There, a review stands only when a clean
-update touched none of the files the task changed (the narrower rule above), and the task says `no check is set` instead
-of `tests pass`.
+没有 `check` 的仓库没有测试来证明合进任务自己文件的改动。在那里，只有干净更新没碰到任务改过的任何文件时评审才作数（上面更窄的规则），任务显示 `no check is set` 而不是 `tests pass`。
 
-The task says plainly what happened: its message reads `Re-merged with main, tests pass, review 2 still stands`; that
-review's box carries the same line (with when, and how often); the row keeps showing the review that passed
-(`Pass · 2nd review`); and `details` lists each time under that review as `kept`. This is fixed behaviour, not a setting.
+任务明白地说清发生了什么：它的消息是 `Re-merged with main, tests pass, review 2 still stands`；那场评审的框里带着同一行（附时间和次数）；行上继续显示通过的那场评审（`Pass · 2nd review`）；`details` 在那场评审下把每次都列为 `kept`。这是固定行为，不是设置。
 
-## Stepping in
+## 插手
 
-Typing in the agent's own terminal, or replying from the board, starts all of this over: an approval is withdrawn, a
-pending auto-merge is cancelled (a cancellation that fails is saved as a visible failure), and the old review is marked
-stale. A chat with reviewed work is the exception: what it starts over only counts once the code changed.
+在代理自己的终端里打字，或从看板回复，都会把这一切重来：批准被撤回、待定的自动合并被取消（取消失败会存为可见的失败）、旧评审被标记为过时。与已评审工作的聊天是例外：它触发的重来只在代码改动后才算数。
 
-### Chatting with a finished task re-reviews only what changed
+### 与已完成的任务聊天只会重审改动的部分
 
-When you talk to the agent of a task that is under review, waits for your yes, or is done (your own words: from the
-board, `tell`, or typed in its own pane; the keys that send a review or a failure back are not a chat), the board keeps
-what the last review covered: the commit it looked at, with nothing uncommitted on top. When the agent's turn ends, it
-compares:
+与一个正在评审、等你点头、或已完成的任务的代理说话时（你自己的话：从看板、`tell`、或在它自己的面板里打字；把评审或失败退回的按键不算聊天），看板保留上一次评审覆盖的内容：它看过的那个提交，上面没有未提交的东西。代理的回合结束时，它比较：
 
-- **No code changed** (a question answered, something explained, nothing committed or edited): the task goes back to the
-  stage it was in, with the same review, and no check, review or merge starts. Its row says so after the review's result
-  (`Pass · 1 minor · Chatting · no changes, review kept`), and the task panel lists it under that review
-  (`a chat changed no code, review 2 still stands`, with when and how often).
-- **A review was under way** when you wrote: it goes on (the box says `Send message to Agent: the review goes on unless the code changes`). What the reviewer changed is not put back while the agent may be at work in the same folder. If
-  the agent's turn changed nothing, the review's result stands as it ends. If it changed the code, the review is stopped
-  (or, if already through, its result no longer covers the work), and the change waits as below.
-- **The code changed**: nothing is reviewed after each message. The row says `Changes made · review starts when you're done`, and the board waits until you are:
-  - you left the chat (selected another task on the board, or, for a chat in its own pane, Herdr shows another space
-    than the agent's); or
-  - `review.afterChat` (60 seconds) passed with no new message from you and the agent at rest.
+- **代码没变**（回答了一个问题、解释了什么，没有提交或编辑）：任务回到原来的阶段，带着同一场评审，不启动检查、评审或合并。它的行在评审结果之后说明这一点（`Pass · 1 minor · Chatting · no changes, review kept`），任务面板在那场评审下列出（`a chat changed no code, review 2 still stands`，附时间和次数）。
+- **你写话时评审正在进行**：它继续（框里写着 `Send message to Agent: the review goes on unless the code changes`）。评审者改动的东西不会放回去，因为代理可能正在同一文件夹里干活。若代理的回合什么都没改，评审结果在它结束时作数。若改了代码，评审被停止（或已经跑完的话，它的结果不再覆盖工作），改动按下面等待。
+- **代码变了**：不会每来一条消息就评审。行上显示 `Changes made · review starts when you're done`，看板等你聊完：
+  - 你离开了聊天（在看板上选了别的任务，或聊天在自己的面板里时，Herdr 显示了别的空间而不是代理的）；或
+  - `review.afterChat`（60 秒）内你没有新消息、且代理已静止。
 
-  Then one review runs on the final state, through the whole finish line (commit, main brought in, check, push, review).
-  Another message before then restarts the quiet time. A turn that puts the code back as it was reviewed puts the task
-  back too.
+  然后在最终状态上跑一次评审，走完整个收尾流水线（提交、并入 main、检查、推送、评审）。之前再来一条消息会重新计时。把代码改回评审时样子的回合，也会把任务改回去。
 
-Everything else stays as it was. What you ask for in a chat is still reviewed before any merge. A task that merges by
-itself never merges while a chat is open or with unreviewed changes. An approval you gave is withdrawn when the code
-changes. A merge waiting for GitHub's checks is called off by any chat: its change waits for you to be done, like any
-chat's, and the task waits for your new yes after the review.
+其他一切照旧。你在聊天里要求的东西在任何合并前仍要评审。自己合并的任务绝不会在聊天开着或有未评审改动时合并。你给过的批准在代码改动时撤回。等 GitHub 检查的合并会被任何聊天叫停：它的改动等你聊完，和任何聊天一样，任务在评审后等你的新点头。
 
-## When a task is done
+## 任务完成时
 
-Merged here or on GitHub, finished with nothing to merge, or called done by you: its space leaves Herdr's sidebar by
-itself, and its worktree and branch are removed. `workspace.cleanup false` keeps everything.
+在这里或 GitHub 上合并、无可合并而收尾、或由你说完成：它自己离开 Herdr 的侧栏，工作树和分支被删除。`workspace.cleanup false` 保留一切。
 
-**Work is never lost for it:**
+**工作绝不会因此丢失：**
 
-- A checkout with unsaved files, or with work that was never merged, stays on disk with its branch. The task says where,
-  and a reply continues there.
-- A space you are using again is not closed: a turn in the agent's own terminal, a command running in any of its panes
-  (including one a finished agent left running in the background).
-- What an agent program keeps running as part of itself is no such command: its MCP servers, or its own program under
-  an npm wrapper (`codex` installed with npm). They are in the agent's own process group, and an MCP server's input and
-  output are wired to the agent itself (a pipe or a socket the agent holds the other end of). What such a helper runs
-  under it is its own too (a language server's telemetry, in a group of its own). So a finished agent with MCP or
-  language servers is closed like any other. A command whose streams go elsewhere (the terminal, a file, `/dev/null`) keeps
-  the space open, in the agent's group or not, and so does one in a group of its own. What cannot be told counts as a
-  command.
-- Nor is one Herdr could not answer for, or whose Herdr session is not running: then nothing of the task is touched.
-- The clean-up is tried again by itself (about every half minute, board open or closed) and happens once the space is
-  free. After a turn of the agent, only once that has been quiet for ten minutes. Work that appeared meanwhile is kept.
-- An agent Herdr cannot place (status "unknown") counts as at work until its screen has stood still for two minutes, its
-  saved conversation ends in a finished turn, and nothing runs under the agent program but its own helpers (above). So
-  an agent of unknown status that keeps a command of its own running is never closed by itself: archive or remove its
-  task.
+- 有未保存文件、或有从未合并的工作的检出，带着它的分支留在磁盘上。任务说明在哪里，回复就在那里继续。
+- 你又在用的空间不会被关掉：代理自己终端里的一个回合、它任何面板里正在跑的命令（包括完成的代理留在后台跑的）。
+- 代理程序作为自身一部分保持运行的东西不算这样的命令：它的 MCP 服务器，或 npm 包装下的自身程序（用 npm 装的 `codex`）。它们在代理自己的进程组里，MCP 服务器的输入输出接在代理身上（代理握着另一端的管道或 socket）。这种帮手在它下面跑的东西也归它自己（语言服务器的遥测，在自己的组里）。所以带 MCP 或语言服务器的完成代理像其他一样被关掉。流去往别处的命令（终端、文件、`/dev/null`）会让空间保持打开，无论在不在代理的组里；在自己组里的也一样。分不清的按命令算。
+- Herdr 答不上来的、或其 Herdr 会话没在跑的也不关：那样任务的一切都不动。
+- 清理会自己重试（约每半分钟一次，看板开或关都一样），空间一空闲就清理。代理有过回合后，要等它安静十分钟。期间出现的工作会保留。
+- Herdr 无法定位的代理（状态「unknown」）在以下条件满足前都算在干活：屏幕静止两分钟、已保存的会话以完成的回合结尾、代理程序下没跑东西除了它自己的帮手（见上）。所以状态未知、还挂着自己命令的代理绝不会被自己关掉：归档或移除它的任务。
 
-A reply to work that was cleaned up starts a new round in a fresh worktree.
+对已清理工作的回复会在一个新工作树里开新一轮。
 
-Herdr also opens the repo itself as a space when it makes a repo's first worktree. That one is closed with the repo's last
-task space, unless it was open before or you use it (a second pane or tab, an agent, a running command, or you are
-looking at it).
+Herdr 在为仓库建第一个工作树时，也会把仓库本身作为一个空间打开。它随该仓库最后一个任务空间一起关闭，除非它之前就开着、或你在用它（第二个面板或标签页、一个代理、一个正在跑的命令，或你正看着它）。
 
-## With the board closed: the keeper
+## 看板关闭时：看守
 
-A small background process, the keeper (`omh keeper`), does what the open board's tick does: it polls pull
-requests, starts queued tasks, runs the Watcher, and keeps Herdr's sidebar current.
+一个小的后台进程，看守（keeper，`omh keeper`），做打开的看板每次 tick 做的事：轮询 PR、启动排队的任务、运行观察者（Watcher）、让 Herdr 的侧栏保持最新。
 
-- **The sidebar.** An agent's entry there is a small copy of its task's row on the board ([Herdr's sidebar](sidebar.md)):
-  the task's number and title; who is on it and where it stands, in the board's own words (one list:
-  `crates/core/src/status_words.rs`), with the review round and the pull request; and the row's percent and time to go
-  (`8% 16m`). The pane's title names the task the same way, so the web UI's sidebar reads the same. A running review has
-  two entries, the agent's and the reviewer's: they are two agents. The sidebar shows only tasks with a live agent pane;
-  the others (queued, your own) are on the board only.
-- **No notifications.** It raises no pop-up or sound: what needs you is on the board and in Herdr's sidebar.
-- **Its life.** Herdr starts it with its server. Any Herdr event, or opening the board, starts it again if it died. It
-  replaces itself when the plugin is updated, and exits when Herdr is gone. It looks after this machine's tasks only.
-- An open board does the same. After an update it loads the new version by itself, in place, once nothing is half typed.
-- **One pass at a time.** This round of looking after the tasks also runs after every hook and every background job.
-  Only one runs per Herdr session at a time: one that comes while another is under way (a slow Herdr) does nothing
-  itself, and the one under way goes round once more at its end if it was asked to (a pull request poll is never lost).
-  A clean-up still running for a task is not started again.
+- **侧栏。** 代理在那里的一条目是它任务行在看板上的小副本（[Herdr 的侧栏](sidebar.md)）：任务的编号和标题；谁在干、干到哪，用看板自己的词（一份列表：`crates/core/src/status_words.rs`），带评审轮次和 PR；以及行的百分比和剩余时间（`8% 16m`）。面板的标题同样以这种方式命名任务，所以 web UI 的侧栏读起来一样。进行中的评审有两个条目，代理的和评审者的：它们是两个代理。侧栏只显示有活着的代理面板的任务；其他（排队的、你自己的）只在看板上。
+- **没有通知。** 不弹窗、不出声：需要你的在看板上和 Herdr 的侧栏里。
+- **它的生命。** Herdr 随它的服务器一起启动它。任何 Herdr 事件、或打开看板，都会在它死掉后重新启动它。插件更新时它替换自己，Herdr 消失时退出。它只照看本机的任务。
+- 打开的看板做同样的事。更新后它自己就地加载新版本，在没有东西打到一半的时候。
+- **一次只跑一轮。** 这一轮照看任务的活也在每个钩子和每个后台任务之后运行。每个 Herdr 会话同时只跑一个：另一个进行中时到来的那个（慢的 Herdr）自己什么都不做，进行中的那个在结束时若被请求过就再跑一轮（PR 轮询绝不丢失）。某个任务的清理还在跑时不会重复启动。

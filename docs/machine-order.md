@@ -1,85 +1,57 @@
-# Machine order
+# 机器顺序
 
-**The board lists machines in the same order as Herdr's machines sidebar** (the **machines** panel on the left of the
-Herdr window). Reorder the sidebar and the board follows: another machine's order at its next answer (a few seconds),
-this machine's own within a minute.
+**看板按 Herdr 机器侧栏的顺序列出机器**（Herdr 窗口左侧的 **machines** 面板）。重排侧栏，看板跟着走：别的机器的顺序在它下次回答时生效（几秒内），本机的在一分钟内生效。
 
-That order is used everywhere machines are listed:
+所有列出机器的地方都用这个顺序：
 
-- the machine headings in the list;
-- `Alt+M`'s round (every machine, then each machine by itself), shown as the filter row's first item;
-- the same on the web board, and the web UI's Boards section and its list of whose tasks to show, whatever order the
-  web UI keeps its PCs in ([web UI](web-ui.md)). There **All machines** stands first, above the machines.
+- 列表里的机器标题；
+- `Alt+M` 的轮换（所有机器，然后逐台），显示为筛选行的第一项；
+- web 看板上相同，以及 web UI 的 Boards 部分和它「显示谁的任务」的列表，不论 web UI 按什么顺序保存它的 PC（[web UI](web-ui.md)）。那里 **All machines** 排在最前，在各机器之上。
 
-## Where Herdr keeps the order
+## Herdr 把顺序存在哪
 
-Herdr's sidebar shows **Local** first, then the saved machines that are turned on, in the order of its list of saved
-machines.
+Herdr 侧栏先显示 **Local**，然后是开启的已保存机器，按它保存机器列表的顺序。
 
-- `herdr machine list --json` prints that list in order, and says which machine the window shows now (`selected`).
-- Herdr has no command to change the order. A new machine goes to the end. A plugin such as Reorder Machines, or an
-  edit of Herdr's list, moves it.
-- The list lives on the computer the Herdr window runs on, which is often not the one the board runs on. With the
-  Herdr window on a laptop showing a Mac mini's board, the laptop's order is the one that counts. The Mac mini's own
-  list (in the order its machines were added) is a different one.
+- `herdr machine list --json` 按顺序打印那个列表，并说明窗口当前显示哪台机器（`selected`）。
+- Herdr 没有改顺序的命令。新机器排在末尾。像 Reorder Machines 这样的插件，或者直接编辑 Herdr 的列表，可以移动它。
+- 列表保存在 Herdr 窗口运行所在的电脑上，通常不是看板运行所在的那台。笔记本上的 Herdr 窗口显示 Mac mini 的看板时，起作用的是笔记本上的顺序。Mac mini 自己的列表（按它的机器添加顺序）是另一份。
 
-## Which sidebar the board follows
+## 看板跟随哪个侧栏
 
-Every machine sends its Herdr list along with its tasks. The board picks, in this order:
+每台机器随它的任务发来它的 Herdr 列表。看板按以下顺序选取：
 
-1. **The sidebar of a machine whose Herdr window shows this machine now.** That machine is its own Local, so it comes
-   first; this machine stands where that sidebar puts it.
-2. **The one it followed before**, as long as that sidebar still has this machine (even if its window has since moved
-   to another machine). The choice is saved with the board's view, so it holds after the board closes. Until that
-   machine answers again, the board uses this machine's own list.
-3. **This machine's own Herdr list**, with this machine (its Local) first.
-4. **None**, when no list can be read (an older Herdr, or machines named by hand in `board.machines`): this machine
-   first, then the others by name.
+1. **Herdr 窗口当前显示本机的那台机器的侧栏。** 那台机器是它自己的 Local，所以排最前；本机站在那个侧栏放它的位置。
+2. **之前跟随的那个**，只要那个侧栏仍有本机（哪怕它的窗口已经移到别的机器）。这个选择随看板视图保存，看板关闭后仍有效。在那台机器再次回答之前，看板用本机自己的列表。
+3. **本机自己的 Herdr 列表**，本机（它的 Local）排最前。
+4. **都没有**，当一个列表都读不到（Herdr 太旧，或 `board.machines` 里手写的机器）：本机在前，其余按名字排。
 
-### How the board finds itself in another machine's list
+### 看板怎么在别的机器的列表里找到自己
 
-This machine is the saved machine that connects to one of its names, in its own Herdr session:
+本机是连接到它某个名字的那个已保存机器，在那台机器自己的 Herdr 会话里：
 
-- its host name (a `.local` name, as a Mac names itself, also without `.local`);
-- an address of one of its network interfaces (a Tailscale address too);
-- an SSH alias, read as the host it stands for in that machine's SSH config (`ssh -G`, which that machine reads before
-  it sends its list).
+- 它的主机名（`.local` 名字，Mac 自报的名字，不带 `.local` 也行）；
+- 它某个网络接口的地址（Tailscale 地址也算）；
+- 一个 SSH 别名，按那台机器 SSH 配置里它代表的主机解析（`ssh -G`，那台机器发列表之前会读它）。
 
-Failing that, it is the saved machine whose name stands for one of those addresses: the other machine looks the names
-in its list up (DNS, Tailscale's MagicDNS) and sends the addresses with them. A Mac mini whose own host name is `Mac`,
-saved on the laptop as `eliass-mac-mini` (its Tailscale name), is found so. A list from a program that sends no
-addresses has its names looked up on the board's side. An address that another of the board's machines connects to is
-never taken for this one.
+都不行时，是名字代表这些地址之一的那个已保存机器：那台机器查它列表里的名字（DNS、Tailscale 的 MagicDNS）并把地址一并发来。一台自己主机名是 `Mac`、在笔记本上保存为 `eliass-mac-mini`（它的 Tailscale 名）的 Mac mini 就是这样被找到的。程序发来的列表若不带地址，名字就在看板这边查。看板的另一台机器连接到的地址绝不会被当成这一台。
 
-A sidebar where this machine is not found that way, or is turned off, is not followed. A machine the board does not
-know is never taken for this one.
+按这种方式找不到本机、或本机关着的侧栏，不被跟随。看板不认识的机器绝不会被当成这一台。
 
-The other machines are matched to the board's machines by where they connect (same host, port and Herdr session), or
-else by name. Host names are compared whole: `build.prod.example` is never `build.dev.example`. Only a bare name
-matches the first part of a whole one (`mac-mini` and `mac-mini.tail1234.ts.net`). This machine's bare names are only
-the ones it really has, never cut from its whole name.
+其他机器按连接位置（相同的主机、端口和 Herdr 会话）与看板的机器对应，否则按名字。主机名整体比较：`build.prod.example` 绝不是 `build.dev.example`。只有裸名字能匹配完整名字的开头部分（`mac-mini` 和 `mac-mini.tail1234.ts.net`）。本机的裸名字只算它真有的，绝不从完整名字里截出来。
 
-## Names
+## 名字
 
-Where the board follows another machine's sidebar, it names the machines as that sidebar does, with its own name beside
-it where the two differ: `Local (elias-macbook-pro-m1)` for the machine whose window it is, `Mac mini (Mac)` for this
-one. The same names are in the filter row and on the web board. Following this machine's own list,
-the board's names stand. A machine's name in a scope, a message or a coordinator's name is still the board's.
+看板跟随别的机器的侧栏时，按那个侧栏的方式命名机器，两者不一致时把看板自己的名字放在旁边：给它所在的那台机器是 `Local (elias-macbook-pro-m1)`，给本机是 `Mac mini (Mac)`。筛选行和 web 看板上是同样的名字。跟随本机自己的列表时，用看板的名字。作用域、消息或协调者名字里的机器名仍是看板的。
 
-## Machines the sidebar does not show
+## 侧栏不显示的机器
 
-A machine the board knows but the followed sidebar does not show (turned off there, or not saved there) comes after
-the rest: this machine first, then by name.
+看板认识但被跟随的侧栏不显示的机器（在那边关了，或没保存在那边）排在其余之后：本机在前，然后按名字。
 
-A machine that does not answer stays where Herdr puts it, as Herdr keeps it in its sidebar too.
+不响应的机器留在 Herdr 放它的位置，因为 Herdr 也把它留在侧栏里。
 
-## A machine on an older program
+## 程序较旧的机器
 
-A machine whose program is older than this feature (herdr-superwork 0.3.0, say) sends no Herdr list. The board then
-asks that machine's Herdr itself, over the same SSH, at each of its answers (`herdr machine list --json`), and follows
-its sidebar all the same.
+程序比这个功能老的机器（比如 herdr-superwork 0.3.0）不发 Herdr 列表。看板会在它每次回答时，通过同一条 SSH 直接问那台机器的 Herdr（`herdr machine list --json`），照旧跟随它的侧栏。
 
-- Only an SSH alias in that list is not resolved there. So the entry for this machine must use one of its own names or
-  addresses. A newer program there resolves aliases.
-- A machine whose Herdr gives no list (none found by a login shell there, or a Herdr older than saved machines) is
-  never followed, and is placed like any other.
+- 那个列表里的 SSH 别名不在那边解析。所以本机的条目必须用它自己的名字或地址。那边的新版程序会解析别名。
+- Herdr 给不出列表的机器（那边登录 shell 找不到，或 Herdr 早于已保存机器功能）从不被跟随，和其他机器一样按普通方式放置。

@@ -1,85 +1,74 @@
-# The check's progress
+# 检查的进度
 
-**While the board runs a repo's check, the task shows how far along it is.** Nothing shown is a guess, and the
-Watcher is not asked. A check can report a count by writing to one file; one that writes nothing still gets a timer.
+**看板跑仓库的检查时，任务会显示跑到哪了。** 显示的都不是猜的，也不会去问观察者（Watcher）。检查可以往一个文件里写计数来上报进度；什么都不写的检查也有计时。
 
-The board runs the `check` itself: at the finish line when the agent says it is done, and again after catching up
-with main before a merge ([how work gets done](how-work-gets-done.md)). The progress shows everywhere a task's
-progress shows: its row, the task panel, the details page, the chat line and Herdr's sidebar.
+看板自己跑 `check`：在收尾流水线上、代理说做完的时候，以及合并前追上 main 之后（[工作怎么完成](how-work-gets-done.md)）。进度显示在所有显示任务进度的地方：它的行、任务面板、详情页、聊天行和 Herdr 的侧栏。
 
-## What the task shows
+## 任务显示什么
 
-| The check | The line | Bar and percent | Minutes left |
+| 检查 | 行上 | 进度条与百分比 | 剩余分钟 |
 |---|---|---|---|
-| runs, and reports a count | `Running the check · tests 31 of 47` | the count: 31 of 47 is 65% | how long full runs took here, minus the time spent |
-| waits for its turn | `Waiting for its turn · 2 ahead` | none | the runs ahead, then its own |
-| answers at once: this code passed before | `The check already passed for this exact code` | none | none |
-| runs, and reports nothing | `Running the check · 2m of about 5m` | none | what it took before, minus the time spent |
-| reports nothing, and never ran here before | `Running the check · 2m` | none | none |
+| 在跑，并上报计数 | `Running the check · tests 31 of 47` | 计数：47 里的 31 就是 65% | 这里完整跑一遍的耗时，减去已用时间 |
+| 等着轮到自己 | `Waiting for its turn · 2 ahead` | 无 | 前面几轮，再加它自己那轮 |
+| 立刻回答：这些代码以前通过过 | `The check already passed for this exact code` | 无 | 无 |
+| 在跑，但什么都不上报 | `Running the check · 2m of about 5m` | 无 | 以前的耗时，减去已用时间 |
+| 不上报，且这里从没跑过 | `Running the check · 2m` | 无 | 无 |
 
-### The percent
+上表各行原文的意思是「运行检查 · 测试 47 个里的第 31 个」「等着轮到自己 · 前面还有 2 个」「这些代码的检查已经通过过」「运行检查 · 约 5 分钟里的 2 分钟」「运行检查 · 2 分钟」。
 
-Only ever the count: finished out of total. It is 100% only when all are finished.
+### 百分比
 
-### The minutes left
+只按计数算：已完成除以总数。只有全部完成才是 100%。
 
-- They come from the last runs of the same command, in the same repo, on this machine, that ran in full and passed.
-  The middle one of the last five is used, so one slow run on a busy machine does not move it.
-- A run that had part of its work done before it began counts as that share of a full run.
-- Once a run is past its usual time, the minutes follow its own pace so far (and are left out while under a twentieth
-  is done). With no run timed yet, they follow its own pace too.
-- Never under a minute while work is left.
-- **Waiting:** one usual run for each run ahead, minus the time since the line last moved, then the check's own run.
-  With no timed run, none are shown.
+### 剩余分钟
 
-### When it stands still
+- 来自同一仓库、同一命令、这台机器上最近几次完整跑完且通过的运行。取最近五次的中间值，所以忙机器上一次慢跑不会带偏它。
+- 开始前已有一部分工作做完的那次运行，按占完整运行的份额计时。
+- 一旦超过它的通常耗时，剩余分钟就按它自己至今的节奏走（完成不到二十分之一时不显示）。没有计时过的运行，也按它自己的节奏走。
+- 只要还有活没干完，就不少于一分钟。
+- **等待时**：前面每个排队的运行算一次通常耗时，减去行上最后一次动以来的时间，然后加上检查自己那轮。没有计时过的运行时不显示。
 
-When nothing has moved for three times as long as a full run takes (at least three minutes; ten where no run was
-timed), the row says so instead of looking frozen:
+### 什么时候算卡住
 
-- `The check stands still · nothing finished for 13m · tests 31 of 47` (the bar stays, the minutes go)
-- `Waiting for its turn unusually long · nothing moved for 13m · 2 ahead`
-- `The check has not ended · all finished 16m ago · tests 47 of 47`, when the count is complete but the check does not
-  end.
+当超过完整运行耗时三倍（至少三分钟；没有计时过的是十分钟）什么都没动时，行上会说出来，而不是看着像卡死：
 
-A check that reports nothing cannot be seen standing still, only running long. Past three times its usual time (and
-at least ten minutes over), the row says `The check runs far longer than usual · 16m, usually 2m`.
+- `The check stands still · nothing finished for 13m · tests 31 of 47`（检查卡住不动 · 13 分钟没有完成项 · 测试 47 个里的第 31 个；进度条留着，分钟消失）
+- `Waiting for its turn unusually long · nothing moved for 13m · 2 ahead`（等轮到自己等得异常久 · 13 分钟没有动静 · 前面还有 2 个）
+- `The check has not ended · all finished 16m ago · tests 47 of 47`（检查没有结束 · 16 分钟前就全部完成 · 测试 47 个里的第 47 个），计数已满但检查不结束时出现。
 
-### The colour
+什么都不上报的检查看不出卡住，只能看出跑得久。超过通常耗时三倍（且至少超出十分钟）时，行上显示 `The check runs far longer than usual · 16m, usually 2m`（检查跑得比平常久得多 · 16 分钟，平常 2 分钟）。
 
-The mark, bar, percent and minutes are a plain light grey while the board checks: the theme's `subtext0`, under the
-name `check`. Amber is the agent's colour, blue is the reviewer's, and grey is the board's own step. It is brighter
-than the greyed words beside it, and has no hue.
+### 颜色
 
-## How a check reports its progress
+看板检查期间，标记、进度条、百分比和分钟是朴素的浅灰：主题里的 `subtext0`，名字是 `check`。琥珀色是代理的颜色，蓝色是评审者的，灰色是看板自己这一步。它比旁边灰掉的字亮，没有色相。
 
-The board gives the check command one more variable, `OMH_PROGRESS`: the name of a file. The check writes
-where it is to that file, as often as it likes, each time replacing the whole file. The board reads it once a second.
+## 检查怎么上报进度
 
-Write one line, as JSON or plain words:
+看板给检查命令多一个变量 `OMH_PROGRESS`：一个文件名。检查把自己的进度写进那个文件，想写多勤都行，每次整个文件替换。看板每秒读一次。
 
-| Written | Means |
+写一行，JSON 或纯文字：
+
+| 写的内容 | 含义 |
 |---|---|
-| `{"done": 31, "total": 47, "unit": "tests"}` | 31 of 47 are finished. `unit` is the word shown before the count; leave it out for none |
-| `31/47` or `31 of 47 tests` | the same, for a shell script |
-| `{"done": 45, "total": 50, "before": 40}` | 40 of them were done before this run began (they passed earlier and did not run again): the run is timed as part of a full one |
-| `{"state": "waiting", "ahead": 2}` | it has not started: two runs go first |
-| `{"state": "known"}` | answered at once, nothing run: this exact code passed before |
+| `{"done": 31, "total": 47, "unit": "tests"}` | 47 个里完成 31 个。`unit` 是计数前显示的那个词；不写就没有 |
+| `31/47` 或 `31 of 47 tests` | 同上，给 shell 脚本用 |
+| `{"done": 45, "total": 50, "before": 40}` | 其中 40 个在本次运行开始前就做完了（之前通过过，没有再跑）：这次运行按完整运行的一部分计时 |
+| `{"state": "waiting", "ahead": 2}` | 还没开始：前面还有两次运行 |
+| `{"state": "known"}` | 立刻回答，什么都没跑：这些代码以前通过过 |
 
-A shell check, for example:
+一个 shell 检查的例子：
 
 ```sh
 n=0; total=$(ls tests/*.sh | wc -l)
 for t in tests/*.sh; do sh "$t" || exit 1; n=$((n+1)); [ -n "$OMH_PROGRESS" ] && echo "$n/$total tests" > "$OMH_PROGRESS"; done
 ```
 
-Good to know:
+要知道的：
 
-- Write the file in one go (write a file beside it and rename it, or one short `echo`): the board may read at any
-  moment.
-- A line the board cannot read changes nothing.
-- `done` past `total` counts as `total`.
-- The file is the board's own, in the task's folder, and is removed when the check ends.
-- Whether the check passed is its exit status, as always, never what it wrote.
+- 一次写完整个文件（在旁边写好再改名，或一条短 `echo`）：看板随时可能在读。
+- 看板读不懂的行等于没写。
+- `done` 超过 `total` 就按 `total` 算。
+- 这个文件归看板所有，在任务的文件夹里，检查结束就删掉。
+- 检查是否通过，一如既往只看它的退出码，绝不看它写了什么。
 
-This repo's own check reports this way: [testing](testing.md).
+这个仓库自己的检查就是这样上报进度的：[测试](testing.md)。

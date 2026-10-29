@@ -1,48 +1,40 @@
-# What a key shows at once
+# 一次按键立刻显示什么
 
-**A key that acts on a task shows it right away**, even when the work takes a while (setting up a worktree, starting
-an agent, a merge, another machine answering). The row gets the working mark and says what is happening, in the
-working colour. The task panel says the same under Status, as `Now`.
+**作用于任务的按键会立刻给出反馈**，即使工作要花点时间（准备任务的工作树、启动代理、合并、另一台机器应答）。行上出现进行中的标记，并用进行中的颜色说明正在发生什么。任务面板在 Status 下以 `Now` 显示同样的内容。
 
-| Key | The row says |
+| 按键 | 行上显示 |
 |---|---|
-| `Ctrl+S`, or a first reply to a task with no agent | `Starting…` |
-| `Ctrl+X` on a running task | `Stopping…` |
-| `Ctrl+X` then `y` on one that is not running | `Removing…` |
-| `Ctrl+L` | `Merging…` (after the `y`), `Approving…`, `Trying again…` or `Finishing as it is…`, depending on what it says yes to |
+| `Ctrl+S`，或对没有代理的任务发出第一条回复 | `Starting…` |
+| 对运行中的任务按 `Ctrl+X` | `Stopping…` |
+| 对未运行的任务按 `Ctrl+X` 再按 `y` | `Removing…` |
+| `Ctrl+L` | `Merging…`（在 `y` 之后）、`Approving…`、`Trying again…` 或 `Finishing as it is…`，取决于你对什么说了 yes |
 | `Ctrl+R` | `Sending back…` |
-| `Ctrl+A`, `Ctrl+Z` | `Archiving…`, `Restoring…` |
-| `Ctrl+P` (on a task, and on a machine's or a project's row, here or on its machine) | `Pinning…`, `Unpinning…` |
-| `y` when picking an attempt | `Keeping attempt B…` |
-| `Alt+O` | `Opening…` (until its pane opens) |
-| `Space`, `Ctrl+S`, `Ctrl+X` on an automation | `Turning on…`, `Turning off…`, `Firing…`, `Removing…` |
-| `Ctrl+S`, `Ctrl+X`, `Ctrl+O` on a machine's or a project's row (its coordinator, here or on its machine) | `Starting…` (started, or autopilot on), `Stopping…` (stopped, or autopilot off), in the time's place with the working mark |
-| `Alt+O` on a machine's or a project's row | `Opening…` |
+| `Ctrl+A`、`Ctrl+Z` | `Archiving…`、`Restoring…` |
+| `Ctrl+P`（对任务，以及对机器或项目的行，本机或其所在机器上） | `Pinning…`、`Unpinning…` |
+| 选择并行尝试时按 `y` | `Keeping attempt B…` |
+| `Alt+O` | `Opening…`（直到它的面板打开） |
+| 对自动化按 `Space`、`Ctrl+S`、`Ctrl+X` | `Turning on…`、`Turning off…`、`Firing…`、`Removing…` |
+| 对机器或项目的行按 `Ctrl+S`、`Ctrl+X`、`Ctrl+O`（其协调者，本机或其所在机器上） | `Starting…`（已启动，或自动驾驶已开）、`Stopping…`（已停止，或自动驾驶已关），显示在时间的位置上，带进行中的标记 |
+| 对机器或项目的行按 `Alt+O` | `Opening…` |
 
-**Nothing is said under the chat when it worked**: no confirmation line, for any key. The row shows what is under way,
-then what it became. What went wrong is still said (below).
+这些词都是看板界面上的原文，意思是「启动中……」「停止中……」「移除中……」「合并中……」「批准中……」「重试中……」「按原样收尾……」「退回中……」「归档中……」「恢复中……」「固定中……」「取消固定中……」「保留并行尝试 B……」「打开中……」「开启中……」「关闭中……」「触发中……」。
 
-## When it ends
+**成功时聊天区不显示任何东西**：任何按键都没有确认行。行上先显示正在进行的事，再显示它的结果。出错仍然会说（见下）。
 
-The words stay until the board has read the task again after the work ended. Then the row shows the task's real state.
-A read that started before the work ended does not count, so the row never flickers back to the old state.
+## 何时结束
 
-For another machine's task, the words stay until that machine shows the task changed, or has answered twice (at most
-15 seconds).
+这些词会一直留着，直到工作结束后看板重新读到该任务。之后行上显示任务的真实状态。在工作结束之前就开始的那次读取不算数，所以行上不会闪回旧状态。
 
-## When it fails
+对另一台机器上的任务，这些词会留到那台机器显示任务已变化，或它已应答两次（最多 15 秒）。
 
-The row says so in red, with the error mark: `Could not stop: …` and why. The panel says the same under `Now`, and the
-message line says it until you press `Esc`. The row goes back to normal after ten seconds, or when `Esc` dismisses the
-error.
+## 失败时
 
-## Pressing the key again
+行上用红色加错误标记显示：`Could not stop: …` 及原因。任务面板在 `Now` 下显示同样的内容，消息行也会显示，直到你按 `Esc`。十秒后行上恢复正常，或者按 `Esc` 关掉错误时恢复。
 
-It does nothing while the work is under way, so nothing starts twice. The message line says
-`Still starting PRJ-12. One moment.`
+## 再按一次
 
-Typing to the task's agent and going into its pane never wait. They also leave the row's words alone: the row keeps
-saying `Stopping…` until the stop is done.
+工作进行中再按没有任何作用，所以同一件事不会启动两次。消息行显示 `Still starting PRJ-12. One moment.`。
 
-A task whose row is not in view (say, one restored from the archive with `Ctrl+Z`) gets the words on the message line
-instead: `Restoring PRJ-12 "Fix the build"…`.
+向任务的代理打字、进入它的面板，都不用等。它们也不会动行上的那句话：行上会一直显示 `Stopping…`，直到停止完成。
+
+不在视野里的任务（比如用 `Ctrl+Z` 从归档恢复的任务），这些话改在消息行上显示：`Restoring PRJ-12 "Fix the build"…`。

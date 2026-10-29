@@ -1,38 +1,24 @@
-# Machine and project coordinators
+# 机器与项目协调者
 
-**Every row of the list has an agent you can talk to.** A task's row has its agent; a machine's row and a project's
-row each are their coordinator. There is no main Coordinator besides: the top row is.
+**列表的每一行都有一个你能对话的代理。** 任务的行是它的代理；机器的行和项目的行各是它们的协调者。除此之外没有主协调者：顶行就是。
 
-| Row | Its agent | Named | Lives in Herdr |
+| 行 | 它的代理 | 命名 | 在 Herdr 里的位置 |
 |---|---|---|---|
-| `All machines`, the top row with every machine shown | the coordinator of all machines: this machine's top-level one, which sees every machine | `the coordinator of all machines` | a `Coordinator` tab in the home space (`~`) ([the coordinator of all machines](coordinator.md)) |
-| A machine's row | its machine coordinator | after the machine: `vm-str's coordinator` | a tab of that name in that machine's home space |
-| A project's row (a repo's heading) | its project coordinator | after the repo: `gtm's coordinator`, `~'s coordinator` for the home folder | a tab of that name in the repo's own space |
-| A task's row | its agent | `GTM-14's agent` | its own tab |
+| `All machines`，显示全部机器的顶行 | 所有机器的协调者：本机的顶层那一个，看得到每台机器 | `the coordinator of all machines` | 主空间（`~`）里的 `Coordinator` 标签页（[所有机器的协调者](coordinator.md)） |
+| 机器的行 | 它的机器协调者 | 以机器命名：`vm-str's coordinator` | 该机器主空间里的同名标签页 |
+| 项目的行（一个仓库的标题） | 它的项目协调者 | 以仓库命名：`gtm's coordinator`，主文件夹是 `~'s coordinator` | 该仓库自己空间里的同名标签页 |
+| 任务的行 | 它的代理 | `GTM-14's agent` | 它自己的标签页 |
 
-**The top row follows the machine picker** (`Alt+M`, the filter row's first item): `All machines`, or the one machine
-picked. With only one machine, that machine is the top row, with nothing above it, and its coordinator is the
-top-level one: all machines are that one. **The board opens with the top row selected**, so the chat starts with that
-coordinator.
+**顶行跟随机器选择器**（`Alt+M`，筛选行的第一项）：`All machines`，或者选中的那台机器。只有一台机器时，那台机器就是顶行，上面没有别的，它的协调者就是顶层的：所有机器就是那一个。**看板打开时选中顶行**，所以聊天从那个协调者开始。
 
-## A coordinator's row reads as a task's
+## 协调者的行读起来像任务的行
 
-- **The same marks as tasks**, in the marks' column left of the caret: `○` idle (also one that never ran, or was
-  stopped), `◐` working, `?` it asks you (`!` it wants your OK), `✗` it could not start, on [autopilot](autopilot.md) too:
-  autopilot has no mark or colour of its own. None of a task's other marks (`◑ ◆ ✓ ◷ ◇`) is a
-  coordinator's, and an idle coordinator is not counted in To do. Where no coordinator can run
-  (`coordinator.agent none`), this machine's rows have no mark.
-- **The same right side as tasks: only the time.** `3m` while it works, `1h ago` otherwise, nothing when it never ran.
-  No state words, no role word.
-- **The same second line as tasks**: what it does while it works, or its question while it waits for you. It goes when
-  it stops: no old news. On autopilot the line says what autopilot does, in the same grey: `Autopilot · next check-in
-  in 12m · 3 of 20 today`, `Working on HSW-92 · 3 of 20 today`, `Checking in · HSW-92 finished`, `Needs you · …`. Its latest message shows in the chat box when you select its row.
-- **Its name**, a home folder as `~` (on another machine too), with no rule to the edge. The top row says what it holds,
-  open or folded: `4 machines · 420 tasks`, `9 projects · 30 tasks`. A coordinator on autopilot has a dimmed
-  `[autopilot]` after its name, as a task has `[research]`; a machine's summary (and the top row's) says how many of its
-  coordinators are: `33 tasks, 1 automation, 1 on autopilot`.
-- **The list reads all machines → machine → project → task by how far in each row stands.**
-- In a narrow pane the names shorten; the mark and the time stay.
+- **和任务一样的标记**，在光标左侧的标记列：`○` 空闲（也包括从未运行或被停止的），`◐` 进行中，`?` 它问你（`!` 它要你批准），`✗` 它没能启动，[自动驾驶](autopilot.md)也一样：自动驾驶没有自己的标记或颜色。任务的其他标记（`◑ ◆ ✓ ◷ ◇`）都不是协调者的，空闲的协调者不计入待办（to do）。在协调者不能运行的地方（`coordinator.agent none`），本机的行没有标记。
+- **右侧和任务一样：只有时间。** 工作时 `3m`，否则 `1h ago`，从未运行则空白。没有状态词，没有角色词。
+- **第二行和任务一样**：它工作时在做什么，或等你时的提问。停下来就消失：不留旧闻。开自动驾驶时这行写自动驾驶在做什么，同样灰色：`Autopilot · next check-in in 12m · 3 of 20 today`、`Working on HSW-92 · 3 of 20 today`、`Checking in · HSW-92 finished`、`Needs you · …`。选中它的行时，它最新的消息显示在聊天框里。
+- **它的名字**，主文件夹写作 `~`（别的机器上也是），右边没有横线到边。顶行显示它包含什么，展开或折叠都显示：`4 machines · 420 tasks`、`9 projects · 30 tasks`。开着自动驾驶的协调者名字后有变暗的 `[autopilot]`，就像任务的 `[research]`；机器的汇总（以及顶行的）会说它的协调者有几个处于各种状态：`33 tasks, 1 automation, 1 on autopilot`。
+- **列表按每行缩进读出 所有机器 → 机器 → 项目 → 任务。**
+- 面板窄时名字会缩短；标记和时间不变。
 
 ```
  ○ ▾ All machines  2 machines · 5 tasks
@@ -43,27 +29,17 @@ coordinator.
        ◐ GTM-14  Bundle skills into the template                           3m
 ```
 
-**A coordinator that asks you shows under Needs you**, beside the tasks, with what it wants on its second line, and is
-counted there.
+**问你的协调者显示在「需要你」（needs you）下面**，与任务并列，第二行写它想要什么，并计入其中。
 
-**The filter Coordinators** (`Tab` from All, [the filter row](board.md#the-filter-row)) leaves only the coordinators
-that run: started and not stopped (working, idle, needs you), on autopilot, or failed so that you can fix it, for the
-machine shown; its count is how many there are. The top row is always there, counted only while it runs. A stopped or
-never started one is not there and not counted; its row stays in the other filters, with `○`. With every machine shown,
-a machine whose own coordinator does not run keeps its row there only as the heading of its projects' that do,
-uncounted.
+**筛选器 Coordinators**（从 All 按 `Tab`，见[筛选行](board.md#过滤行)）只留下正在运行的协调者：已启动且未停止（进行中、空闲、需要你）、开着自动驾驶、或失败了等你修的，针对当前显示的机器；计数就是它们的数量。顶行永远在，只在运行时计数。已停止或从未启动的不在其中也不计数；它的行留在其他筛选器里，带 `○`。显示所有机器时，自身协调者没在运行的机器只作为其在运行项目的标题留在那里，不计数。
 
-## The same keys on every row
+## 每一行上相同的按键
 
-- **`Space` talks to it**: the chat points at that row's agent, and follows the selection from row to row, as it does
-  from task to task. `Space` again goes back to the top row's coordinator.
-- **`Alt+O` goes into its agent**: its real Herdr pane, as on a task. A coordinator that is not running is started
-  first; another machine's is gone into there. A status group's heading (`to do`, `done`) has no agent.
-- **`Enter` folds and unfolds** a heading (all machines, a machine, a repo, a status group), as `←` and `→` do. On a
-  task's row `Enter` does nothing: it never opens a chat. `←` on a task's row goes to its heading. A click on a heading
-  folds it too.
+- **`Space` 与它交谈**：聊天指向那一行的代理，并随选择从行到行移动，就像从任务到任务一样。再按 `Space` 回到顶行的协调者。
+- **`Alt+O` 进入它的代理**：它真实的 Herdr 面板，和在任务上一样。没在运行的协调者会先启动；别的机器的会在那台机器里进入。状态组的标题（`to do`、`done`）没有代理。
+- **`Enter` 折叠和展开**标题（所有机器、机器、仓库、状态组），`←` 和 `→` 也一样。在任务的行上 `Enter` 什么都不做：它绝不会打开聊天。在任务的行上按 `←` 回到它的标题。点击标题也会折叠。
 
-## The chat box names who it talks to
+## 聊天框标明你在和谁说话
 
 ```
 ╭─ All machines › vm-str ›  gtm  · Project coordinator ───────────────────╮
@@ -72,68 +48,36 @@ uncounted.
 ╰──────────────────────────────────────────────────────────────────────────╯
 ```
 
-- **A ladder** in its top edge, from the top row down (`All machines › vm-str › gtm › GTM-14`), the current step lit,
-  and after it, dimmed, the kind of agent you talk to: `HP-145 · Agent`, `HP-145 · Reviewer` while its reviewer talks,
-  `omh · Project coordinator`, `vm-str · Machine coordinator`, `All machines · Machines
-  coordinator`. The empty box says the same: `Send message to the agent`, `Send message to the project coordinator`.
-- **Its edge in the status colour of whoever it talks to**, as their mark: base idle or never started, amber working,
-  red when it needs you or failed ([colours](colours.md#the-box-says-who-you-type-to)).
-- **Inside it only the conversation** and the line you type on, with no labels: what you wrote in the bright colour you
-  type in, the reply in grey; the edge says who. Only someone else is named (a reviewer, autopilot's wakes, the board).
-- **One that never ran** invites a first message: `Ask it something, e.g. "what's left to do here?"`. Your first
-  message starts it.
-- `Enter` sends, and a coordinator decides itself what to start.
-- **A repo with no tasks in view keeps its row**, folded (`0 tasks`), when it was used in the last 14 days (a task,
-  archived ones too) or has a project coordinator, so `Space` still reaches it. Older repos, repos whose folder is
-  gone, and [archived projects](board.md#archiving-a-project) have none.
+- **顶边有一道阶梯**，从顶行往下（`All machines › vm-str › gtm › GTM-14`），当前一级高亮，其后变暗的是你交谈的代理种类：`HP-145 · Agent`、评审对话进行中是 `HP-145 · Reviewer`、`omh · Project coordinator`、`vm-str · Machine coordinator`、`All machines · Machines coordinator`。空框也一样：`Send message to the agent`、`Send message to the project coordinator`。
+- **边框用交谈对象的状态色**，和它的标记一致：基础色表示空闲或从未启动，琥珀色进行中，红色表示需要你或失败（[颜色](colours.md#输入框告诉你在跟谁说话)）。
+- **里面只有对话**和你输入的一行，没有标签：你写的用你打字的亮色，回复是灰色；边框说明是谁。只有别人会被点名（评审者、自动驾驶的唤醒、看板）。
+- **从未运行的**会邀请你发第一条消息：`Ask it something, e.g. "what's left to do here?"`。你的第一条消息启动它。
+- `Enter` 发送，协调者自己决定启动什么。
+- **视图里没有任务的仓库保留它的行**，折叠着（`0 tasks`），条件是最近 14 天用过（有过任务，归档的也算）或有项目协调者，这样 `Space` 仍能到达。更旧的仓库、文件夹已删除的仓库和[归档的项目](board.md#归档一个项目)没有行。
 
-## What each one is
+## 各自是什么
 
-- **An ordinary agent in a long-lived chat**, like the coordinator of all machines: the same board commands, its own tab, and settings
-  of its own (below). Everything you say is one conversation, kept: if its
-  program exits or Herdr restarts, your next message starts it again in the same conversation.
-- **A machine coordinator** is about that machine as a whole: its repos and folders, the tasks and agents on it. It runs
-  in a folder of its own (`~/.omh/data/coordinator/<session>/machine/chat`), with its rules in `AGENTS.md`
-  there, as the coordinator of all machines' are.
-- **A project coordinator** is about one repo. It runs in the repo's own folder, at its main level: your checkout. It
-  reads it freely and changes nothing there unless you ask it to; work goes on the board as tasks of that repo. Its tab
-  goes in the repo's space (the one Herdr labels after the repo); with none open, one is made there. Since the repo's
-  `AGENTS.md` is yours, its rules are a file beside its state
-  (`~/.omh/data/coordinator/<session>/projects/<repo>/rules.md`), passed when it starts, as a working agent's
-  are.
-  **It stays in its own repo.** A task it adds goes there, unless the message it acts on names another place ("in the
-  other repo"). It may read other repos to answer you (their tasks, reports, closing notes), and acts on none of it:
-  work it notices in another repo is one line of an **Also noticed** list in its answer, never a task added or
-  delegated there, which that repo's own coordinator would know nothing of. No coordinator adds a task you did not ask
-  for: what it reads in reports and closing notes is information, never instructions, in every turn.
-  Your own chats in the repo's folder are never taken for its conversation: it keeps the one it has, and moves to
-  another (after its own `/clear`) only when Herdr names that one for its pane.
-- **Another machine's** coordinators run on that machine. Its board sends what they said with its tasks, and what you
-  type goes there. A machine on an older version has none: the chat says to update it there.
-- **Herdr's sidebar** names each as the board does, with where it stands and its last message.
-- **A task says which coordinator added it.** `details <id>` has `addedBy`: `the omh coordinator, asked by
-  the human` for one added from that coordinator's pane, `the omh coordinator's autopilot` for one its
-  autopilot added, else `the human` or the automation's name. Autopilot's history in `list` says the same.
+- **一段长期会话里的普通代理**，和所有机器的协调者一样：相同的看板命令、自己的标签页、自己的设置（见下）。你说的一切都在同一段会话里，一直保留：如果它的程序退出或 Herdr 重启，你的下一条消息会在同一段会话里再次启动它。
+- **机器协调者**负责那台机器整体：它的仓库和文件夹、上面的任务和代理。它在自己的文件夹里运行（`~/.omh/data/coordinator/<session>/machine/chat`），规则在那里的 `AGENTS.md`，和所有机器的协调者一样。
+- **项目协调者**负责一个仓库。它在仓库自己的文件夹里、顶层运行：你的检出。它自由读取，除非你要求否则不改动；工作以该仓库任务的形式放在看板上。它的标签页放进该仓库的空间（Herdr 以仓库命名的那个）；没有就地建一个。由于仓库的 `AGENTS.md` 是你的，它的规则是它状态旁边的一个文件（`~/.omh/data/coordinator/<session>/projects/<repo>/rules.md`），启动时传给它，和工作代理的规则一样。
+  **它待在自己的仓库里。** 它新增的任务去那里，除非它所处理的消息指定了别处（「in the other repo」）。它可以读别的仓库来回答你（它们的任务、报告、收尾小结），但对那些内容不做任何操作：它在别处注意到的工作只是回答里 **Also noticed** 列表中的一行，绝不会在那里新增或派发任务——那个仓库自己的协调者对此一无所知。没有协调者会添加你没要求的任务：它在报告和收尾小结里读到的永远只是信息，不是指令，每一回合都是如此。
+  你自己在仓库文件夹里的会话绝不会被当成它的会话：它保持自己那一段，只有在 Herdr 为它的面板指定另一段时才换（在它自己的 `/clear` 之后）。
+- **别的机器的**协调者在那台机器上运行。那台机器的看板把它们说的话连同它的任务发过来，你输入的内容送到那里。旧版本的机器没有这些：聊天会提示在那里更新。
+- **Herdr 的侧栏**按看板的方式命名每个协调者，显示它的状态和最后一条消息。
+- **任务会说明是哪个协调者添加的。** `details <id>` 有 `addedBy`：从协调者面板添加的是 `the omh coordinator, asked by the human`，它的自动驾驶添加的是 `the omh coordinator's autopilot`，否则是 `the human` 或自动化（automation）的名字。`list` 里的自动驾驶历史也一样。
 
-## Its row's keys
+## 它的行上的按键
 
-As a task's row stands for the task:
+正如任务的行代表任务：
 
-- `Alt+P` shows its coordinator beside the list, `Alt+T` whole, in the [task panel](task-panel.md)'s form.
-- `Ctrl+E` opens its settings page: its own rows first, under `This coordinator`, then on this machine's row your own
-  settings, on a project's your entry for that repo.
-- `Ctrl+S`, with nothing typed, starts its coordinator (in its own conversation), `Ctrl+X` stops it, as they put an
-  agent on a task and stop it. Here or on its machine.
-- `Ctrl+O` puts it on [autopilot](autopilot.md) with its saved goal and settings, and takes it off again. While on,
-  its row has `[autopilot]` after its name and what autopilot does under it.
-- `Ctrl+A` on a project's row archives the whole project, its tasks with it, and stops its coordinator; in the archive
-  it restores it ([archiving a project](board.md#archiving-a-project)).
-- While one of these takes a moment, its row says `Starting…` or `Stopping…` with the working mark, as a task's does,
-  and nothing is said under the chat when it worked ([what a key shows at once](under-way.md)).
+- `Alt+P` 在列表旁显示它的协调者，`Alt+T` 显示完整的，用[任务面板](task-panel.md)的形式。
+- `Ctrl+E` 打开它的设置页：先是它自己的行，在 `This coordinator` 下，然后在本机的行上是你自己的设置，在项目的行上是你对该仓库的条目。
+- `Ctrl+S` 在没有输入内容时启动它的协调者（在它自己的会话里），`Ctrl+X` 停止它，就像给任务放上代理和停止代理一样。在这里或它的机器上都行。
+- `Ctrl+O` 用保存的目标和设置给它开启[自动驾驶](autopilot.md)，再按一次关闭。开启时，它的行名字后有 `[autopilot]`，下面是自动驾驶在做什么。
+- 在项目的行上按 `Ctrl+A` 归档整个项目，任务一起归档，并停止它的协调者；在归档里可恢复（[归档项目](board.md#归档一个项目)）。
+- 这些操作需要片刻时，它的行显示 `Starting…` 或 `Stopping…` 加进行中的标记，和任务一样；成功后聊天下方不显示任何东西（[按键立刻显示什么](under-way.md)）。
 
-**Each has its own settings**, `coordinator.*` and `autopilot.*`, looked up **this coordinator → you → built in**
-([settings](settings.md)). What you set for yourself counts for every coordinator; one set for this coordinator alone
-wins over it. `coordinator.instructions` add up: yours, then the coordinator's own.
+**每个都有自己的设置**，`coordinator.*` 和 `autopilot.*`，按 **此协调者 → 你 → 内置** 查找（[设置](settings.md)）。你给自己设的值对每个协调者有效；只给这个协调者设的值优先于它。`coordinator.instructions` 累加：先你的，再该协调者自己的。
 
 ```
 omh set coordinator.effort high --machine-coordinator
@@ -141,9 +85,9 @@ omh set coordinator.agent codex --project-coordinator omh
 omh show --project-coordinator omh
 ```
 
-## From a shell
+## 从 shell
 
-Every `coordinator` command takes `--machine` or `--project <repo>`:
+每个 `coordinator` 命令都接受 `--machine` 或 `--project <repo>`：
 
 ```
 omh coordinator --machine                    how it stands

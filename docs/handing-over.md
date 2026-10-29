@@ -1,99 +1,63 @@
-# Handing text to an agent
+# 把文字交给代理
 
-**Everything the board gives an agent is typed into its box, and the board checks it was really sent.** If it was not,
-the board presses enter again. If that still fails, the task says **Not started** and you retry.
+**看板交给代理的一切都是打进它的输入框的，而且看板会确认真的发出去了。**没发出去就再按一次回车。仍失败时，任务显示 **Not started**，你重试。
 
-What gets typed: the task at the start, your replies, review findings, conflict and pull-request notices, "carry on"
-after a cut-off turn, the reviewer's brief, and what you say to the Coordinator.
+打进去的内容有：启动时的任务、你的回复、评审发现、冲突和 PR 通知、被截断回合后的「继续」、评审者的说明，以及你对协调者说的话。
 
-## What you see
+## 你会看到什么
 
-| The row says | Means |
+| 行上显示 | 含义 |
 |---|---|
-| `Starting` (or `About to continue`) | the board is waiting for the program to come up, or checking the text went in |
-| `Has not started yet: pressing enter again` | the text sits in the box; the board presses enter again |
-| **Not started: its instructions sit unsent in its box** | still sitting there 40 seconds after the last enter, or the text never reached the agent at all (3 minutes, below) |
+| `Starting`（或 `About to continue`） | 看板在等程序起来，或在确认文字已输入 |
+| `Has not started yet: pressing enter again` | 文字停在输入框里；看板再按一次回车 |
+| **Not started: its instructions sit unsent in its box** | 最后一次回车 40 秒后仍停在那里，或文字根本没到代理那里（3 分钟，见下） |
 
-While it waits, the row never says `working` or `finishing`.
+等待期间，行上从不显示 `working` 或 `finishing`。
 
-## A task shown as not started
+## 显示为未启动的任务
 
-- **Look at its pane in the error.** The error's detail ends with the last lines of the agent's terminal, read when the
-  board gave up: the text still in the box, an empty box, or whatever the program shows instead.
-- **Retry**: the "yes" key on the board, or `omh retry <id>`. It ends the agent's program, starts it again in
-  the same pane and hands it the same text, word for word. The program is ended first because its box may still hold
-  the old text, and typing on top would send it twice.
-- **Or go into the agent and press enter yourself.** The board sees it start, and the error goes away.
-- **A reply from the board** is typed into the same box and goes out together with what sat there. The board keeps
-  both: if that does not start either, retry hands over all of it, in order.
-- **A program that ended** with typed text it never took shows the same error at once: the text went with the program.
-  A late report of a turn it finished before that changes nothing. Retry starts it again with the text.
-- **Retry never ends a program that is alive and has the text.** If the words turn out to be in the agent's saved
-  conversation after all, retry just clears the error: same program, same conversation, and a turn that ended
-  meanwhile goes to the finish line. This holds for tasks an older board marked too. That version noted when the agent
-  came to rest, not when the text was typed, so for such a task the whole conversation of the running program is read.
+- **看错误里的面板。**错误详情以代理终端的最后几行结尾，是看板放弃时读到的：文字还在输入框里、空输入框、或程序显示的其它东西。
+- **重试**：看板上的“yes”键，或 `omh retry <id>`。它结束代理的程序，在同一面板里重新启动，逐字交上同一段文字。先结束程序是因为输入框里可能还留着旧文字，在上面再打会发两遍。
+- **或者进到代理里自己按回车。**看板看到它启动，错误消失。
+- **从看板回复**会打进同一个输入框，和停在那里的文字一起发出。看板两样都留着：如果还是没启动，重试会按顺序把全部内容交过去。
+- **程序结束时**输入框里有没被接收的文字，会立刻显示同样的错误：文字随程序一起没了。迟到的已完成回合报告改变不了什么。重试带着文字重新启动它。
+- **重试绝不会结束还活着且握着文字的程序。**如果文字其实已经在代理保存的会话记录里，重试只是清掉错误：同一程序、同一对话，期间结束的回合照常进收尾流水线。旧版看板标记的任务也如此。那个版本记的是代理静止的时刻，不是文字输入的时刻，所以这类任务会读运行中程序的整个会话记录。
 
-**The reviewer and the Coordinator** are held to the same. A reviewer that never starts on its brief fails that review
-("the reviewer did not start"); retry runs it again. Words the Coordinator did not take are named in its chat ("your
-message sits unsent in its box"). They are not typed again.
+**评审者和协调者**受同样约束。评审者没按说明开始，那次评审就算失败（“the reviewer did not start”）；重试让它重跑。协调者没接收的话会在它的聊天里点名（“your message sits unsent in its box”）。不会重新输入。
 
-## Why this exists
+## 为什么有这套机制
 
-On a busy machine, a task's text once sat in its agent's box for twenty minutes while the board said "working".
+机器繁忙时，一段任务文字曾在代理的输入框里躺了二十分钟，看板却一直说“working”。
 
-Herdr calls a program ready as soon as it is the pane's foreground process. That can be seconds before it has drawn
-anything. The board typed the task at that moment. A program still starting keeps typed text in its box but drops the
-enter that follows (Herdr presses it 0.3 seconds after the text). Nothing was sent, and nothing noticed.
+Herdr 在程序成为面板前台进程的瞬间就称它就绪。那可能比它画出任何东西早几秒。看板在那一刻打了任务文字。还在启动的程序会把打好的文字留在输入框里，但丢掉后面的回车（Herdr 在文字后 0.3 秒按回车）。什么都没发出去，也没人发现。
 
-## How the board makes sure
+## 看板怎么确认
 
-1. **It waits until the program is up.** After starting an agent, the board watches its pane until something is drawn
-   after the start command and the screen holds still for a moment (a minute at most). Then it types. A normal start
-   costs about half a second more. This is the same for every agent: it reads the pane, nothing program-specific.
-2. **It looks again after typing.** It keeps Herdr's reading of the agent from just before the text went in.
-   - An agent that is working, has finished a turn, or has written to its saved conversation since has taken the text.
-   - One that sits at its prompt exactly as before has not. The board presses enter again after 5 seconds, then 10,
-     then 20. It never types the text a second time.
-   - An agent Herdr cannot classify (status `unknown`) is checked too: its counters and saved conversation still say
-     whether it moved.
-   - **Counters that moved are not proof on their own.** A program that only draws its screen again moves Herdr's
-     counters too, with nothing in its box. When the counters moved but the agent was never seen working and its saved
-     conversation does not hold the text yet, the board keeps a light mark and looks again on its passes. It is
-     settled the moment the agent works, the words show up in its saved conversation, or the task moves on. Still
-     unsettled after 3 minutes, with the agent at rest, the board reads its pane once: the text not there either means
-     it never reached the agent, and the task says **Not started**, as above. The mark holds nothing back meanwhile: a
-     turn that ends goes to the finish line as usual.
-3. **It says so** on the row, as in the table above.
+1. **等程序起来。**启动代理后，看板盯着它的面板，直到启动命令之后画出东西、画面稳定片刻（最多一分钟）。然后才输入。正常启动多花约半秒。这对所有代理一样：读面板，不依赖程序特性。
+2. **输入后再看一眼。**它保留输入前一刻 Herdr 对代理的读数。
+   - 在工作、已完成一个回合、或此后写过保存的会话记录的代理，已接收文字。
+   - 停在提示符上和之前一模一样的代理没有。看板 5 秒后再按回车，然后 10 秒、20 秒。绝不再打一遍文字。
+   - Herdr 无法归类的代理（状态 `unknown`）也会检查：计数器和保存的会话记录仍能看出它动没动。
+   - **计数器动了本身不算证据。**只重绘屏幕的程序也会让 Herdr 的计数器动，而输入框里什么都没有。计数器动了、但从没见代理工作、保存的会话记录里也还没有文字时，看板留个轻标记，巡查时再看。代理开始工作、文字出现在保存的会话记录里、或任务继续推进的那一刻就算确认。3 分钟后仍未确认、代理静止时，看板读一次它的面板：文字也不在那里就说明它从没到过代理那里，任务显示 **Not started**，如上。期间标记不阻塞任何事：结束的回合照常进收尾流水线。
+3. **行上会说明**，如上表。
 
-### A message typed while the agent is mid-turn
+### 回合进行中输入的消息
 
-Here "the agent is working" proves nothing: it works either way. So the board waits until the agent is at rest, and
-looks from there. An agent that took the message carries straight on with it. One that lost the enter sits at its
-prompt and gets enter again. Until that is settled, the turn that just ended is not sent to the finish line: it is not
-the answer to the message. The surest proof is the words standing in the agent's saved conversation. An agent that
-never takes the message is shown as not started, and stays so until you retry or press enter. The Coordinator's
-messages are checked the same way, on the board's tick.
+这里“代理在工作”证明不了什么：它反正都在工作。所以看板等到代理静止，再从那里看起。接收到消息的代理直接带着它继续。丢了回车的代理停在提示符上，再按一次回车。在确认之前，刚结束的回合不进收尾流水线：它不是对那条消息的回答。最可靠的证据是文字出现在代理保存的会话记录里。始终没接收消息的代理显示为未启动，一直保持到你重试或按回车。协调者的消息同样检查，在看板的节拍上进行。
 
-**A message the agent takes mid-turn counts as delivered then.** Some programs read what was typed between two steps
-of a turn (Claude Code does). They write the words into the saved conversation at that moment, as a note of its own
-kind (`queued_command`), not as a prompt. The board looks for these every few seconds while the agent works. From then
-on the message is delivered: the turn's end, however much later, is the answer to it and goes to the finish line.
+**代理在回合中途接收的消息算当场送达。**有些程序会在一个回合的两个步骤之间读取输入（Claude Code 就是）。它们当场把文字写进保存的会话记录，作为一种特别的记录（`queued_command`），不是提示词。看板在代理工作时每隔几秒找这些记录。从此消息就算送达：回合结束——无论多久之后——就是对它的回答，进收尾流水线。
 
-- The board reads back as far as the moment the text was typed, however long the conversation has grown since. It used
-  to read only the last 768 KB: a message taken early in a long turn (3.5 MB before its end, on one real task) was not
-  found, enter was pressed three times into an empty box, and the task stood as "not started" with its work done and
-  saved.
-- A program's note that the words only wait in its queue does not count: it has not read them yet.
+- 看板回读到文字输入的那一刻，无论此后会话记录长到多大。它过去只读最后 768 KB：一条在长回合早期被接收的消息（某个真实任务在回合结束前达到 3.5 MB）没被找到，回车往空输入框里按了三次，任务停在“not started”，而活儿已经干完并保存了。
+- 程序“文字只是在队列里等着”的记录不算数：它还没读。
 
-## The waits
+## 等待时长
 
-| Variable | Default | What |
+| 变量 | 默认 | 作用 |
 |---|---|---|
-| `OMH_READY_MS` | 60000 | the longest the board waits for a started program to draw its screen; 0 types at once |
-| `OMH_SUBMIT_MS` | 5000 | the wait before the first extra enter; each later wait is twice the one before |
-| `OMH_CONFIRM_MS` | 180000 | how long counters that moved without a sign of work wait for a proof that the agent took the text |
+| `OMH_READY_MS` | 60000 | 看板等已启动程序绘出屏幕的最长时间；0 表示立即输入 |
+| `OMH_SUBMIT_MS` | 5000 | 第一次补按回车前的等待；之后每次等待是前一次的两倍 |
+| `OMH_CONFIRM_MS` | 180000 | 计数器动了却没有工作迹象时，等“代理已接收文字”的证据等多久 |
 
-Very long text is handed over in a file instead: [when an agent could not start](could-not-start.md#long-rules-and-long-messages).
+很长的文字改用文件交接：[代理启动不了时](could-not-start.md#超长规则与超长消息)。
 
-The code is `crates/flow/src/submit.rs`, with `submit/unconfirmed.rs` (counters that moved alone) and
-`submit/give_up.rs` (the task failed as not started, with its pane). What was measured on real programs is in [checked on Herdr](checked-on-herdr.md).
+代码在 `crates/flow/src/submit.rs`，另有 `submit/unconfirmed.rs`（仅计数器变动）和 `submit/give_up.rs`（任务以未启动失败，附面板内容）。在真实程序上测得的结果见 [checked on Herdr](checked-on-herdr.md)。

@@ -1,12 +1,8 @@
-# List headings
+# 列表标题
 
-**The task list sits under headings, and `←` on a heading folds it, `→` unfolds it.** The headings are a repo's name when the list
-is grouped by repo (`Alt+S`), or a status (`needs you`, `working`, `to do`, `done` …) when it is grouped by status.
-Grouped by machine (`Alt+S` again), each machine has its heading and its tasks stand right under it, with no status
-headings.
+**任务列表排在标题下面，标题上按 `←` 折叠，按 `→` 展开。** 按仓库分组（`Alt+S`）时标题是仓库名，按状态分组时是一个状态（`needs you`、`working`、`to do`、`done` …）。按机器分组（再按 `Alt+S`）时，每台机器一个标题，它的任务直接排在下面，没有状态标题。
 
-With every machine shown (`Alt+M`, [other machines](other-machines.md)) there is one more level: **a heading per
-machine**, its repos (or status groups) under it, and their tasks under those.
+显示所有机器时（`Alt+M`，[其他机器](other-machines.md)）多一层：**每台机器一个标题**，它的仓库（或状态组）在它下面，任务再在那些下面。
 
 ```
 ▾ All machines  2 machines · 4 tasks
@@ -19,86 +15,53 @@ machine**, its repos (or status groups) under it, and their tasks under those.
   ▸ vm-ssa  1 task
 ```
 
-**Every row sits tight**, at every level and with a filter on or off: no empty line between `All machines` and a
-machine, between machines, between projects or status groups, or between tasks. How far in a row stands, and its bold
-or its colour, say its level.
+**每一行都挨紧排**，每一层、开不开过滤都一样：`All machines` 和机器之间、机器之间、项目或状态组之间、任务之间都没有空行。一行缩进多深、它的粗体或颜色，说明它的层级。
 
-## The top row
+## 顶行
 
-**On top of every list is the top row**: `All machines` with every machine shown, or the one machine shown (on a board
-with only this machine, that one). Everything else stands under it, one step in. It says what it holds, open or folded
-(`2 machines · 5 tasks`, `9 projects · 30 tasks`), and folds the whole list away. It is its coordinator's row, as every
-machine's and project's row is ([machine and project coordinators](machine-and-project-coordinators.md)), and the board
-opens on it. The archive has none.
+**每个列表的顶部是顶行**：显示所有机器时是 `All machines`，只显示一台机器时是那台（只有本机的看板上就是本机）。其他一切排在它下面，缩进一步。它说明自己装了什么，展开还是折叠（`2 machines · 5 tasks`、`9 projects · 30 tasks`），并把整个列表折走。它是它的协调者的行，和每台机器、每个项目的行一样（[机器和项目协调者](machine-and-project-coordinators.md)），看板就开在它上面。归档没有顶行。
 
-## Machine and repo headings
+## 机器和仓库的标题
 
-- **A machine's heading** is its name in bold, in the base colour, nothing after it (no rule); its coordinator's mark, where it has one, is left of its caret. This machine
-  shows its own name (its hostname).
-- Machines come in the order of Herdr's machines sidebar ([machine order](machine-order.md)).
-- **Every machine that answered has a heading, also one with no task yet.** It shows folded, `▸ vm-ssa  0 tasks`, and
-  does what any machine's row does: `Space` talks to its machine coordinator, which adds tasks there
-  ([machine and project coordinators](machine-and-project-coordinators.md)), and its automations show under it. `→`
-  has nothing to unfold and says so; its first task opens it. While a filter is on, or in the archive, a machine with
-  nothing that matches has no heading.
-- One whose tasks cannot be read has no heading: it says so above the list, as always.
-- **A row never names its machine.** Its tag is the one it has on its own machine's board: the repo's key and number
-  (`HSW-151`, [task numbers](task-numbers.md)). The heading above says whose it is.
-- **A repo's heading** is its name in normal weight, in the base colour of the task titles under it, one step in, with its key beside it,
-  dimmed (`omh · HSW`), never `vm-str:omh`. It is never quieter than its tasks, in any theme, so
-  a list of several repos reads as several blocks. It has no rule: the rule is a machine's. On each machine, the repo the board is in comes first.
-- **On one machine** (this machine's board, or one other machine by itself) the machine's row is the top row.
+- **机器的标题**是它的名字，粗体，基础色，后面什么都没有（没有横线）；有协调者标记的，标记在它的箭头左边。本机显示自己的名字（它的主机名）。
+- 机器按 Herdr 机器侧栏的顺序排列（[机器顺序](machine-order.md)）。
+- **每台应答过的机器都有标题，包括还没有任务的。** 它折叠显示，`▸ vm-ssa  0 tasks`，做任何机器行都做的事：`Space` 与它的机器协调者对话，协调者在那里加任务（[机器和项目协调者](machine-and-project-coordinators.md)），它的自动化显示在它下面。`→` 没有可展开的，并会这么说；它的第一个任务会展开它。过滤开着、或在归档里时，没有匹配项的机器没有标题。
+- 任务读不到的机器没有标题：照例在列表上方说明。
+- **行绝不命名它的机器。** 它的编号标签是它在自己机器看板上的那个：仓库的 key 加编号（`HSW-151`，[任务编号](task-numbers.md)）。上面的标题说明它是谁的。
+- **仓库的标题**是它的名字，常规字重，用它下面任务标题的基础色，缩进一步，key 在旁边，变暗（`omh · HSW`），绝不写 `vm-str:omh`。在任何主题下它都不比它的任务更暗，所以多仓库的列表读起来像好几个块。它没有横线：横线是机器的。每台机器上，看板所在的仓库排第一。
+- **单台机器时**（本机的看板，或单独一台别的机器），机器的行就是顶行。
 
-## Folding
+## 折叠
 
-- **`←` on a heading folds it.** Its tasks hide, its caret turns to `▸`, and it says how many tasks it holds
-  (`▸ open-crm  4 tasks`), and how many automations where it holds some (`▸ vm-str  7 tasks, 1 automation`,
-  [automations](automations.md)). `→` unfolds it. `←` on a task's row goes to its heading.
-- **`Enter` on a heading folds it and unfolds it too**; on a task's row it does nothing. `Alt+O` goes into a row's
-  agent: on a machine's or a project's row its coordinator, on a task its agent.
-- **A click on a heading** folds it and unfolds it ([mouse](mouse.md)).
-- The hint line says what `Enter` will do (`enter fold`, `enter unfold`), and the `?` menu lists `Enter`, `←` and `→`.
-- **A machine folds whole**: all its repos and tasks hide under its one line, which counts them all. Unfold it and its
-  repos are as they were: a folded one is still folded.
-- It works the same grouped by repo or by status, on one machine or all of them. The two groupings keep their own
-  folds: a repo folded in the repo grouping still shows its tasks in the status grouping.
+- **标题上按 `←` 折叠。** 它的任务隐藏，箭头转为 `▸`，并说明它装了多少任务（`▸ open-crm  4 tasks`），装了自动化的也说明数量（`▸ vm-str  7 tasks, 1 automation`，[自动化](automations.md)）。按 `→` 展开。任务行上按 `←` 跳到它的标题。
+- **标题上按 `Enter` 也折叠和展开**；任务行上按它什么都不做。`Alt+O` 进入一行的代理：机器或项目行上是它的协调者，任务上是它的代理。
+- **点标题**折叠和展开（[鼠标](mouse.md)）。
+- 提示行说明 `Enter` 会做什么（`enter fold`、`enter unfold`），`?` 菜单列出 `Enter`、`←`、`→`。
+- **机器整台折叠**：它所有的仓库和任务都藏在它的一行下，那一行把它们全数出来。展开后它的仓库保持原样：折着的还折着。
+- 按仓库分组或按状态分组、单机或多机，都一样工作。两种分组各有各的折叠：仓库分组里折起的仓库，在状态分组里仍显示它的任务。
 
-### How a heading looks
+### 标题长什么样
 
-- A heading that folds has a **caret** in the marks' column, in the muted colour: `▾` open, `▸` folded. Its name starts
-  one cell after it, where a task's tag starts.
-- On a narrow list the caret stays and the heading is cut at the right edge.
-- The arrow keys stop on every heading, like on a row. A selected heading has the same bar and tint as a selected row.
+- 可折叠的标题在标记列里有一个**箭头**，用暗淡色：`▾` 展开，`▸` 折叠。它的名字从箭头后一格开始，与任务的编号标签起点相同。
+- 窄列表里箭头留下，标题在右边缘截断。
+- 方向键在每个标题上停，就像在行上一样。选中的标题和选中的行有同样的横条和底色。
 
-### Folds are remembered
+### 折叠会被记住
 
-They stay while the list refreshes, when you switch the grouping or the machines and back, and **after the board is
-closed**. They are kept with the rest of the board's view, in `view.json` in the board's data folder. The popup has its
-own, as it has for its selection. The web board keeps its own folds the same way, in its own file.
+列表刷新时、你切换分组或机器再切回来时、以及**看板关闭后**，它们都留着。它们和看板视图的其余部分一起存在看板数据文件夹的 `view.json` 里。弹窗有自己的，和它的选中项一样。web 看板同样把自己的折叠存在自己的文件里。
 
-### What a fold never hides
+### 折叠绝不隐藏的东西
 
-- **A filter's matches.** While find (`Ctrl+F`) or a kept filter is on, every task that matches shows, folded or not.
-  The folds come back when the filter is cleared.
-- **The selected task.** When the selection is brought to a task from elsewhere (Herdr's approve action, the popup
-  opened from a task's pane), or the list is laid out again (another grouping, other machines), the task's machine and
-  group unfold, so it is always in view.
+- **过滤的匹配项。** 查找（`Ctrl+F`）或保留的过滤开着时，每个匹配的任务都显示，无论折没折叠。过滤清除后折叠恢复。
+- **选中的任务。** 选中从别处被带到某个任务时（Herdr 的批准动作、从任务面板打开的弹窗），或列表重新排布时（换分组、换机器），任务的机器和组会展开，所以它总在视野里。
 
-A list longer than its room counts what it does not show on its last line (`↓ 11 more`). Tasks under a folded heading
-are not in that count, since the heading already says how many it holds.
+放不下的列表在最后一行数出没显示的（`↓ 11 more`）。折叠标题下的任务不计入那个数，因为标题已经说了它装了多少。
 
-## The web board
+## web 看板
 
-Same rows, same order, same depth: the top row at the left edge, each machine's row one step in under `All machines`,
-a project's and a status group's one step in under its machine, a project's tasks one step further. Every name is in
-the base colour (the top row's and a machine's bold), a status group's heading in its colour, what goes with a name
-dimmed.
+同样的行、同样的顺序、同样的深度：顶行贴左边缘，每台机器的行在 `All machines` 下缩进一步，项目和状态组的行在它的机器下缩进一步，项目的任务再缩进一步。名字都用基础色（顶行和机器行是粗体），状态组的标题用它自己的颜色，随名字走的部分变暗。
 
-- A machine's row and a project's row are their coordinator's: its mark where a task's mark stands, its time on the
-  right, one line. A tap selects it (its coordinator is then the other one the chat's switch offers); its caret (`▾`
-  open, `▸` folded) folds and unfolds it. Selected, its **Open** shows the coordinator whole.
-- A status group's heading, the automations' and the archive's have nobody to talk to: a tap anywhere on them folds and
-  unfolds them, their caret standing in the marks' column.
-- A folded heading says what it holds (`7 tasks, 1 automation`, `0 tasks`); the top row says it open or folded
-  (`2 projects · 14 tasks`).
-- A watching device may fold too. It only changes what that page shows.
+- 机器行和项目行是它们协调者的行：标记在任务标记的位置，时间在右边，一行。点一下选中它（它的协调者随后成为聊天切换提供的另一个）；它的箭头（`▾` 展开，`▸` 折叠）折叠和展开它。选中后，它的 **Open** 显示完整的协调者。
+- 状态组的标题、自动化的和归档的没有可对话的人：点它们任何位置都折叠和展开，箭头在标记列里。
+- 折叠的标题说明它装了什么（`7 tasks, 1 automation`、`0 tasks`）；顶行展开或折叠都说明（`2 projects · 14 tasks`）。
+- 在看的设备也可以折叠。它只改变那个页面显示什么。

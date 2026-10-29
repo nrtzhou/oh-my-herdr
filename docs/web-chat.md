@@ -1,11 +1,8 @@
-# The web board's chat
+# web 看板的聊天
 
-**The chat under the [web board](web-ui.md)'s list is the web UI's (Ovis's) own chat**: the same transcript, box, files,
-dictation, Stop and keyboard handling as when you open that agent from the web UI's sidebar. The board docks it under
-its list and puts one bar over it: who you talk to, how they stand, Hide and Full screen. The board's **Call** button
-stands in the box, beside the mic.
+**[web 看板](web-ui.md)列表下方的聊天就是 web UI（Ovis）自己的聊天**：与你从 web UI 侧栏打开那个代理时相同的会话记录（transcript）、输入框、文件、听写、Stop 和键盘处理。看板把它停靠在列表下方，加一条栏：你在和谁说话、对方状态如何、Hide 和 Full screen。看板的 **Call** 按钮在输入框里，麦克风旁。
 
-On a phone, and in a narrow window:
+手机上，窗口窄时：
 
 ```
 ┌──────────────────────────────────┐
@@ -27,106 +24,49 @@ On a phone, and in a narrow window:
 └──────────────────────────────────┘
 ```
 
-In a wide window the list and the chat stand side by side, the bar at the top of the chat.
+窗口宽时列表和聊天并排，栏在聊天顶部。
 
-**The bar and the chat are one piece.** Under the list they are one sheet with rounded top corners, on the ground the
-web UI's chat has, with no line between the bar and the box: the switch starts where the box starts, and the last
-button stands over the box's Send. With the chat hidden that is the bar and the box alone, one dock at the foot of the
-screen. With the chat shown, its transcript scrolls up under the bar through a short fade, as the web UI's own chat
-scrolls under its header. Full screen, while typing on a phone and side by side there is no list above, so no sheet: the
-bar heads the chat. On a narrow phone the buttons keep their row, and the switch's names are cut short first.
+**栏和聊天是一体的。** 在列表下方它们是一张圆角的上缘面板，落在 web UI 聊天的底色上，栏和输入框之间没有分隔线：切换器从输入框开始处起，最后一个按钮盖在输入框的 Send 上。聊天隐藏时只剩栏和输入框，屏幕底部一个停靠条。聊天显示时，它的会话记录穿过一小段渐隐从栏下方向上滚动，就像 web UI 自己的聊天在其头部下方滚动。全屏、手机打字时和并排布局时列表不在上方，所以没有面板：栏就是聊天的头部。窄屏手机上按钮保持一行，切换器的名字最先被截短。
 
-## The bar
+## 那条栏
 
-- **Who you talk to**: the web UI's own switch with the two you can talk to, as `space` flips them on the terminal
-  board: the top row's coordinator first (`All machines`, or the machine shown) and the selected row's agent second
-  (`HP-4`; on a machine's or a project's row, its coordinator: `gtm`). There is no main Coordinator. The one you talk to
-  is pressed, its name in the status colour of where it stands, as the terminal box's lit label (base when idle or never
-  started, amber at work, red when it needs you or failed); after the switch, dimmed, the kind of agent it is: `·
-  Agent`, `· Reviewer` while a review talks, `· Project coordinator`, `· Machine coordinator`. A tap on the other
-  presses the board's own key. With nobody else to talk to (the top row selected, a status group, an automation's row)
-  it is only that one's name.
-- **How they stand**: each choice has its mark in the board's colours (the dot breathes while it works). Beside it the
-  board's words for it (`No agent yet: your message starts one`, a check's progress). On a phone, a word the mark
-  already says (`idle`, `working`) steps aside, and a longer one takes a line of its own under the switch.
-- **The call's row**: while a [voice call](voice.md) rings or is on, its row stands under the bar, with Mute and End.
-- **Hide** (the chevron) keeps only the box: the list gets the screen. **Show** brings the conversation back. It is the
-  board's `alt+c`, so the board remembers which, also over a reload.
-- **Full screen** (the arrows): the board's header and list step aside and the chat has the whole screen under the bar.
-  The same button, in the same place, then shows the arrows going in and goes back; so do Esc and a phone's back
-  gesture (or the browser's Back), as full screen is a step in the browser's history.
-- **The grip** at the top of the sheet (on a phone, and on a desktop when pointed at) moves where the list ends and the
-  chat begins: from a quarter to four fifths of the screen, kept in this browser. The arrow keys move it a step, Home
-  puts it back.
+- **你在和谁说话**：web UI 自己的切换器，两个可交谈对象，像终端看板上 `space` 的翻转：先是顶行的协调者（`All machines`，或显示的机器），其次是选中行的代理（`HP-4`；在机器行或项目行上是它的协调者：`gtm`）。没有主协调者。正在交谈的那个按下去，名字用它所在状态的状态色（空闲或从未启动为基础色，工作为琥珀色，需要你或失败为红色），像终端输入框的高亮标签；切换器后变暗的是代理种类：`· Agent`、评审对话进行中 `· Reviewer`、`· Project coordinator`、`· Machine coordinator`。点另一个等于按下看板自己的按键。没有别人可交谈时（选中顶行、状态组、自动化的行）只显示它的名字。
+- **它们的状态**：每个选项带看板配色的标记（工作时圆点呼吸）。旁边是看板描述它的词（`No agent yet: your message starts one`，检查进度）。手机上，标记已经说明的词（`idle`、`working`）让位，更长的独占切换器下面一行。
+- **通话的行**：[语音通话](voice.md)拨号或进行中时，它的行在栏下面，带 Mute 和 End。
+- **Hide**（雪佛龙箭头）只留输入框：屏幕归列表。**Show** 把对话变回来。这就是看板的 `alt+c`，所以看板记得状态，刷新后也是。
+- **Full screen**（双向箭头）：看板的头部和列表让开，聊天在栏下面占满全屏。同一个按钮在同一位置变成向内的箭头，再按返回；Esc 和手机的返回手势（或浏览器的后退）也一样，因为全屏是浏览器历史里的一步。
+- **面板顶的拖拽条**（手机上，桌面上指向它时出现）移动列表结束、聊天开始的位置：从屏幕四分之一到五分之四，保存在这个浏览器里。方向键移动一步，Home 复位。
 
-## Docked on the web UI's chat
+## 停靠在 web UI 的聊天上
 
-The board asks where the chat of whoever it talks to is, and the web UI under the board goes there in place: its
-address names that pane's chat view (`?ws=…&pane=…&view=chat#board`), so Back still closes the board.
+看板询问它交谈对象的聊天在哪，看板下方的 web UI 就地前往：它的地址指向那个面板的聊天视图（`?ws=…&pane=…&view=chat#board`），所以后退仍然关闭看板。
 
-- **It only looks.** The top row's coordinator's pane, a machine's or a project's coordinator's, or the task's agent's pane while an
-  agent is in it now. Nothing is opened again or started for it: a task whose agent is not in its pane is the board's
-  own chat until you ask for more (**Open this task's agent** opens its space again).
-- **The web UI makes room.** Its pane column leaves the board the room the board covers: at its top on a phone and a
-  narrow window, at its left beside the list on a wide one. Its own header and tabs over the chat step aside (the
-  board's bar stands for them), and the board goes under the web UI's own menus, sheets and drawer.
-- **Another machine.** A task's agent on another machine is docked from that machine's PC in the web UI, while it is
-  connected there; the board stays the board of the PC the page was on.
-- **Closing the board** puts the web UI back on the pane it showed before.
-- **Picking another pane** in the web UI's own sidebar undocks it.
-- Where the web UI cannot show them, or does not show them within four seconds (a coordinator not started yet, a task
-  with no agent in its pane, another machine's coordinator, a web UI this was not made for), **the board's own chat
-  stands in**, in the same place and under the same bar: the conversation as the web UI draws its own (your words a
-  card on the right, theirs plain prose) over [the board's own box](web-chat-box.md).
+- **只看不动。** 顶行协调者的面板、机器或项目协调者的面板、或当前有代理的任务代理的面板。不会为它重新打开或启动任何东西：代理不在面板里的任务用看板自己的聊天，直到你要求更多（**Open this task's agent** 重新打开它的空间）。
+- **web UI 腾地方。** 它的面板列给看板让出看板覆盖的面积：手机和窄窗口在顶部，宽窗口在左侧挨着列表。它自己在聊天上方的头部和标签让开（看板的栏代替它们），看板排在 web UI 自己的菜单、面板和抽屉之下。
+- **另一台机器。** 别的机器上任务的代理从 web UI 里那台机器的 PC 停靠过来，在那边连着的期间；看板仍是页面原来那台 PC 的看板。
+- **关闭看板**让 web UI 回到它之前显示的面板。
+- **在 web UI 自己的侧栏里选别的面板**会解除停靠。
+- web UI 显示不了它们、或四秒内没显示（协调者还没启动、任务面板里没代理、别的机器的协调者、不是为此做的 web UI）时，**看板自己的聊天顶上**，在同一位置、同一条栏下：对话按 web UI 画自己的方式画（你的话是右侧卡片，对方的是素文），用[看板自己的输入框](web-chat-box.md)。
 
-## What you type
+## 你输入的内容
 
-- **Call** (the phone) stands in the box, right after the mic (after **+** where the mic is off, as on a phone), in the
-  web UI's box and in the board's own alike: the board puts it in the web UI's box while docked, and takes it out again
-  when the board closes. It starts a [voice call](voice.md) with whoever the chat talks to; while the call rings or is
-  on, the same button is red and hangs up. The mic writes your words into the box; Call talks. Each says what it does
-  when hovered and to a screen reader (`Dictate (hold)`, `Start a voice call`).
+- **Call**（电话）在输入框里，紧跟麦克风（没有麦克风的手机上是 **+** 之后），web UI 的框和看板自己的框里都有：停靠时看板把它放进 web UI 的框里，看板关闭时再拿走。它向聊天交谈的对象发起[语音通话](voice.md)；拨号或通话中同一个按钮变红并挂断。麦克风把你的话写进框里；Call 通话。悬停和读屏时各自说明自己做什么（`Dictate (hold)`、`Start a voice call`）。
 
-- **To a task's agent**: the web UI's box sends it, as it does in the web UI, with its queue, its `/` menus and its Stop.
-- **To a coordinator** (the top row's, a machine's or a project's): the web UI's box, but the board sends the words, as
-  its own box does. So the coordinator knows where you were (the repo and the task you had open,
-  [the Coordinator](coordinator.md)), and words wait while it is busy.
-  - Enter (or what the web UI's Settings → Chat says sends) and the round Send. While the web UI's own menu is open (its
-    `/` commands, its `@` files), Enter and Tab pick from it, as they do there.
-  - The words leave the box once the board took them, and the files they carried with them; words it did not take
-    stay, with their files. While a file is still uploading nothing goes, as the web UI's own Send waits.
-  - There is no second way to send: the coordinator decides what to start. Tab is the web UI's own there.
-- Escape in the web UI's box and its menus is the web UI's own.
+- **给任务的代理**：web UI 的框发送，和在 web UI 里一样，带它的队列、`/` 菜单和 Stop。
+- **给协调者**（顶行的、机器的或项目的）：用 web UI 的框，但由看板发送，像它自己的框那样。这样协调者知道你当时在哪（仓库和打开的任务，[协调者](coordinator.md)），它忙时话会排队。
+  - Enter（或 web UI 的 Settings → Chat 里设的发送键）和圆形的 Send。web UI 自己的菜单开着时（它的 `/` 命令、`@` 文件），Enter 和 Tab 从菜单里选，和那里一样。
+  - 看板收下话后，话就离开输入框，带着的文件也一样；没被收下的话留下，文件也是。文件还在上传时什么都不发，和 web UI 自己的 Send 等待一样。
+  - 没有第二种发送方式：协调者决定启动什么。那里 Tab 是 web UI 自己的。
+- web UI 的框和菜单里的 Escape 是 web UI 自己的。
 
-## Above a phone's keyboard
+## 手机键盘弹出时
 
-While you type in the web UI's box with a phone's keyboard up, **the board steps aside to its bar**: the header and the
-list go, and the web UI's chat has the room the keyboard leaves, as it handles its own box above the keyboard. When
-the keyboard goes down, the list is back. With the chat hidden it stays hidden: the board stays in view down to the
-web UI's box, and is as tall as before once the keyboard is down. The web UI's box then gives way to the list, as the
-board's own does ([keeping the list in view](web-chat-box.md#above-a-phones-keyboard)): no taller than leaves the list
-a heading and two rows, and on a phone on its side the board's header and the chat's bar step aside first. The
-keyboard is known by the web UI's own mark on the page (`data-keyboard`). The board's own box, where it stands in, keeps its own way: [above a phone's
-keyboard](web-chat-box.md#above-a-phones-keyboard).
+用手机键盘在 web UI 的框里打字时，**看板退到只剩它的栏**：头部和列表消失，web UI 的聊天占用键盘留下的空间，就像它自己在键盘上方处理输入框那样。键盘收起，列表回来。聊天隐藏时保持隐藏：看板一直留在聊天栏和输入框之上可见，键盘收起后和从前一样高。此时 web UI 的框给列表让位，像看板自己的框一样（[让列表保持可见](web-chat-box.md#手机键盘弹出时)）：高度不超过给列表留下一个标题和两行，手机横放时看板的头部和聊天的栏先让开。键盘按 web UI 自己在页面上的标记（`data-keyboard`）判断。看板自己的框，所在之处，保持自己的方式：[手机键盘弹出时](web-chat-box.md#手机键盘弹出时)。
 
-## How it was tried
+## 怎么试的
 
-On a copy of Herdr, the web UI (herdr-web-ui 0.4.12) and the board, with a real Coordinator and a real task's agent
-(Claude Code), in Chromium and WebKit at an iPhone's size (440×956) and a desktop's (1440×900): the Coordinator and a
-task's agent docked, a task with no agent (the board's own chat), working, a long answer, a file attached in the web
-UI's box, Hide, Full screen, the More menu over the docked chat, a call ringing, on, muted, ended and failed (with the
-call's service played by the page), Enter and Send + start through the board (one message each, the box emptied),
-closing the board and Back (the web UI back on its pane). The keyboard was played: the web UI's mark set and its
-height made shorter. Not tried on a real phone.
+在 Herdr 的副本、web UI（herdr-web-ui 0.4.12）和看板上，用真实的协调者和真实的任务代理（Claude Code），在 Chromium 和 WebKit 里按 iPhone 尺寸（440×956）和桌面尺寸（1440×900）：协调者和任务代理停靠、没代理的任务（看板自己的聊天）、工作中、长回答、web UI 框里附文件、Hide、Full screen、停靠聊天上的 More 菜单、通话拨号、进行、静音、结束和失败（通话服务由页面扮演）、Enter 和 Send + start 经看板（各一条消息，框清空）、关闭看板和后退（web UI 回到它的面板）。键盘是演的：设置 web UI 的标记并调矮高度。没在真手机上试过。
 
-**The bar and the chat as one sheet** were checked on 2026-10-20 against a real web UI (herdr-web-ui 0.4.12) through
-the front door, in Chromium and WebKit at a phone's sizes (440×956, 393×852, 375×760) and a desktop's (900×900,
-1440×900), dark and light: the chat hidden and shown, docked and the board's own, full screen and side by side, before
-and after. The switch's left edge and the box's line up, and the last button stands over Send, at every size. Not tried
-on a real phone.
+**栏和聊天作为一张面板**于 2026-10-20 对照真实 web UI（herdr-web-ui 0.4.12）经前门检查，Chromium 和 WebKit，手机尺寸（440×956、393×852、375×760）和桌面尺寸（900×900、1440×900），深浅两色：聊天隐藏和显示、停靠和看板自己的、全屏和并排、前后对照。切换器的左缘和输入框的对齐，最后一个按钮盖在 Send 上，每个尺寸都如此。没在真手机上试过。
 
-**The Call button in the box** was checked on 2026-10-21 in Chromium at a phone's size (390×844, touch), a tablet's
-(820×1180, touch) and a desktop's (1440×900), with the board's real chat over a copy of the web UI's box (herdr-web-ui
-0.4.12's markup and styles): in the board's own box and in the web UI's, with and without the mic, no call and a call on;
-the web UI drawing its box again, undocking and docking again, and closing the board (nothing left in the web UI's box).
-Not tried against a running web UI or on a real phone.
+**输入框里的 Call 按钮**于 2026-10-21 在 Chromium 检查，手机尺寸（390×844，触屏）、平板（820×1180，触屏）和桌面（1440×900），用看板真实的聊天盖在 web UI 框的副本上（herdr-web-ui 0.4.12 的标记和样式）：看板自己的框和 web UI 的框里、有无麦克风、无通话和通话中；web UI 重画它的框、解除停靠再停靠、关闭看板（web UI 的框里没留东西）。没对着运行中的 web UI 或真手机试过。

@@ -1,52 +1,37 @@
-# Shorter checks on fix rounds
+# 修复轮次的更短检查
 
-**A repo can name a shorter check for fix rounds**: `check.again`, beside `check.command`.
+**仓库可以为修复轮次指定更短的检查**：`check.again`，与 `check.command` 并列。
 
 ```json
 { "check": { "command": "npm run check -- --all", "again": "npm run check -- --since $OMH_CHECKED" } }
 ```
 
-The board runs the repo's check every time an agent finishes: the first time, and again on every fix round (when a
-review, a failed check or GitHub's checks sent the work back). Running the full check every round repeats what already
-passed. When GitHub runs the full suite on the pull request anyway, and the merge waits for it, a shorter check is
-enough on the later rounds.
+代理每次做完，看板都会跑这个仓库的检查：第一次做完跑一次，之后每个修复轮次（评审、检查失败或 GitHub 的检查把工作退回时）再跑一次。每轮都跑完整检查，等于重复已经通过的部分。当 GitHub 反正会在 PR 上跑完整套件、合并也等它时，后面的轮次跑更短的检查就够了。
 
-The default is `none`: the full check every round.
+默认是 `none`：每轮都跑完整检查。
 
-## When the shorter check runs
+## 更短的检查何时运行
 
-The first time a task finishes, the full check (`check.command`) runs. On a later round of the same task, the shorter
-check runs instead **only when both of these hold**. Otherwise, or when the board cannot tell, the full check runs.
+任务第一次完成时，跑完整检查（`check.command`）。同一任务的后续轮次，**只有下面两条都成立时**才改跑更短的检查。否则，或看板说不准时，跑完整检查。
 
-1. **The full check passed on this branch before**, with the same command, and the branch still holds the commit it
-   passed on.
-   - If `check.command` changed since, the full check runs.
-   - If the agent rebuilt the branch (rebased, started again), the commit is gone and the full check runs.
-2. **GitHub's checks guard the merge**: `merge.checks` is `github`, the task has its pull request (`merge.pr`), and a
-   workflow of the branch runs for that pull request. Then the full suite runs on GitHub on the last commit, and
-   nothing merges before it passes ([how work gets done](how-work-gets-done.md)). Without that, every round runs the
-   full check, since it is the only full run before the merge.
+1. **完整检查在这个分支上通过过**，用同样的命令，而且分支上还留着通过时的那个提交。
+   - 如果 `check.command` 之后改过，跑完整检查。
+   - 如果代理重建了分支（变基、重新开始），那个提交没了，跑完整检查。
+2. **GitHub 的检查守着合并**：`merge.checks` 是 `github`，任务有它的 PR（`merge.pr`），而且分支上有 workflow 为那个 PR 运行。这样完整套件会在 GitHub 上对最后一个提交跑，它没通过就谁也合不了（[工作怎么完成](how-work-gets-done.md)）。不满足这条就每轮都跑完整检查，因为那是合并前唯一一次完整运行。
 
-## What the shorter check is told
+## 更短的检查拿到什么
 
-`OMH_CHECKED` holds the commit the full check last passed on, so the shorter check can run only what the
-change since then reaches.
+`OMH_CHECKED` 保存完整检查最后一次通过时的提交，所以更短的检查只跑从那之后的改动影响到的部分。
 
-- A shorter check that passes does not move that commit. So each round covers the whole change since the last full
-  run, the earlier fix rounds included.
-- A full check that passes does move it.
+- 更短的检查通过不会移动那个提交。所以每一轮都覆盖自上次完整运行以来的全部改动，包括之前的修复轮次。
+- 完整检查通过会移动它。
 
-## While it runs, and after
+## 运行期间与之后
 
-- The task's row says `Running the shorter check of a fix round`.
-- A failed shorter check goes back to the agent like any failed check, within `review.rounds`, with the command that
-  ran (the commit filled in for the variable).
-- The reviewer is told which check passed on the commit it reviews, and that the full one runs on GitHub before the
-  merge.
+- 任务的行上显示 `Running the shorter check of a fix round`（运行修复轮次的更短检查）。
+- 更短的检查失败，和任何失败的检查一样退回给代理，在 `review.rounds` 之内，并带上跑过的命令（变量已填入提交号）。
+- 评审者会被告知它评审的提交上通过的是哪个检查，以及合并前完整检查会在 GitHub 上跑。
 
-## This repo's shorter check
+## 这个仓库的更短检查
 
-`npm run check -- --since <commit>` does what the whole check does (builds the program, writes the made tables, checks
-the repo's rules, runs the tests beside the code), but runs only the test files the change since that commit reaches
-([testing](testing.md#the-shorter-check-of-a-fix-round)). Where it cannot tell what a change reaches, it runs every
-test.
+`npm run check -- --since <commit>` 做完整检查做的所有事（构建程序、写 made 表、检查仓库规则、跑代码旁的测试），但只跑从那个提交之后的改动影响到的测试文件（[测试](testing.md#修复轮的更短检查)）。说不准某个改动影响到什么时，就跑全部测试。

@@ -1,65 +1,61 @@
-# Troubleshooting
+# 排查问题
 
-**Most problems say what they are on the task's row, with the next step.** Select the task and press `Alt+P` (or
-`Alt+T` for full screen): the task panel has the whole story. This page lists the common ones and where to look next.
+**多数问题会在任务行上写明是什么、下一步做什么。**选中任务按 `Alt+P`（全屏 `Alt+T`）：任务面板里有完整信息。本页列出常见问题和继续排查的去处。
 
-## Quick checks
+## 快速检查
 
-| Command | Tells you |
+| 命令 | 作用 |
 |---|---|
-| `omh doctor` | the health check: every problem below in one run, each with what to do ([the health check](#the-health-check)) |
-| `omh install` | writes the `omh` launcher again, and says if something else of that name comes first on your PATH ([installing](install.md)) |
-| `omh models [program]` | the model names each agent program takes here, or why its list cannot be read ([models](models.md)) |
-| `omh machines` | whether each other machine answers, how much disk each has free, and why not ([other machines](other-machines.md)) |
-| `omh sweep` | removes what ended tasks left behind now, and says what ([disk space](disk-space.md)) |
-| `omh show <id>` | every setting a task runs on, and where each value comes from ([settings](settings.md)) |
-| `omh details <id>` | everything about one task: reviews, hand-overs, limits, what it waits for |
-| `herdr workspace list` | whether Herdr itself runs and answers |
+| `omh doctor` | 健康检查：一次跑完下面所有项，每项附处理方法（[健康检查](#健康检查)） |
+| `omh install` | 重写 `omh` 启动器，并提示 PATH 里是否有同名程序排在前面（[安装](install.md)） |
+| `omh models [program]` | 各代理程序在此可用的模型名，或为何读不到它的列表（[模型](models.md)） |
+| `omh machines` | 各机器是否响应、各自剩多少磁盘空间、不响应的原因（[其他机器](other-machines.md)） |
+| `omh sweep` | 立即清除已结束任务留下的东西，并说明清了什么（[磁盘空间](disk-space.md)） |
+| `omh show <id>` | 一个任务运行用到的每个设置及取值来源（[设置](settings.md)） |
+| `omh details <id>` | 一个任务的全部信息：评审、交接、限制、在等什么 |
+| `herdr workspace list` | Herdr 本身是否在运行并响应 |
 
-## The health check
+## 健康检查
 
-`omh doctor` looks at everything below at once and takes about a second. A line with `✓` is fine. A line
-with `✗` is a problem, with what to do under it. It exits 1 when there is a problem, so a script can run it too.
+`omh doctor` 一次检查下面所有项，约花一秒。带 `✓` 的行没问题。带 `✗` 的行是问题，下面给出处理方法。有问题时退出码为 1，脚本也能调用。
 
-| It checks | A problem it reports | What to do |
+| 检查项 | 报告的问题 | 怎么办 |
 |---|---|---|
-| this program | its version and how it was installed (downloaded, built from source); older than the plugin's own version | `omh update`, or build it again |
-| the launcher | `~/.omh/data/bin/omh` (what agents and hooks run) is missing, names a program that is gone, or not the plugin's | `sh <plugin folder>/bin/run.sh install`, or open the board once from Herdr |
-| your PATH | `omh` is not on it, or something else of that name comes first | put the launcher's folder first ([installing](install.md#the-command-on-your-path)) |
-| Herdr and the plugin | Herdr not found, older than the plugin needs, the plugin not installed, turned off, or linked to a folder that is gone | install or update Herdr; `herdr plugin enable omh`; link or install the plugin again |
-| each agent program your settings name | not installed, older than the board was checked on, not signed in (Claude Code, Codex and Cursor can say), missing Herdr's integration | install it or choose another; `claude auth login`, `codex login`, `cursor-agent login`; `herdr integration install <name>` |
-| model and effort settings | a model the program does not take, an effort it does not have, a program that cannot do its role, a value written by hand that does not count | `omh set <setting> …` ([models](models.md)) |
-| plan approval | a plan's writer cannot run in its read-only mount here (bubblewrap missing or user namespaces not allowed on Linux; `sandbox-exec` not usable on macOS), while your settings ask for plans (`plan.approve`). With no setting asking, it is said as a fact | install bubblewrap; on macOS start Herdr outside any sandbox; or `omh set plan.approve none` ([a plan first](plan.md)) |
-| other machines | one does not answer, runs an older version, or cannot ask this one | what `omh machines` says ([other machines](other-machines.md)) |
-| disk space | under 10 GB free on a disk that holds the board's data, your repos, worktrees, build caches or temporary files: a task's setup may fail there | free some space, starting with the leftovers below |
-| leftovers | the worktree of a done or archived task (a clean-up keeps one with unsaved work), a worktree on a task branch no task has, one git still lists whose folder is gone, an old warm build in `~/.cache/omh` | the `git worktree remove`, `git worktree prune` or `rm -rf` it names. It never removes anything itself; `omh sweep` removes what is provably an ended task's ([disk space](disk-space.md)) |
-| coordinators' queues | a message waits undelivered for more than a minute, as when `coordinator tell` ran where herdr could not be found | open the board in Herdr, which delivers it; in that shell, set `HERDR_BIN_PATH` to herdr's full path ([the Coordinator](coordinator.md)) |
-| older installs | herdr-superwork or omh 0.2 still in the way | it takes over what it can, and says what is left ([older installs](old-installs.md)) |
+| 本程序 | 版本与安装方式（下载、源码构建）；比插件自带的版本旧 | `omh update`，或重新构建 |
+| 启动器 | `~/.omh/data/bin/omh`（代理和钩子运行它）缺失、指向已消失的程序、或不是插件的 | `sh <plugin folder>/bin/run.sh install`，或从 Herdr 打开一次看板 |
+| 你的 PATH | `omh` 不在上面，或同名程序排在前面 | 把启动器目录放最前（[安装](install.md#path-里的命令)） |
+| Herdr 和插件 | 找不到 Herdr、比插件要求的旧、插件没装、被关掉、或链接到已消失的目录 | 安装或更新 Herdr；`herdr plugin enable omh`；重新链接或安装插件 |
+| 你的设置里点名的每个代理程序 | 没装、比看板验证过的版本旧、没登录（Claude Code、Codex 和 Cursor 能报告）、缺 Herdr 集成 | 装上或换一个；`claude auth login`、`codex login`、`cursor-agent login`；`herdr integration install <name>` |
+| 模型和努力度设置 | 程序不认的模型、它没有的努力度、干不了该角色的程序、手写但不算数的值 | `omh set <setting> …`（[模型](models.md)） |
+| 计划审批 | 计划的写手无法在这里的只读挂载里运行（Linux 缺 bubblewrap 或不允许用户命名空间；macOS 上 `sandbox-exec` 不可用），而你的设置要求计划（`plan.approve`）。没设置要求时只作事实陈述 | 安装 bubblewrap；macOS 上在沙箱外启动 Herdr；或 `omh set plan.approve none`（[先计划](plan.md)） |
+| 其他机器 | 有机器不响应、跑着旧版本、或无法向本机索取 | 看 `omh machines` 说什么（[其他机器](other-machines.md)） |
+| 磁盘空间 | 放看板数据、仓库、工作树、构建缓存或临时文件的盘剩不到 10 GB：任务的环境准备可能失败 | 腾出空间，先清下面的遗留物 |
+| 遗留物 | 已完成或已归档任务的工作树（清理会保留有未保存工作的）、挂在没有任务的分支上的工作树、git 还记着但目录已删的工作树、`~/.cache/omh` 里的旧热构建 | 它给出的 `git worktree remove`、`git worktree prune` 或 `rm -rf`。它自己绝不删东西；`omh sweep` 只删可证明属于已结束任务的（[磁盘空间](disk-space.md)） |
+| 协调者的队列 | 有消息一分钟以上没送达，比如 `coordinator tell` 运行时找不到 herdr | 在 Herdr 里打开看板即送达；在那个 shell 里把 `HERDR_BIN_PATH` 设为 herdr 的完整路径（[协调者](coordinator.md)） |
+| 旧安装 | herdr-superwork 或 omh 0.2 还挡着路 | 能接管的都接管，并说明剩下的（[旧安装](old-installs.md)） |
 
-Other machines are asked only when there are some, and each for at most 5 seconds. A done task's worktree is no
-leftover while its clean-up is still to come, or when `workspace.cleanup` is `false`.
+只有存在其他机器时才去问，每台最多问 5 秒。已完成任务的工作树，若其清理还没到、或 `workspace.cleanup` 为 `false`，不算遗留物。
 
-## An agent could not start
+## 代理起不来
 
-The row says `Could not start: …` with the reason, for example `codex is not logged in` or `sol-6.1 can't be used with your ChatGPT sign-in`. Fix what it says, then delegate again.
+行上显示 `Could not start: …` 加原因，比如 `codex is not logged in` 或 `sol-6.1 can't be used with your ChatGPT sign-in`。照它说的修好，再派发（delegate）一次。
 
-The full table of reasons and fixes: [when an agent could not start](could-not-start.md).
+原因和修法的完整表格：[代理起不来时](could-not-start.md)。
 
-**First time with a program?** Start it once yourself, in a terminal, in a folder of a repo: log in, finish its first
-setup, and trust the folder if it asks ([agent programs](agents.md#before-a-programs-first-task)).
+**第一次用某个程序？**自己在仓库目录的终端里跑一次：登录、完成首次设置，它问的话信任该目录（[代理程序](agents.md#程序首次接任务前)）。
 
-## No space left on device
+## 磁盘空间不足
 
-| You see | What it is | What to do |
+| 你看到 | 是什么 | 怎么办 |
 |---|---|---|
-| a task's setup or check failed with `No space left on device` | the disk filled up during its build | `omh sweep`, then `omh doctor` for what else can go; then finish or delegate it again |
-| `Disk nearly full on vm-str: … free on …; this task starts once 5.0 GB is free` | the board kept the task from starting on a nearly full disk (`board.diskFree`) | the same; it starts by itself once there is room |
+| 任务的环境准备或检查报 `No space left on device` | 构建期间磁盘满了 | `omh sweep`，再用 `omh doctor` 看还有什么可清；然后重新完成或派发它 |
+| `Disk nearly full on vm-str: … free on …; this task starts once 5.0 GB is free` | 看板阻止了任务在快满的磁盘上启动（`board.diskFree`） | 同上；空间够了它自己会启动 |
 
-Ended tasks clean up after themselves, and the board sweeps what they left once a day: [disk space](disk-space.md).
+已结束的任务自己清理，看板每天清扫一次它们留下的东西：[磁盘空间](disk-space.md)。
 
-## A model name is refused
+## 模型名被拒
 
-**A wrong name is refused when you set it**, with the names the program does take and the nearest one:
+**名字写错时，设置它的一刻就会被拒**，并给出程序认的名字和最接近的一个：
 
 ```
 $ omh set worker.agent codex/sol-6.1
@@ -67,144 +63,107 @@ worker.agent: codex has no model "sol-6.1" for your ChatGPT sign-in (pro plan). 
 gpt-6.1-sol, gpt-6-astra, gpt-6-sol, … (codex's own list for that sign-in). Write it after the program: codex/gpt-6.1-sol.
 ```
 
-- **See what a program takes:** `omh models codex`. For Codex that is what your own sign-in can use: a ChatGPT
-  sign-in and an API key take different names.
-- **"Its list cannot be read":** the program is installed but its list command failed (not logged in, offline). Run that
-  list command in a terminal to see why, or leave the model out.
-- **A new Claude model is refused:** the board's table of Claude names is older than the model. Use the short name
-  (`claude/opus`): it always means the newest of its kind. Updating the board (`omh update`) brings the new
-  names.
-- **An effort is refused:** each program has its own levels. The refusal lists the ones it has.
+- **看程序认什么：**`omh models codex`。对 Codex 就是你的登录能用的：ChatGPT 登录和 API key 认的名字不同。
+- **“Its list cannot be read”（读不到它的列表）：**程序装了，但列模型的命令失败（没登录、离线）。在终端跑那条列模型的命令看原因，或者干脆不写模型。
+- **新的 Claude 模型被拒：**看板的 Claude 名字表比模型旧。用短名（`claude/opus`）：它永远指同类里最新的。更新看板（`omh update`）会带来新名字。
+- **努力度被拒：**每个程序有自己的级别。拒绝信息里会列出它有的。
 
-### "can't be used with your ChatGPT sign-in" while the agent works
+### 代理工作中遇到 “can't be used with your ChatGPT sign-in”
 
-Codex refused the model at the agent's first turn (`The 'sol-6.1' model is not supported when using Codex with a
-ChatGPT account`). The board catches it:
+Codex 在代理第一个回合就拒绝了模型（`The 'sol-6.1' model is not supported when using Codex with a ChatGPT account`）。看板会接住它：
 
-- **`…: started again on codex's own default model`**: the board had given Codex that model; Codex now works on its own
-  default. Nothing to do. To choose another, `omh models codex` lists the ones your sign-in can use.
-- **`Agent stopped: … can't be used with your ChatGPT sign-in; try gpt-6.1-sol`**: its default was refused too, or the
-  board gave it no model (then the name comes from Codex's own `model` in `~/.codex/config.toml`). Choose one for the
-  task, `omh set worker.agent codex/gpt-6.1-sol --task <id>`, or fix that line, then `Ctrl+L` (retry): the
-  agent starts again on it.
+- **`…: started again on codex's own default model`**：看板给 Codex 指定了那个模型；Codex 现在用它自己的默认模型干活。不用管。要换一个，`omh models codex` 列出你的登录能用的。
+- **`Agent stopped: … can't be used with your ChatGPT sign-in; try gpt-6.1-sol`**：它的默认模型也被拒，或看板没给它模型（名字来自 Codex 自己 `~/.codex/config.toml` 里的 `model`）。给任务选一个，`omh set worker.agent codex/gpt-6.1-sol --task <id>`，或改掉那行，然后 `Ctrl+L`（重试）：代理在它上面重新启动。
 
-More: [models and effort](models.md).
+更多：[模型与努力度](models.md)。
 
-## A task seems stuck
+## 任务像卡住了
 
-Find what its row says:
+看它那行说什么：
 
-| The row says | What is going on | What to do |
+| 行上显示 | 发生了什么 | 怎么办 |
 |---|---|---|
-| `Waiting for a free slot` (`Q#2`) | every slot of `board.agents` is taken | wait, or raise `board.agents` |
-| `queued after HSW-12` | it waits for other tasks to be done ([one task after another](after.md)) | wait, or `omh delegate <id> --now` |
-| `Has not started yet: pressing enter again` | the task's text sits in the agent's box | wait a moment: the board presses enter again |
-| `Not started: its instructions sit unsent in its box` | the text never went in | `Ctrl+L` (retry), or go into the agent and press enter ([handing over](handing-over.md)) |
-| `Finishing` for a long time, with the agent at rest | the board missed the end of its turn | `Ctrl+L`, or `omh finish <id>` |
-| `Stopped without a summary` | the agent stopped and the board cannot tell if it finished | `Ctrl+R` tells it to go on; `Ctrl+L` takes the work as it is |
-| `Agent's connection dropped, trying again in 2m` | the provider cut the turn off | nothing: the board retries by itself ([a turn cut off by the provider](provider-errors.md)) |
-| `Agent stopped` | an error waiting cannot fix: a usage limit, a refusal | read the reason in the panel; reply, or `Ctrl+R` |
-| `Agent stopped: … can't be used with your ChatGPT sign-in` | its program refused its model | choose a model, then `Ctrl+L` ([above](#cant-be-used-with-your-chatgpt-sign-in-while-the-agent-works)) |
-| `Plan ready` · `The plan's review could not run (…): yours to judge` | the reviewer of a plan (`plan.approve reviewer`) could not start or gave no verdict | read the plan; `Ctrl+L` builds it, a reply sends it back, `omh retry <id>` has the reviewer look again ([a plan first](plan.md#the-reviewers-look)) |
-| `Needs a login` | the agent's program is logged out | log in (go into the agent with `Enter`), then reply or `Ctrl+R` |
-| `stopped at its 2h limit` | it reached `limit.time` or `limit.tokens` | `Ctrl+R` to continue, a higher limit, or `Ctrl+L` to take it as it is ([limits](limits.md)) |
-| `resolving a conflict with main` | main changed under it; its agent is fixing that | wait |
-| `behind main` | main could not be brought in; the work itself is fine | the board tries again every minute; the reason is in the panel ([below](#behind-main-main-could-not-be-fetched)) |
-| `Waiting for GitHub checks · 2 of 3 passed` | the pull request's checks still run | wait: it merges by itself once they pass |
-| `Could not read GitHub's checks` | `gh` is not logged in, or its token may not read Actions and Commit statuses | log `gh` in, or give the token those two read permissions ([how work gets done](how-work-gets-done.md#a-fine-grained-github-token-is-enough)) |
-| `The check stands still · nothing finished for 13m` | the repo's check hangs | look at what the check runs ([the check's progress](check-progress.md)) |
+| `Waiting for a free slot`（`Q#2`） | `board.agents` 的名额全满 | 等待，或调高 `board.agents` |
+| `queued after HSW-12` | 在等其他任务完成（[一个接一个](after.md)） | 等待，或 `omh delegate <id> --now` |
+| `Has not started yet: pressing enter again` | 任务文本还在代理的输入框里 | 稍等：看板会再按一次回车 |
+| `Not started: its instructions sit unsent in its box` | 文本没发进去 | `Ctrl+L`（重试），或进代理里按回车（[交接](handing-over.md)） |
+| `Finishing` 持续很久，代理已空闲 | 看板错过了回合（turn）结束 | `Ctrl+L`，或 `omh finish <id>` |
+| `Stopped without a summary` | 代理停了，看板无法判断它是否完成 | `Ctrl+R` 让它继续；`Ctrl+L` 按现状收下工作 |
+| `Agent's connection dropped, trying again in 2m` | 服务商切断了回合 | 不用管：看板自动重试（[被服务商切断的回合](provider-errors.md)） |
+| `Agent stopped` | 等待解决不了的错误：用量限制、拒绝 | 在面板里读原因；回复，或 `Ctrl+R` |
+| `Agent stopped: … can't be used with your ChatGPT sign-in` | 它的程序拒绝了那个模型 | 选一个模型，然后 `Ctrl+L`（[上文](#代理工作中遇到-cant-be-used-with-your-chatgpt-sign-in)） |
+| `Plan ready` · `The plan's review could not run (…): yours to judge` | 计划的评审者（`plan.approve reviewer`）起不来或没给结论 | 读计划；`Ctrl+L` 开始构建，回复把它退回，`omh retry <id>` 让评审者再看（[先计划](plan.md#评审者的审阅)） |
+| `Needs a login` | 代理的程序登出了 | 登录（`Enter` 进代理），然后回复或 `Ctrl+R` |
+| `stopped at its 2h limit` | 到了 `limit.time` 或 `limit.tokens` | `Ctrl+R` 继续、调高限制，或 `Ctrl+L` 按现状收下（[限制](limits.md)） |
+| `resolving a conflict with main` | main 在它脚下变了；它的代理正在解决 | 等待 |
+| `behind main` | 拉不进 main；工作本身没问题 | 看板每分钟重试；原因在面板（[下文](#落后于-main拉不下-main)） |
+| `Waiting for GitHub checks · 2 of 3 passed` | PR 的检查还在跑 | 等：通过后自动合并 |
+| `Could not read GitHub's checks` | `gh` 没登录，或它的 token 没有 Actions 和 Commit statuses 的读权限 | 登录 `gh`，或给 token 这两项读权限（[工作如何完成](how-work-gets-done.md#细粒度-github-token-就够了)） |
+| `The check stands still · nothing finished for 13m` | 仓库的检查卡住了 | 看看检查在跑什么（[检查的进度](check-progress.md)） |
 
-**An agent shows a dialog** (a permission prompt, a question with choices): the chat says so. Press `Enter` to go into the
-agent and answer it there.
+**代理弹出对话框**（权限提示、选项问题）：聊天里会说明。按 `Enter` 进代理，在里面回答。
 
-**An agent asked a question in plain words and stopped**: the board takes that as finished and reviews it. Reply to the
-agent, and it goes on ([an agent that waits for you](waiting-for-you.md)).
+**代理用大白话提问然后停下**：看板当作已完成并进入评审（review）。回复代理即可继续（[等你的代理](waiting-for-you.md)）。
 
-## A done task stays in Herdr's sidebar
+## 完成的任务留在 Herdr 侧栏
 
-A merged or finished task's space closes by itself (`workspace.cleanup`, on by default). When one stays, its line in the
-task panel ends in `Kept:` and says why:
+合并或结束的任务，其空间（space）会自动关闭（`workspace.cleanup`，默认开）。没关掉时，任务面板里它的行以 `Kept:` 结尾并说明原因：
 
-| It says | Why | What to do |
+| 显示 | 原因 | 怎么办 |
 |---|---|---|
-| `(uncommitted changes)` | its checkout has files that were never committed | look at them; reply to the task, or remove the worktree yourself |
-| `(unmerged work on <branch>)` | its branch holds commits that were not merged | merge them, or reply to the task to go on with them |
-| `(its space is in use: a turn in its agent's terminal)` | you talked to its agent in its own terminal | nothing: it is tried again about every half minute, and closes once the agent has been quiet a while |
-| `(its space is in use beside its agent: <process> (pid <n>) <why>)` | a process runs in the agent's pane that is not one of its helpers; `<why>` says what is wrong with it (below) | end it if it is yours, and the space closes on the next try |
-| `(its space is in use in another of its panes: <process> (pid <n>) runs in it)` | a command runs in another pane of its space | end it, or close that pane |
-| `(its space is in use: herdr cannot tell whether its agent works, …)` | Herdr calls the agent's status unknown, and the rest of the line says what is not settled yet (its screen still moves, its last turn has not ended) | nothing: it closes once the agent has been still a while |
-| `(its space is in use: herdr does not answer for its agent)` (or `for its space`) | Herdr did not answer | nothing: it is tried again |
-| `(its herdr session cannot be reached)` | the Herdr session it ran in is not running | start that session; it is tried again |
+| `(uncommitted changes)` | 它的检出里有从未提交的文件 | 看看那些文件；回复任务，或自己删掉工作树 |
+| `(unmerged work on <branch>)` | 它的分支上有没合并的提交 | 合并它们，或回复任务继续处理 |
+| `(its space is in use: a turn in its agent's terminal)` | 你在它自己的终端里跟它的代理说过话 | 不用管：约每半分钟重试一次，代理安静一会儿就关 |
+| `(its space is in use beside its agent: <process> (pid <n>) <why>)` | 代理的面板里跑着一个不是它助手的进程；`<why>` 说明哪里不对（见下） | 是你的就结束它，下次重试时空间关闭 |
+| `(its space is in use in another of its panes: <process> (pid <n>) runs in it)` | 它空间的另一个面板里有命令在跑 | 结束它，或关掉那个面板 |
+| `(its space is in use: herdr cannot tell whether its agent works, …)` | Herdr 判定代理状态未知，行的其余部分说明还有什么没定（屏幕还在动、上一回合没结束） | 不用管：代理静止一会儿就关 |
+| `(its space is in use: herdr does not answer for its agent)`（或 `for its space`） | Herdr 没有响应 | 不用管：会重试 |
+| `(its herdr session cannot be reached)` | 它所在的 Herdr 会话没在运行 | 启动那个会话；会重试 |
 
-- **What `<why>` means**: a process in the agent's own process group is one of its helpers (an MCP server) only when
-  its input and output are wired to the agent and its errors go to no terminal. Otherwise it `streams to the terminal`,
-  `is not wired to its agent` (a file, `/dev/null`, a pipe nobody in the agent's group holds), `has its input or output
-  closed`, or `cannot be looked at` (the system does not say). A process under the agent in a group of its own (a dev
-  server it started) `runs in a group of its own` (one wired to the agent, or under a helper, is its own, and keeps nothing); one its
-  pane's shell runs `runs in the background of its shell`.
-- **`; and 2 more`**: the line names the first thing only. `omh details <id>` lists every one, under `inUse`.
-- **It names one of the agent's own helpers** (an MCP server, a language server): that is a bug. Please open an issue
-  with the `Kept:` line and the `inUse` list of `omh details <id>`.
-- **Nothing says `Kept:`, and the space still stays**: `omh show <id>` tells whether `workspace.cleanup` was
-  turned off, and where. `omh set workspace.cleanup true` turns it on again.
-- **An agent with MCP servers used to stay `in use` for good**: its servers counted as a command still running. Since
-  this was fixed, the next pass closes those spaces by itself.
-- **To close one at once**: archive the task (`Ctrl+A`); what is kept on disk stays, and the task says where.
+- **`<why>` 的含义**：代理自己进程组里的进程，只有输入输出接在代理上、错误不进任何终端时，才算它的助手（MCP 服务器）。否则它是 `streams to the terminal`（输出到终端）、`is not wired to its agent`（没接上代理：指向文件、`/dev/null`、代理组里没人持有的管道）、`has its input or output closed`（输入或输出已关闭），或 `cannot be looked at`（系统不给看）。代理之下自成进程组的进程（它启动的开发服务器）是 `runs in a group of its own`（接在代理上、或在某个助手之下的进程组算它自己的，不留东西）；由面板 shell 启动的进程是 `runs in the background of its shell`（在该 shell 后台运行）。
+- **`; and 2 more`**：该行只列第一项。`omh details <id>` 在 `inUse` 下列出全部。
+- **列出了代理自己的助手**（MCP 服务器、语言服务器）：这是 bug。请开 issue，附上 `Kept:` 行和 `omh details <id>` 的 `inUse` 列表。
+- **没有 `Kept:` 字样但空间还在**：`omh show <id>` 能查 `workspace.cleanup` 是不是被关了、在哪关的。`omh set workspace.cleanup true` 重新打开。
+- **带 MCP 服务器的代理曾永远 `in use`**：服务器被算成还在跑的命令。已修复，下一轮会自己关掉这些空间。
+- **想立刻关掉一个**：归档任务（`Ctrl+A`）；磁盘上保留的东西不动，任务会说明在哪。
 
-## Behind main: main could not be fetched
+## 落后于 main：拉不下 main
 
-Before a finished task is reviewed, and again right before it merges, the board fetches main and merges it into the
-task's branch. When that fetch fails, nothing is failed: the task is checked and reviewed as usual, then waits as
-`behind main`. It cannot be approved until it is up to date, and the board tries again by itself every minute. When
-the remote cannot be reached at all, so the branch cannot be pushed either, the task waits the same way before its
-push and review, and those run by themselves once the remote answers. A merge you had approved waits the same way,
-with nothing merged: approve it again once the row is back to ready.
+任务完成后的评审前、合并前，看板都会拉取 main 并合进任务分支。拉取失败不算失败：任务照常检查和评审，然后以 `behind main` 状态等待。追上之前不能批准，看板每分钟自动重试。远端完全连不上、分支也推不上去时，任务在推送和评审前同样这样等，远端恢复后自动执行。你已批准的合并也这样等着，什么都没合并：等行回到待批准后再批一次。
 
-The panel (`Alt+P`) says why in plain words under **Behind main**, and what git itself said under **Details**:
+面板（`Alt+P`）在 **Behind main** 下用大白话说明原因，**Details** 下是 git 自己的话：
 
-| The reason says | What to do |
+| 原因 | 怎么办 |
 |---|---|
-| origin asked for a login | make `git fetch origin` work in your checkout without a prompt: an SSH key loaded in the agent, or a credential helper. The board never types a password |
-| origin did not answer within 60 seconds | the same, if it waits for a password or a passphrase; otherwise a slow or busy remote, and the next try may pass |
-| origin could not be reached | the network or the server: nothing to do, the board tries again |
-| origin has no branch … | the remote's main branch has another name, or the branch the task started from (`workspace.from`) is gone: `git fetch origin`, then `git remote set-head origin --auto` in your checkout, or push that branch again |
-| git's lock file … stayed in the way | another git command was writing the same ref the whole time, or one that stopped left its `.lock` file behind: if no git command runs in that repo, delete the file it names |
-| origin is not a repository the board can read | `git remote -v` shows where origin points |
+| origin 要求登录 | 让检出里的 `git fetch origin` 不要提示就能跑：代理里加载 SSH key，或用凭据助手。看板绝不输密码 |
+| origin 60 秒内没响应 | 它在等密码或口令的话同上；否则是远端慢或忙，下次可能就过了 |
+| 连不上 origin | 网络或服务器的问题：不用管，看板会重试 |
+| origin 没有分支 … | 远端主分支叫别的名字，或任务起始分支（`workspace.from`）没了：在检出里 `git fetch origin`，再 `git remote set-head origin --auto`，或重新推那个分支 |
+| git 的锁文件 … 挡路 | 一直有另一个 git 命令在写同一个 ref，或停掉的命令留下了 `.lock` 文件：那个仓库里没有 git 命令在跑的话，删掉它点名的文件 |
+| origin 不是看板能读的仓库 | `git remote -v` 看 origin 指向哪里 |
 
-Many tasks of one repo finishing at once never get in each other's way: they share one copy of main (every worktree
-of a repo writes the same `origin/main`), so the board fetches it for one task at a time, and a task that waited for
-another's fetch takes that one's result. A fetch that git refused because another program fetched at that very moment
-(an agent's own `git fetch`, yours, an editor's) is tried again after 2 and 4 seconds, and a copy that program just
-fetched counts. A remote whose main is not called `main` and was never named in your clone (no `origin/HEAD`, as after
-`git remote add`) is asked which branch it is, and that branch is fetched, once.
+同一个仓库的多个任务同时完成从不互相挡路：它们共用一份 main（仓库的每个工作树写同一个 `origin/main`），所以看板一次为一个任务拉取，等别的任务拉取的那个直接用它的结果。git 因为恰好有别的程序在拉取而拒绝的 fetch（某个代理自己的 `git fetch`、你的、编辑器的），2 秒和 4 秒后重试，那个程序刚拉到的副本也算数。远端主分支不叫 `main` 且你的克隆里从没指过名（没有 `origin/HEAD`，比如 `git remote add` 之后）时，会问远端它是什么分支，然后拉那个分支，只拉一次。
 
-## Where the logs are
+## 日志在哪
 
-All in the board's data folder, `~/.omh/data/` ([the home folder](home-folder.md)):
+全在看板的数据目录 `~/.omh/data/`（[主目录](home-folder.md)）：
 
-| File | Holds |
+| 文件 | 内容 |
 |---|---|
-| `tasks/<repo>/<n>/runner.log` | one task's background work: delegating, the finish line, merges. A failed start adds its account at the end: the reason, what Herdr said, the agent terminal's last lines |
-| `coordinator/<session>/start.log` | why the Coordinator could not start, with its terminal's last lines |
-| `keeper.log` | the keeper (the board's background process): starts, updates, errors |
-| `hook.log` | what Herdr's hooks and the agents' turn-end reports told the board |
-| `jobs.log` | background jobs that belong to no single task |
-| `tasks/<repo>/<n>/closing-note.md` | what the agent said when it stopped |
+| `tasks/<repo>/<n>/runner.log` | 一个任务的后台工作：派发、收尾流水线（finish line）、合并。启动失败会在末尾追加说明：原因、Herdr 说了什么、代理终端的最后几行 |
+| `coordinator/<session>/start.log` | 协调者起不来的原因，附其终端的最后几行 |
+| `keeper.log` | 看守（看板的后台进程）：启动、更新、报错 |
+| `hook.log` | Herdr 的钩子和代理回合结束报告告诉看板的内容 |
+| `jobs.log` | 不属于任何单个任务的后台作业 |
+| `tasks/<repo>/<n>/closing-note.md` | 代理停下时说的话（收尾小结） |
 
-The task panel shows most of this already. `omh details <id>` prints the rest.
+任务面板已显示大部分。`omh details <id>` 打印其余。
 
-## The board itself
+## 看板本身
 
-- **`omh` is not found**: open the board once from Herdr (the plugin's action "Open the work board"), then add
-  `~/.omh/data/bin` to your PATH ([installing](install.md#the-command-on-your-path)).
-- **`herdr` is not found although it is installed**: a command run over plain SSH (`ssh host omh …`) gets
-  no login shell, so its PATH often lacks `~/.local/bin`. When PATH has no `herdr`, the board looks in
-  `~/.local/bin`, `~/.cargo/bin`, `~/bin`, `/usr/local/bin` and `/opt/homebrew/bin`, then in a login shell's PATH. Herdr
-  somewhere else: set `HERDR_BIN_PATH` to its full path.
-- **The board key does nothing**: a popup of another plugin may be open (close it first), or the key is not bound. The
-  board offers the key on its first screen ([installing](install.md#the-first-run)).
-- **The board looks cut off or half empty**: another Herdr window on the same session (a second device, a browser tab)
-  has the size. Type a key in this window ([the board's size](board-size.md)).
-- **Herdr refuses the plugin**: your running Herdr server must be 0.9.3 or newer. Restart it after updating Herdr.
-- **Another machine's tasks do not show**: run `omh machines`, and see
-  [when a machine does not answer](other-machines.md#when-a-machine-does-not-answer).
+- **找不到 `omh`**：从 Herdr 打开一次看板（插件动作 "Open the work board"），然后把 `~/.omh/data/bin` 加进 PATH（[安装](install.md#path-里的命令)）。
+- **装了却找不到 `herdr`**：纯 SSH 跑的命令（`ssh host omh …`）拿不到登录 shell，PATH 里常常缺 `~/.local/bin`。PATH 里没有 `herdr` 时，看板依次找 `~/.local/bin`、`~/.cargo/bin`、`~/bin`、`/usr/local/bin`、`/opt/homebrew/bin`，再看登录 shell 的 PATH。Herdr 在别处：把 `HERDR_BIN_PATH` 设为它的完整路径。
+- **看板按键没反应**：可能有别的插件浮层开着（先关掉），或按键没绑定。看板首次运行的界面会提供按键绑定（[安装](install.md#首次运行)）。
+- **看板显示被裁切或一半空白**：同一会话的另一个 Herdr 窗口（第二台设备、浏览器标签页）占着尺寸。在本窗口按任意键（[看板的尺寸](board-size.md)）。
+- **Herdr 拒绝插件**：正在运行的 Herdr 服务器必须是 0.9.3 或更新。更新 Herdr 后重启它。
+- **别的机器的任务不显示**：运行 `omh machines`，再看[机器不响应时](other-machines.md#机器不响应时)。

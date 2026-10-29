@@ -1,7 +1,6 @@
-# A plan first
+# 先计划
 
-**With `plan.approve` on, the agent writes a plan before it builds, and nothing in the repo is changed until the plan
-has its yes.** A misunderstanding caught in two minutes saves a wrong build caught in forty.
+**开启 `plan.approve` 后，代理先写计划再动手，计划获批之前仓库里不会有任何改动。**两分钟就能抓住的误解，胜过四十分钟后才发现的错误构建。
 
 ```
 omh delegate 12 --plan.approve you                                    # show me the plan first
@@ -9,7 +8,7 @@ omh delegate 12 --plan.approve you --plan.agent claude/claude-opus-5-5 # a stron
 omh set plan.approve reviewer --repo my-app                           # in this repo the reviewer checks every plan
 ```
 
-Or tell the [Coordinator](coordinator.md): "show me the plan first", "have Opus plan it".
+或者告诉[协调者](coordinator.md)：「先给我看计划」「让 Opus 来写」。
 
 ```
 task ─► the plan is written (nothing changes) ─► yes: you, or the reviewer ─► the agent builds that plan ─► check, review, merge
@@ -17,189 +16,125 @@ task ─► the plan is written (nothing changes) ─► yes: you, or the review
                      └──── sent back with words ◄─────┘
 ```
 
-## The two settings
+## 两项设置
 
-| Setting | Values | Means |
+| 设置 | 取值 | 含义 |
 |---|---|---|
-| `plan.approve` | `none` (built in), `you`, `reviewer` | `none`: no plan, the agent builds at once. `you`: the agent writes its plan and the task waits as **plan ready** for your yes. `reviewer`: the reviewer checks the plan against the task's description, and the build goes on by itself when the plan passes |
-| `plan.agent` | `none` (built in), or a program with an optional model after a slash (`claude/claude-opus-5-5`) | who writes the plan. `none`: the working agent. A program: a planner of its own |
+| `plan.approve` | `none`（默认）、`you`、`reviewer` | `none`：不写计划，代理立即构建。`you`：代理写出计划，任务以 **计划待批准（plan ready）** 状态等你批准。`reviewer`：评审者对照任务描述检查计划，计划通过后构建自动继续 |
+| `plan.agent` | `none`（默认），或一个程序，斜杠后可带模型（`claude/claude-opus-5-5`） | 谁写计划。`none`：工作代理。指定程序：独立的计划编写者 |
 
-- Both are work [settings](settings.md) like every other: looked up task → your entry for the repo → you → built in; set
-  with `set`; taken by `add --delegate` and `delegate` as `--plan.approve you`; held by an [automation](automations.md);
-  listed by `show`.
-- **A repo's own file cannot set them**, so code an agent writes cannot switch a plan's approval on or off.
-- **When they are read.** Both are read when the agent first starts on the task: set on a task whose agent already
-  builds, they change nothing about that run. `plan.approve` is read once more when the plan is written, for who says
-  yes: if it was turned off meanwhile, nobody is asked and the build goes on.
-- A new round of a task that landed (delegated again after its clean-up) starts with a new plan.
+- 两项都和其它[设置](settings.md)一样：查找顺序 任务 → 你在该仓库的条目 → 你 → 默认；用 `set` 设置；`add --delegate` 和 `delegate` 以 `--plan.approve you` 传入；可由[自动化](automations.md)持有；`show` 会列出。
+- **仓库自己的文件不能设置它们**，所以代理写的代码无法开关计划批准。
+- **读取时机。**两项都在代理首次开始任务时读取：对代理已经在构建的任务设置它们，不会改变那一次运行。`plan.approve` 在计划写好后还再读一次，决定谁来批准：如果中途被关掉，就不问任何人，构建直接继续。
+- 任务落地后重新开始的新一轮（清理后再次派发）会从一份新计划开始。
 
-## Plan ready: say yes, or send it back
+## 计划待批准：批准，或者发回
 
-With `plan.approve: you`, the task waits in a state of its own, **plan ready**. It stands under **needs you**: the row
-says `Plan ready · <the plan's first words>`, the State line and Herdr's sidebar say `plan ready`, and `board.notify`
-fires as for anything that needs you.
+开启 `plan.approve: you` 时，任务停在自己的状态 **计划待批准（plan ready）**。它挂在 **需要你（needs you）** 下：行上显示 `Plan ready · <the plan's first words>`，State 行和 Herdr 的侧栏显示 `plan ready`，`board.notify` 像对待任何需要你的事项一样触发。
 
-The task panel shows the plan under **Plan**: where it stands, who wrote it, the plan's own words (its first lines beside
-the list, all of it full screen), and **`Open plan`**, a private link served the way a report's is. The web Board shows
-the same part. You do one of two things:
+任务面板在 **Plan** 部分显示计划：当前状态、谁写的、计划原文（列表旁显示开头几行，全屏显示全文），以及 **`Open plan`**——一个私密链接，服务方式与报告相同。网页看板显示同样的内容。你二选一：
 
-- **Yes**: the approve key (`ctrl+l`), or `omh approve <id>`. The plan is approved as it stands and the build
-  starts.
-- **A reply**: `space`, then your words, or `omh tell <id> <text>`. The plan goes back to its writer with
-  your words and is written again. The task is plan ready again when the new plan is there.
+- **批准**：批准键（`ctrl+l`），或 `omh approve <id>`。计划按原样批准，构建开始。
+- **回复**：`space`，然后输入你的话，或 `omh tell <id> <text>`。计划带着你的话退回编写者重写。新计划就位后，任务再次成为计划待批准。
 
-## The reviewer's look
+## 评审者的审阅
 
-With `plan.approve: reviewer`, the reviewer (`reviewer.agent`, in a tab named `Plan review`) reads the plan and the code
-it speaks of, and answers as it does for work: does building this plan do what the task asked, and a list of findings by
-severity. [The gate](gate.md) decides by the same rule (`review.mustFix`):
+开启 `plan.approve: reviewer` 时，评审者（`reviewer.agent`，标签页名为 `Plan review`）阅读计划及其提到的代码，像评审工作成果一样作答：照这份计划构建能否完成任务要求，外加按严重程度列出的发现。[评审门](gate.md)按同一规则判定（`review.mustFix`）：
 
-- the plan passes: the build goes on, and nobody is asked;
-- it fails: the plan goes back to its writer with the reviewer's points, by itself, up to `review.rounds` times;
-- still failing then: the task is plan ready, with what the reviewer found in the plan's part, and the yes is yours;
-- **the review cannot run** (its reviewer cannot start, or stops without a verdict): the task is plan ready all the same,
-  its row saying why (`The plan's review could not run (…): yours to judge`). Your yes (`ctrl+l`) builds the plan as
-  it stands; `omh retry <id>` has the reviewer look at it again.
+- 计划通过：构建继续，不问任何人；
+- 不通过：计划带着评审者的意见自动退回编写者，最多 `review.rounds` 次；
+- 仍然不通过：任务成为计划待批准，评审者的发现放在计划部分，由你批准；
+- **评审无法运行**（评审者起不来，或没有结论就退出）：任务照样成为计划待批准，行上说明原因（`The plan's review could not run (…): yours to judge`）。你的批准（`ctrl+l`）按原样构建计划；`omh retry <id>` 让评审者再看一次。
 
-The reviewer runs in a read-only mount of its own, made the same way as the writer's. It is always started by the board
-from outside the writer's mount: the writer's program reports the end of its turn from inside its mount, and the board
-does the rest outside it (on macOS a sandbox cannot be made inside another).
+评审者在自己的只读挂载里运行，制作方式与编写者相同。它总是由看板从编写者的挂载外启动：编写者的程序在挂载内报告回合结束，其余由看板在挂载外完成（macOS 无法在沙箱里再建沙箱）。
 
-A look at a plan is not one of the task's review rounds: the first review of the work is still `Reviewer #1`.
+审阅计划不算任务的评审轮次：工作成果的第一次评审仍然是 `Reviewer #1`。
 
-## After the yes
+## 批准之后
 
-The agent builds that plan.
+代理照该计划构建。
 
-- The plan's own writer hears `Your plan is approved` in its conversation: its program is ended and started again in the
-  same conversation, outside the read-only mount the plan was written in.
-- After a planner, the working agent starts with the task and the plan's file.
-- The review of the finished work is told of the approved plan. It checks the work against the task **and** the plan,
-  and says where the build left the plan (`Left the plan` under the review in the task panel). Leaving the plan is a
-  finding only when the result is worse for it.
+- 计划的编写者会在其对话里听到 `Your plan is approved`：它的程序被结束，并在同一段对话里、写计划用的只读挂载之外重新启动。
+- 用过计划编写者之后，工作代理带着任务和计划文件开始。
+- 对完成工作的评审会被告知已批准的计划。它对照任务**和**计划检查工作，说明构建在哪些地方偏离了计划（任务面板评审部分下的 `Left the plan`）。偏离计划只有在结果因此变差时才算一项发现。
 
-## Who writes the plan
+## 谁来写计划
 
-### The working agent (`plan.agent: none`)
+### 工作代理（`plan.agent: none`）
 
-It is told to change nothing; to write what it understood, what it will change and where, in which order, how it will be
-checked and what it is unsure of; and to stop.
+它被要求不改任何东西；写下它的理解、要改什么和在哪里、按什么顺序、怎么检查、哪些没把握；然后停下。
 
-- **Every program plans with its usual access** (Claude Code, Codex, pi, Herdr's others: [agents](agents.md)) and saves
-  the plan as a file in the task's own folder. The [read-only mount](#nothing-in-the-repo-is-changed-before-the-yes)
-  keeps the repo as it is, so the writer can still save notes, publish a page or write its closing note without
-  stopping at its pane for a yes.
-- **Claude Code's own plan mode is not used**: it asks at the pane for every write outside its plan file. A Claude Code
-  that an older board started in it still has its plan taken when it presents it, until the next release.
+- **每个程序都用平常的权限写计划**（Claude Code、Codex、pi、Herdr 的其它程序：[agents](agents.md)），并把计划存成任务自己文件夹里的文件。[只读挂载](#批准之前仓库里不会有任何改动)让仓库保持原样，所以编写者仍能存笔记、发布页面、写收尾小结，不会卡在面板前等你批准。
+- **不使用 Claude Code 自带的计划模式**：它会对计划文件之外的每次写入逐个在面板前询问。旧版看板以该模式启动的 Claude Code，在它呈现计划时照样会被取走计划，直到下一个版本。
 
-### A planner of its own (`plan.agent: <program>`)
+### 独立的计划编写者（`plan.agent: <program>`）
 
-- It works in the task's worktree, in a tab of its own named **`Planner`** ([a task's tabs](tabs.md)), on its own
-  program and model, while the working agent's tab `Agent` waits beside it.
-- While it writes, it is the task's agent in every way: the row, the Watcher's line, the chat, a reply and the stop key
-  are its.
-- A planner that is not installed here: the working agent plans, and the task's settings say so in a `Note`.
-- After the yes its tab closes, and **its time and tokens are kept on the task** (the plan's part of the task panel:
-  `Planner used 51s · 18k in · 29 out`).
+- 它在任务的工作树里工作，在名为 **`Planner`** 的专属标签页中（[任务的标签页](tabs.md)），用自己的程序和模型；工作代理的 `Agent` 标签页在旁边等待。
+- 写计划期间，它在各方面都是任务的代理：行、观察者的那一行、聊天、回复和停止键都归它。
+- 计划编写者没装在这里：由工作代理写计划，任务的设置里用 `Note` 说明这一点。
+- 批准后它的标签页关闭，**它花的时间和 token 记在任务上**（任务面板的计划部分：`Planner used 51s · 18k in · 29 out`）。
 
-### The plan file
+### 计划文件
 
-One file, `plan.md`, in the task's own folder on the board
-(`~/.omh/data/tasks/<repo>/<n>/artifacts/plan/`), never in the repo.
+一个文件 `plan.md`，放在看板上任务自己的文件夹里（`~/.omh/data/tasks/<repo>/<n>/artifacts/plan/`），绝不在仓库里。
 
-- An agent that stopped without saving one: its last message is the plan.
-- Nothing said either: `No plan was written`, which goes back to the agent like any failure.
-- A plan that went back and was not saved again is the old one. Then what its writer said last is the new plan; with
-  nothing said, there is no new plan. An older file is never what gets the yes.
+- 代理停下却没存计划：它最后一条消息就是计划。
+- 什么也没说：`No plan was written`，像任何失败一样退回给代理。
+- 退回后没重新保存的计划还是旧的。此时编写者最后说的话就是新计划；什么都没说就没有新计划。更早的文件永远不会获批。
 
-## Nothing in the repo is changed before the yes
+## 批准之前仓库里不会有任何改动
 
-The board does not only ask for it. Four things hold, from the moment the plan step begins until the build starts:
+看板不只是口头要求。从计划步骤开始到构建启动，有四重保障：
 
-1. **The plan's writer runs where the worktree cannot be written.** The board starts its program inside a mount of its
-   own, made by the platform's own tool ([which one](#the-mount-on-linux-and-on-macos)), where the task's worktree and
-   its git folder cannot be written. A write, a delete, a commit, and also a `chmod` that would give the permission
-   back, are refused (`Read-only file system` on Linux, `Operation not permitted` on macOS), whatever the program's own
-   access.
-   - This holds for every program (Claude Code, Codex, pi and Herdr's others), for a planner of its own, and for the
-     reviewer that checks a plan.
-   - Everything else is as on the machine, so the plan can be saved in the board's folder, and the program keeps its
-     own session files.
-   - After the yes, the program is ended and started again the usual way, outside that mount, in the same conversation.
-   - **Where no such mount can be made**, **no plan is written in a repo at all**. The task does not start, and says
-     what is missing and the two ways on: make the mount possible (on Linux: install bubblewrap; on macOS: start Herdr
-     outside any sandbox), or `set plan.approve none --task <id>`. A lesser guard is never used instead.
-     `omh doctor` says whether plan approval can run on this machine, and why not.
-2. **The worktree's files are read-only too.** Every file and folder in it loses its write permission, ignored files
-   too, and so does the worktree's own git folder (its index, its `HEAD`). Whatever runs outside the mount is answered
-   `Permission denied`. The permission comes back when the build starts, before its agent is started (so a start that
-   fails leaves the worktree writable, and `plan.locked` false), when you stop the task, and before the worktree is
-   removed. Delegated again with the plan step still open, its writer starts again and the worktree is read-only again.
+1. **计划的编写者运行在工作树不可写的地方。**看板把它的程序放进专属挂载里启动，挂载由平台自己的工具制作（[哪一个](#linux-与-macos-上的挂载)），任务的工作树和它的 git 目录在里面不可写。写入、删除、提交，以及想把写权限改回来的 `chmod`，一律被拒（Linux 上是 `Read-only file system`，macOS 上是 `Operation not permitted`），不论程序自身权限如何。
+   - 对每个程序都成立（Claude Code、Codex、pi 和 Herdr 的其它程序），对独立计划编写者、对检查计划的评审者也成立。
+   - 其它一切与机器上无异，所以计划可以存进看板的文件夹，程序保留自己的会话文件。
+   - 批准后，程序被结束并以平常方式在同一段对话里、该挂载之外重新启动。
+   - **在做不出这种挂载的地方**，**根本不在仓库里写计划**。任务不启动，会说明缺什么和两条出路：让挂载可用（Linux：安装 bubblewrap；macOS：在任何沙箱之外启动 Herdr），或 `set plan.approve none --task <id>`。绝不用较弱的防护顶替。`omh doctor` 会说明这台机器能不能跑计划批准，不能是为什么。
+2. **工作树的文件也变只读。**里面每个文件和文件夹都去掉写权限，被忽略的文件也一样，工作树自己的 git 目录（索引、`HEAD`）也是。挂载外跑的任何东西得到的回答都是 `Permission denied`。权限在构建启动前、其代理启动前恢复（所以启动失败会留下可写的工作树和 false 的 `plan.locked`），你停止任务时恢复，工作树被移除前也恢复。计划步骤还开着时再次派发，编写者重新启动，工作树再次只读。
 
-   Every way out of the plan step leaves the worktree writable: your yes (also to a plan whose step failed after it was
-   written), a stop, and a delegate with the plan taken off (`set plan.approve none --task <id>`), which builds the plan
-   that was written as it stands, or starts the work when none was.
-3. **The board looks for itself**, when the plan's turn ends and once more right before the build starts. If something
-   changed all the same (somebody took the read-only bit off), it undoes it in the task's own worktree: the branch goes
-   back to the commit it stood on, added files go, and so do ignored files that were not there when the step began.
-   What was undone is kept as `changed-too-early.patch` beside the plan, and the task says how much was put back
-   (`Put back  2 changes made in the repo before the yes`).
-4. **Nothing is built on a change the board may not or could not undo.** The plan is not shown and the build does not
-   start: the task says `The repo was changed before the plan was approved`, with what changed. Sent to the agent, it
-   undoes it. A yes already given stands, and the start is tried again once the change is gone.
+   离开计划步骤的每条路都让工作树恢复可写：你的批准（也包括对写完后失败的计划的批准）、停止，以及去掉计划步骤的派发（`set plan.approve none --task <id>`）——后者按原样构建已写出的计划，没有计划就直接开工。
+3. **看板自查**，计划的回合结束时一次，构建启动前再一次。要是还是变了（有人去掉了只读位），它就在任务自己的工作树里撤销：分支回到原来的提交，新增文件消失，步骤开始时不存在的被忽略文件也清掉。撤销的内容存成 `changed-too-early.patch` 放在计划旁边，任务说明还原了多少（`Put back  2 changes made in the repo before the yes`）。
+4. **看板不能或不该撤销的改动之上，什么也不构建。**计划不显示，构建不启动：任务显示 `The repo was changed before the plan was approved`，附上改了什么。发给代理后它撤销这些改动。已给出的批准依然有效，改动消失后再试一次启动。
 
-And while the plan step is open, no turn's end counts as finished work: nothing is committed, checked, pushed, opened as
-a pull request or reviewed.
+计划步骤开着期间，任何回合结束都不算完成的工作：不提交、不检查、不推送、不开 PR、不评审。
 
-What the mount is not: a wall against a program that sets out to get around it (one that asks Herdr to run a command in
-another pane, say). It stops every write made the ordinary way, with or without the write permission put back. The
-board's own look, and the hold on the build, are for the rest.
+挂载防不住蓄意绕过的程序（比如让 Herdr 在别的面板里跑命令）。它拦住一切按常规方式做出的写入，无论写权限是否被改回。看板自己的自查和冻结构建负责其余部分。
 
-### The mount on Linux and on macOS
+### Linux 与 macOS 上的挂载
 
 | | Linux | macOS |
 |---|---|---|
-| The tool | bubblewrap: `bwrap --dev-bind / / --ro-bind <worktree> <worktree> --ro-bind <git folder> <git folder>` | macOS's own sandbox: `sandbox-exec -p '<profile>'` |
-| What it guards | the worktree and its git folder are mounted read-only | a Seatbelt profile allows everything except a write under the worktree and its git folder: `(version 1)(allow default)(deny file-write* (subpath "<worktree>") (subpath "<git folder>"))`, each by its real path (`/var/…` is `/private/var/…`) |
-| A write there | `Read-only file system` | `Operation not permitted` |
-| It needs | bubblewrap installed, and user namespaces allowed | `/usr/bin/sandbox-exec` (part of macOS), and Herdr not itself started inside a sandbox |
+| 工具 | bubblewrap：`bwrap --dev-bind / / --ro-bind <worktree> <worktree> --ro-bind <git folder> <git folder>` | macOS 自带沙箱：`sandbox-exec -p '<profile>'` |
+| 防护内容 | 工作树和它的 git 目录以只读方式挂载 | 一个 Seatbelt 配置允许一切，只拒绝工作树和 git 目录下的写入：`(version 1)(allow default)(deny file-write* (subpath "<worktree>") (subpath "<git folder>"))`，各用真实路径（`/var/…` 是 `/private/var/…`） |
+| 那里的写入 | `Read-only file system` | `Operation not permitted` |
+| 需要 | 已装 bubblewrap，且允许用户命名空间 | `/usr/bin/sandbox-exec`（macOS 自带），且 Herdr 自身不在沙箱里启动 |
 
-- The guarantee is the same on both: the program cannot write under those two folders, and cannot take the guard off.
-- **macOS allows no sandbox inside another.** A program that runs its own commands in a sandbox of its own would see
-  every command fail inside ours, so for the plan step the board turns that sandbox off; ours is the guard:
-  - Codex: `-c sandbox_mode="danger-full-access"` (with full access, `--dangerously-bypass-approvals-and-sandbox`
-    already has it off). Its approvals stay as they were.
-  - Claude Code: `"sandbox": {"enabled": false}` in the settings the board passes it for that launch (`--settings`),
-    in case your own settings turn its sandbox on.
-  - pi has no sandbox of its own.
-  After the yes the program starts again the usual way, its own sandbox as you set it.
-- `OMH_SANDBOX` picks the tool outright: `bwrap`, `sandbox-exec`, or `none` (no mount: no plan is written in
-  a repo). Unset, the board tries the platform's own and remembers for ten minutes whether it works. A try made from
-  inside a sandbox (on macOS one always fails there) is never remembered.
+- 两者保证相同：程序无法在这两个文件夹下写入，也无法解除防护。
+- **macOS 不允许沙箱套沙箱。**在自己沙箱里跑命令的程序，在我们的沙箱内每条命令都会失败，所以计划步骤中看板关掉它那个沙箱，由我们的防护负责：
+  - Codex：`-c sandbox_mode="danger-full-access"`（完全访问下 `--dangerously-bypass-approvals-and-sandbox` 已经把它关了）。它的批准行为保持原样。
+  - Claude Code：看板该次启动传给它的设置（`--settings`）里写 `"sandbox": {"enabled": false}`，以防你自己的设置开了它的沙箱。
+  - pi 没有自己的沙箱。
+  批准后程序以平常方式重新启动，它自己的沙箱按你的设置来。
+- `OMH_SANDBOX` 直接指定工具：`bwrap`、`sandbox-exec` 或 `none`（不挂载：不在仓库里写计划）。未设置时，看板试平台自带的，并记住十分钟内它是否可用。从沙箱内部做的尝试（macOS 上在沙箱里总是失败）永远不会被记住。
 
-### A task in your own checkout
+### 在你自己的检出里跑的任务
 
-A task with no worktree of its own differs in one way: the board never takes the write permission off your files and
-never undoes anything there, because what is there may be yours.
+没有自己工作树的任务只有一点不同：看板绝不摘掉你文件的写权限，也绝不在那里撤销任何东西，那里的东西可能是你的。
 
-- Its plan's writer runs in the read-only mount all the same: your checkout is a read-only file system for that program
-  only, never for you.
-- Rule 4 holds for whatever changes there meanwhile: it goes back to the agent (`review.rounds` times, then it waits for
-  you), and nothing is built until it is gone.
-- A task in a repo always gets a worktree of its own when it is first delegated.
+- 它的计划编写者照样运行在只读挂载里：你的检出只对那个程序是只读文件系统，对你从来不是。
+- 规则 4 对期间发生的任何改动都成立：退回给代理（`review.rounds` 次，然后等你），改动消失之前什么都不构建。
+- 仓库里的任务在首次派发时总会得到自己的工作树。
 
-A folder that is no repo has nothing to guard: there the plan is written and approved the same way, with no mount.
+压根不是仓库的文件夹没什么可防护：计划照样写、照样批准，没有挂载。
 
-## Several attempts on one task
+## 一个任务上的多次并行尝试
 
-The plan belongs to the task, not to an agent or a worktree: one file, written once, approved once. With
-[several attempts](attempts.md) (`attempts.by`):
+计划属于任务，不属于某个代理或某个工作树：一个文件，写一次，批准一次。有[多次并行尝试](attempts.md)（`attempts.by`）时：
 
-1. The task is not split when it starts. One writer makes the plan (the working agent, or the planner), and it is
-   approved once.
-2. Only then is the task split. Every attempt gets that same plan in its first prompt, and builds it.
-3. The worktree and tab the plan was written in become attempt A's. Each other attempt gets its own beside it.
-4. From there on, all is as for any task done several times: the check, the pick, one review of the chosen attempt,
-   which is checked against the task and the plan.
+1. 任务启动时不拆分。一个编写者写计划（工作代理或计划编写者），批准一次。
+2. 然后才拆分任务。每次尝试在第一条提示词里拿到同一份计划，照着构建。
+3. 写计划用的工作树和标签页归尝试 A。其余每次尝试在旁边各有自己的。
+4. 此后一切与做多次的任何任务相同：检查、挑选、对选中的尝试做一次评审，对照任务和计划检查。
 
-`attempts.by` is read for this when the build starts, so a count changed while the plan waits counts.
+`attempts.by` 在构建开始时读取，所以计划等待期间改动的数量也生效。

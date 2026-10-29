@@ -1,6 +1,6 @@
-# The home folder
+# 主目录
 
-**Everything the board keeps for you is in one folder, `~/.omh/`, the same on every machine.**
+**看板为你保存的一切都在一个目录 `~/.omh/` 里，每台机器都一样。**
 
 ```
 ~/.omh/
@@ -18,128 +18,84 @@
   set-aside/    only after a move that found a file in both places: the copy that was not kept in use
 ```
 
-## Putting it somewhere else
+## 换个位置放
 
-| To move | Set |
+| 要移动 | 设置 |
 |---|---|
-| the whole folder | `OMH_HOME` |
-| only the data | `OMH_DATA_DIR` |
-| only the settings | `OMH_CONFIG_DIR` |
-| only the reports | `OMH_REPORTS_DIR` |
-| only the folder the Coordinator starts in | `OMH_COORDINATOR_DIR` |
+| 整个目录 | `OMH_HOME` |
+| 只移数据 | `OMH_DATA_DIR` |
+| 只移设置 | `OMH_CONFIG_DIR` |
+| 只移报告 | `OMH_REPORTS_DIR` |
+| 只移协调者的启动目录 | `OMH_COORDINATOR_DIR` |
 
-What the board starts (an agent's tab, a reviewer's, the command agents are handed) is given `OMH_HOME`, and
-a part's own variable only for a part kept somewhere else than its place in the home folder. So `OMH_HOME`
-set to a scratch folder in front of a command there moves all of it: none of the real board is reached.
+看板启动的东西（代理的标签页、评审者的标签页、发给代理的命令）都带着 `OMH_HOME`，只有某个部分放在主目录之外时才带它自己的变量。所以在一条命令前把 `OMH_HOME` 设成临时目录，就整体搬家：碰不到真正的看板。
 
-The `XDG_*` variables (`XDG_STATE_HOME`, `XDG_CONFIG_HOME`, `XDG_DATA_HOME`) no longer choose a place. They are read for
-one thing only: to find where an older version kept its files, for the move below.
+`XDG_*` 变量（`XDG_STATE_HOME`、`XDG_CONFIG_HOME`、`XDG_DATA_HOME`）不再决定位置。它们只剩一个用途：找旧版本把文件放哪了，供下面的搬家用。
 
-## Nothing of the board's goes into the folder an agent works in
+## 看板的东西不进代理工作目录
 
-What an agent writes for the board goes in its task's own folder, `data/tasks/<repo>/<n>/`:
+代理为看板写的东西放在它任务自己的目录 `data/tasks/<repo>/<n>/` 里：
 
-- its closing note (`closing-note.md`);
-- while a review runs, the reviewer's verdict and evidence (`review/`, moved to `artifacts/` when the review ends).
+- 它的收尾小结（closing note，`closing-note.md`）；
+- 评审进行中，评审者的结论和证据（`review/`，评审结束移到 `artifacts/`）。
 
-The agent is told the full path. So no repo or worktree gets a folder of the board's, and a task that works in your
-home folder writes nothing into `~/.omh/` itself.
+代理会拿到完整路径。所以任何仓库或工作树都不会多出看板的目录，在你主目录里干活的任务也不往 `~/.omh/` 本身写任何东西。
 
-The closing note is removed when its task is cleaned up (after a merge, a task that ended with nothing to merge, or
-`clear`). The whole task folder goes when the task is cleared away.
+收尾小结在任务清理时删除（合并后、以无东西可合并告终的任务、或 `clear`）。任务被清掉时整个任务目录一起消失。
 
-`.omh.json` (a repo's own settings) is a different file.
+`.omh.json`（仓库自己的设置）是另一个文件。
 
-### Leftovers from older versions
+### 旧版本的残留
 
-Older versions had agents write into `.herdr-superwork/` inside the folder they worked in (ignored by git):
-`closing-<n>.md` and `review-<n>/`. For a task in the home folder that was `~/.herdr-superwork/` itself, which is where
-a `closing-1.md` beside `data` and `settings` comes from. Now:
+旧版本让代理往工作目录里的 `.herdr-superwork/` 写东西（git 会忽略）：`closing-<n>.md` 和 `review-<n>/`。对在主目录里干活的任务，那个位置就是 `~/.herdr-superwork/` 本身，`data` 和 `settings` 旁边的 `closing-1.md` 就是这么来的。现在：
 
-- An agent started with the old rule keeps working. The board still reads a note from the old place for its task (the
-  newer one, when both places have one) until that task is done. A task started by this version is never looked for
-  there.
-- When such a task is cleaned up, its own note in the old place is removed with it, and the old folder too when that
-  leaves it empty.
-- Anything else in an old `.herdr-superwork/` folder is left alone (a task started by this version removes nothing from
-  it, whatever the files are called), and so is a folder that is not empty. Delete it yourself when no agent from
-  before is still running. Its line in the repo's `.git/info/exclude` stays, so leftovers never show up as changes.
+- 用旧规则启动的代理继续干活。看板仍会从旧位置读那个任务的收尾小结（两处都有时取较新的），直到该任务结束。本版启动的任务绝不去那里找。
+- 这种任务被清理时，它在旧位置的收尾小结一并删除；旧目录因此空了的话也删掉。
+- 旧 `.herdr-superwork/` 目录里的其他东西一律不动（本版启动的任务不从里面删任何东西，无论文件叫什么），非空目录也不动。确认搬家前启动的代理都退出后，自己删掉它。它在仓库 `.git/info/exclude` 里的那一行保留，残留永远不会显示为改动。
 
-## What stays outside it
+## 留在它外面的东西
 
-- **The how-to file** in each agent program's own skills folder (`~/.claude/skills/omh` and the others), and
-  **the marked blocks** in Herdr's `config.toml`. They have to be where those programs read them.
-  `omh remove-extras` takes them out ([installing](install.md)).
-- **The web UI's shared link.** With the web UI (Ovis) installed, and only after a yes: where that web UI's shared link
-  (`tailscale serve`) points, so the Board shows in it. `omh web-ui unlink` and `remove-extras` point it back
-  ([the board in the web UI (Ovis)](web-ui.md)).
-- **The trust mark for a repo**, in the agent program's own settings (`~/.claude.json`, `~/.codex/config.toml`; pi's
-  for each task's worktree in `~/.pi/agent/trust.json`).
-- **This repo's own test runner** keeps what already passed in `~/.cache/omh-check` ([testing](testing.md)).
-  That is a cache of a tool for working on this code, not something the board keeps for you: delete it any time.
+- **how-to 文件**在每个代理程序自己的技能目录里（`~/.claude/skills/omh` 等），**标记块**在 Herdr 的 `config.toml` 里。它们必须放在那些程序读取的位置。`omh remove-extras` 把它们取走（[安装](install.md)）。
+- **Web UI 的共享链接。**装了 Web UI（Ovis）且你同意后才会动：改的是那个 Web UI 的共享链接（`tailscale serve`）指向哪里，好让看板显示在里面。`omh web-ui unlink` 和 `remove-extras` 把它指回去（[Web UI（Ovis）里的看板](web-ui.md)）。
+- **仓库的信任标记**，在代理程序自己的设置里（`~/.claude.json`、`~/.codex/config.toml`；pi 的在 `~/.pi/agent/trust.json`，按任务的工作树记）。
+- **本仓库自己的测试运行器**把已通过的结果放在 `~/.cache/omh-check`（[测试](testing.md)）。那是给这份代码干活用的工具缓存，不是看板为你保存的东西：随时可删。
 
-## Coming from herdr-superwork or omh 0.2
+## 从 herdr-superwork 或 omh 0.2 迁来
 
-`~/.herdr-superwork` becomes this folder. The old omh 0.2's projects, which it kept under this very name, are
-set aside to `~/.omh-legacy` first: [older installs](old-installs.md).
+`~/.herdr-superwork` 变成本目录。旧 omh 0.2 的项目本来就放这个名字下，会先搁置到 `~/.omh-legacy`：[旧安装](old-installs.md)。
 
-## Coming from an older version: the one-time move
+## 从旧版本迁来：一次性搬家
 
-Older versions kept the data in `~/.local/state/herdr-superwork`, the settings in `~/.config/herdr-superwork`, and
-agents' reports in `~/.local/share/herdr-superwork-reports`. **The first run of a new version moves all three into
-`~/.omh/` by itself**: any run, whether the board, a command, or the hook Herdr calls. It then says so once,
-in one line, the first time you would see it (on the board when it opens, or after a command you typed):
+旧版本把数据放在 `~/.local/state/herdr-superwork`，设置在 `~/.config/herdr-superwork`，代理的报告在 `~/.local/share/herdr-superwork-reports`。**新版本首次运行会把三者都搬进 `~/.omh/`**：任何一次运行都算，看板、命令、或 Herdr 调用的钩子。然后在你第一次会看到的地方（看板打开时，或你敲过命令后）用一行说明：
 
     Moved the board's files into ~/.omh: data (from ~/.local/state/herdr-superwork), settings (from
     ~/.config/herdr-superwork), reports (from ~/.local/share/herdr-superwork-reports). The old places are links to
     the new ones, so whatever is running carries on.
 
-### Why it is safe
+（含义：看板的文件已搬进 `~/.omh`，数据、设置、报告各从旧位置搬来；旧位置变成指向新位置的链接，运行中的东西照常继续。）
 
-- **Nothing is copied or deleted, and no old path is ever missing.** The old path is the folder itself, and then, in one
-  step, a link to where the folder now is. Each folder goes in three steps, each whole or not done at all:
-  1. two spare links are made (`<old>.moving` and the new place);
-  2. the old folder and the spare link change places;
-  3. the new place and the spare name change places.
+### 为什么安全
 
-  "Change places" is one system call (Linux `renameat2`, a Mac's `renamex_np`), so a command started at the old path at
-  any moment finds its file. A run that was cut off is carried on by the next from the shape it left, and a second run
-  finds nothing to do. `moved.json` is written before the first step.
-- **The old places become links to the new ones.** Everything that still holds an old path keeps working on the same
-  files: a board or keeper still running old code, the command path agents were handed
-  (`~/.local/state/herdr-superwork/bin/herdr-superwork`), the hook settings of running agents, a task's saved artifacts,
-  the page server. A lock is one file whichever path takes it, so old and new code still take turns. The links can be
-  removed once nothing started before the move still runs; the board leaves them.
-- **Data already in the new place is never written over.** What the new place holds is first put into the old folder
-  (the one in use), then the folder moves as above. Whatever only one side has is kept. Of a file both have, the newer
-  one stays in use and the other goes to `set-aside/`, and the line says how many.
-- **Nobody's lock is taken from under it.** When both places have the same lock file, the one in the old place (the
-  place in use) is the lock and is never replaced or removed: a process that holds it, or has opened it and is about to
-  take it, still has the one real lock afterwards. The new place's copy goes, and only while nobody holds it; while one
-  does, that folder is not moved now, and a later run moves it. And after the board takes a lock, it checks that what
-  it holds is still the file at that path, and takes the one there if not.
-- **A run never starts on an empty new place.** Whatever has not moved when a run begins (another run is still moving it
-  after three seconds of waiting, a step failed, a lock in the new place was held) is used where it is, in the old
-  place, for that run.
-- **If two paths cannot change places in one step** (a system without that call), **or the old place is on another
-  disk**, the folder stays where it is and the new place becomes a link to it. Still one folder, still no moment without
-  the old path, and the line says so.
-- **A folder you named yourself stays.** With `OMH_DATA_DIR` (or the settings or reports one) set to a place
-  of your own, that part is not moved.
-- **Only the copy the board runs from moves anything.** A second checkout of this code (a git worktree an agent works
-  in, a copy under test) leaves the files alone and works on the board where it is.
+- **不复制、不删除，旧路径一刻都不缺。**旧路径先是目录本身，然后一步变成指向新位置的链接。每个目录走三步，每步要么整体完成要么没做：
+  1. 建两个备用链接（`<old>.moving` 和新位置）；
+  2. 旧目录和备用链接互换；
+  3. 新位置和备用名字互换。
 
-### The Coordinator's conversation
+  「互换」是一次系统调用（Linux `renameat2`，Mac 的 `renamex_np`），所以任何时刻从旧路径启动的命令都找得到自己的文件。中断的运行由下一次从它留下的形态接上，第二次运行无事可做。`moved.json` 在第一步之前写好。
+- **旧位置变成指向新位置的链接。**还握着旧路径的一切照常在同一份文件上工作：还在跑旧代码的看板或看守、发给代理的命令路径（`~/.local/state/herdr-superwork/bin/herdr-superwork`）、运行中代理的钩子设置、任务存的产物、页面服务器。锁在哪条路径上都是同一个文件，新旧代码照样轮流拿。搬家前启动的东西都退出后，链接可以删；看板不动它们。
+- **新位置已有的数据绝不被覆盖。**新位置里的东西先放进旧目录（在用的那个），然后按上面搬。只有一边有的都保留。两边都有的文件，较新的继续用，另一份进 `set-aside/`，说明里会写有多少个。
+- **不从任何进程手里抢锁。**两处有同一个锁文件时，旧位置（在用的位置）那个就是锁，绝不替换或删除：握着它、或已打开即将拿它的进程，事后仍然握着唯一的真锁。新位置那份只在没人握时才走；有人握时那个目录这次不搬，下次运行再搬。看板拿到锁后还会检查手里这个是否仍是该路径上的文件，不是的话拿路径上那个。
+- **运行绝不在空的新位置上开始。**运行开始时还没搬完的东西（另一个运行搬了三秒还没完、某步失败、新位置的锁被人拿着）这次就在原地、旧位置用。
+- **两个路径无法一步互换**（没有那个系统调用的系统），**或旧位置在另一块盘上**时，目录留在原地，新位置变成指向它的链接。还是一个目录，旧路径还是不缺，说明里会写。
+- **你自己指定的目录不动。**`OMH_DATA_DIR`（或设置、报告那个）指向你自己的位置时，那部分不搬。
+- **只有看板运行的那份才搬家。**这份代码的第二个检出（代理在干的 git 工作树、测试中的副本）不动文件，就地对着现有看板干活。
 
-Its folder moves with the data (`data/coordinator/<session>/chat`), and a running Coordinator stays in it. After its
-next restart it is in the same conversation: the board reopens it by its id, and all three programs find a conversation
-by id from the moved folder. (Tried for real with Claude Code 2.1.296, which keys saved conversations by folder:
-`--resume` found it and went on in it. Codex and pi keep theirs by date and by id.)
+### 协调者的对话
 
-A program started before the move still knows its folder by the old path, and saves a new chat (`/clear`, `/new`) under
-that one. The board looks there too, so it is followed as always.
+它的目录随数据一起搬（`data/coordinator/<session>/chat`），运行中的协调者留在里面。下次重启后还是同一场对话：看板按 id 重新打开它，三个程序都能从搬过的目录里按 id 找到对话。（用 Claude Code 2.1.296 真实验证过，它按目录给保存的对话做键：`--resume` 找到了并在里面继续。Codex 和 pi 按日期和 id 保存。）
 
-### Undoing it
+搬家前启动的程序仍按旧路径认识它的目录，并把新聊天（`/clear`、`/new`）存到那下面。看板也去那里找，所以照常跟得上。
 
-Stop the board, remove the three links, move `data`, `settings` and `reports` back to the old places, and run the old
-version. Nothing else was changed.
+### 撤销
+
+停掉看板，删掉三个链接，把 `data`、`settings`、`reports` 移回旧位置，跑旧版本。别的什么都没改。

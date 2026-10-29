@@ -1,65 +1,43 @@
-# The gate
+# 评审门
 
-**The reviewer describes; the board decides.** The reviewer lists what is wrong, each finding with a severity. The
-board then applies fixed rules: the work **passes** when no finding of its own is `major` or worse (`review.mustFix`).
-Otherwise it goes back to the agent to fix, at most `review.rounds` times, and then waits for you.
+**评审者描述，看板判定。**评审者列出问题，每项发现带严重程度。看板随后套用固定规则：没有任何一项自己的发现达到 `major` 或更严重（`review.mustFix`）时，工作**通过**。否则退回代理修复，最多 `review.rounds` 次，然后等你。
 
-## What the reviewer gives
+## 评审者给出什么
 
-No score and no merge advice. Every round it answers one fixed question, "Does the change do what the task asked?"
-(`meets`), and lists its findings. Each finding has:
+不打分，不给合并建议。每一轮它回答一个固定问题：「改动是否完成了任务要求？」（`meets`），并列出发现。每项发现有：
 
-- a severity (below);
-- a subject, and a [short title](titles.md) of it;
-- where it is;
-- a proof: what the reviewer actually ran or saw;
-- whether it was there before the task (`preexisting`).
+- 严重程度（见下）；
+- 主题，以及它的[短标题](titles.md)；
+- 位置；
+- 证据：评审者实际跑了什么、看到什么；
+- 是否在任务之前就存在（`preexisting`）。
 
-The severity says what the fault does:
+严重程度说明故障的性质：
 
-| Severity | Means |
+| 严重程度 | 含义 |
 | --- | --- |
-| `critical` | only one of four: a fault a user would hit in ordinary use; data that is lost or wrong; something unsafe; a requirement the task states plainly that is not built. A missing picture, a line of a document, or proof that cannot be had on this machine is not critical |
-| `major` | a real fault in an unusual case; a claim that is not proven (a fix not shown to work, a test that cannot catch its bug); a document that states something false |
-| `minor` | correct but could be better: wording, naming, a small inaccuracy, a narrow gap |
-| `trivial` | a note; nothing to do |
+| `critical` | 只有四种之一：用户正常使用就会踩到的故障；数据丢失或错误；不安全；任务明说的要求没做。缺一张图、文档少一行、或这台机器上取不到的证据都不算 critical |
+| `major` | 特殊情况下的真实故障；未经证实的说法（修复没证明有效、测试抓不住它该抓的 bug）；文档写了假的东西 |
+| `minor` | 正确但可以更好：措辞、命名、小错、窄小的缺口 |
+| `trivial` | 备注；无需处理 |
 
-## The board's rules
+## 看板的规则
 
-- **The reviewer's own findings decide.** `meets: false` adds a critical finding of the board's own ("The change does
-  not do what the task asked") only when the reviewer listed nothing at all. Beside real findings, the board adds
-  nothing. (That line used to be 67 of 292 findings, and 28 of 76 failed rounds had no critical finding of the task's
-  own.)
-- **A critical finding with an empty proof counts as major.**
-- **A pre-existing finding never sends the work back**, and never becomes a task. A round whose findings are all
-  pre-existing passes, whatever `meets` says. The review lists them as `pre-existing`, the agent is told to leave them,
-  and nothing else is done. Add a task yourself for one you want fixed.
-- **Pass:** no finding of the task's own at or above `review.mustFix` (`major` by default). A pass is what "may merge"
-  means everywhere: a task with `merge.by: itself` merges ([merging by itself](#merging-by-itself)), an approved merge
-  that was repaired goes through, and the board says `Pass`.
-- **Fail:** the work goes back to the agent by itself, at most `review.rounds` times. Findings at or above the gate are
-  sent as required, the rest as optional. When the cap is reached and it still fails, it stops and waits for you. With
-  a fallback agent set (`worker.fallback`), the next agent on that list takes over first, with the open findings and
-  rounds of its own ([the fallback agent](fallback.md)).
-- **From the second round on**, the reviewer gets the earlier findings and only checks that each is fixed and that the
-  fixes broke nothing. It may add a new finding only if it is critical, with proof. Anything smaller it notices late is
-  left out (a pre-existing fault is still noted). A reply from you starts a full review again.
-- **`review.rounds 0`** sends nothing back by itself: findings wait for you (`Ctrl+R` sends them). The review is still
-  judged at `review.mustFix`, and a failed one never merges by itself.
-- **`review.timeout`** (`20m`, or `none`) is how long one review may take: past it the review fails (`review timed out
-  after 20m (review.timeout)`) and goes on as any failed review does. `limit.time` is another thing: it stops any run,
-  the agent's too, keeps its work and waits for you ([limits](limits.md)).
-- **A review that ends without a verdict** (it timed out, the reviewer exited or its terminal closed, its verdict was
-  not valid) shows the reviewer's last screen in the failure: its last 8 lines, read before its tab closes. A dialog
-  that stopped it (one herdr did not report as a dialog) is there to see, before you retry.
+- **以评审者自己的发现为准。**只有当评审者什么都没列时，`meets: false` 才补一条看板自己的 critical 发现（“The change does not do what the task asked”）。有真实发现时，看板什么都不加。（那句话过去占 292 条发现中的 67 条，而 76 个失败轮次里有 28 个根本没有任务自己的 critical 发现。）
+- **证据为空的 critical 发现按 major 计。**
+- **旧有发现绝不退回工作**，也绝不变成任务。发现全是旧有的轮次，无论 `meets` 怎么说都通过。评审把它们列为 `pre-existing`，告知代理别动，不做别的处理。想修的自己加任务。
+- **通过：**没有任何一项任务自己的发现达到 `review.mustFix`（默认 `major`）。通过就是各处「可以合并」的意思：`merge.by: itself` 的任务会[自行合并](#自行合并)，批准后修过的合并会走完，看板显示 `Pass`。
+- **失败：**工作自动退回代理，最多 `review.rounds` 次。达到评审门的发现作为必修发过去，其余作为可选。到上限仍失败就停下等你。设了备用代理（`worker.fallback`）时，先由列表里的下一个代理带着未解决的发现和自己的轮次接管（[备用代理](fallback.md)）。
+- **第二轮起**，评审者拿到先前的发现，只检查每项是否修好、修复有没有弄坏别的。它只有在带证据且为 critical 时才能加新发现。晚发现的小问题一律略过（旧有故障仍记录）。你的回复会触发一次全新评审。
+- **`review.rounds 0`** 不自动退回任何东西：发现等你（`Ctrl+R` 发出）。评审仍按 `review.mustFix` 判定，失败的评审绝不自行合并。
+- **`review.timeout`**（`20m` 或 `none`）是一次评审允许的时长：超过即评审失败（`review timed out after 20m (review.timeout)`），后续与任何失败评审相同。`limit.time` 是另一回事：它停任何运行，包括代理的，保留工作成果并等你（[limits](limits.md)）。
+- **没有结论就结束的评审**（超时、评审者退出或终端关闭、结论无效）会在失败信息里显示评审者的最后画面：标签页关闭前读到的最后 8 行。拦住它的对话框（herdr 没按对话框上报的那种）也能看到，供你重试前判断。
 
-Findings below the gate still show on the review page, in the task panel and in a comment on the pull request, marked
-as not required.
+低于评审门的发现仍显示在评审页、任务面板和 PR 评论里，标记为非必修。
 
-## Merging by itself
+## 自行合并
 
-By default, finished work waits for your yes (`merge.by: you`). With `merge.by: itself` it merges by itself the moment
-it is green.
+默认情况下完成的工作等你批准（`merge.by: you`）。设为 `merge.by: itself` 后，一变绿就自行合并。
 
 ```
 omh set merge.by itself                  every task
@@ -68,86 +46,58 @@ omh set merge.by itself --task <id>      one task (or: delegate <id> --merge.by 
 omh unset merge.by                       take the choice back
 ```
 
-Or tell the Coordinator "auto-merge this one" or "always auto-merge". The task panel shows it as `Merge`.
+或者告诉协调者「这个自动合并」「总是自动合并」。任务面板把它显示为 `Merge`。
 
-### What "green" means
+### 「绿」是什么意思
 
-The check passed, the review passed the gate (or the task is not reviewed), the branch is up to date with main with no
-conflict, and the pull request has no failed check or requested change.
+检查通过、评审过了评审门（或任务不评审）、分支与 main 同步且无冲突、PR 没有失败的检查或要求修改。
 
-### Only the reviewed commit merges
+### 只合并被评审过的提交
 
-The board remembers the commit the review saw and merges exactly that. A commit that reached the branch or the pull
-request afterwards stops the merge, and is checked and reviewed first. (GitHub, asked right after the board's own push,
-may still name the commit before it. That is not such a commit: while the branch at the remote is the reviewed one, the
-board asks again.)
+看板记住评审看过的提交，原样合并。之后进入分支或 PR 的提交会拦住合并，先检查和评审。（GitHub 在看板自己推送后立刻查询时，仍可能报出前一个提交。那不算这种提交：远端分支还是被评审的那个时，看板会再问。）
 
-### Main moved since the review
+### 评审之后 main 动了
 
-The task catches up and merges, with nobody asked. The board merges main into the branch itself and runs the check on
-the result.
+任务自行追平并合并，不问任何人。看板自己把 main 合进分支，并在结果上跑检查。
 
-- Clean merge and the check passes: the review still stands and the task merges at once. Such a merge of the board's
-  own counts as reviewed. Any other new commit does not.
-- The merge conflicts, or the check fails after it: the task goes back to its agent to repair. What the agent made of
-  it is reviewed before it may merge, the conflicts it resolved included.
+- 干净合并且检查通过：评审依然有效，任务立即合并。看板自己做的这种合并算已评审。任何其它新提交不算。
+- 合并冲突，或合并后检查失败：任务退回代理修复。代理修出来的东西要先评审才能合并，包括它解的冲突。
 
-### One at a time
+### 一次一个
 
-Every merge moves main under the tasks behind it, so a repo's tasks merge in a line: one catches up, is checked and
-merges, then the next, in the order they became ready.
+每次合并都会挪动后面任务脚下的 main，所以一个仓库的任务排成一列合并：一个追平、检查、合并，然后下一个，按就绪顺序。
 
-- A waiting task says `Waiting to merge: <id> goes first`.
-- It is not brought up to date before its turn, so it catches up once, not once per merge ahead of it.
-- A task that must be reviewed again leaves the line, and joins it again after.
-- The line moves with the board closed too.
+- 等待中的任务显示 `Waiting to merge: <id> goes first`。
+- 轮到之前不追平，所以只追平一次，而不是前面每合并一次就追平一次。
+- 需要再评审的任务离队，之后重新排队。
+- 看板关掉时队伍照样前进。
 
-### What still stops and asks you
+### 这些情况仍会停下问你
 
-- a review that still fails the gate after its rounds;
-- checks on GitHub that still fail after the rounds, or never finish (`merge.checks`);
-- a merge that failed;
-- a login, a question or a permission request from the agent;
-- a checkout of yours on another branch;
-- **a task you stepped into after it asked you** (a reply to its agent, a turn in its terminal, stopping it or
-  delegating it again) asks you again too, once. `set merge.by itself --task <id>` on that task says you do not need
-  to be asked. One you stopped or delegated again while it still worked was not asking: its new round is checked and
-  reviewed again, and merges by itself when it passes.
+- 走完轮次仍不过评审门的评审；
+- GitHub 上的检查走完轮次仍失败、或永不结束（`merge.checks`）；
+- 合并失败；
+- 代理的登录、提问或权限请求；
+- 你的检出在别的分支上；
+- **任务向你提问后你插过手**（回了它的代理、在它终端里跑了一轮、停了它或重新派发），会再问你一次。在那个任务上 `set merge.by itself --task <id>` 表示不必再问。它还在干活时被你停下或重新派发的不算插手：新一轮照常检查和评审，通过就自行合并。
 
-Sending the board's own words back to the agent (the review, or what went wrong: `Ctrl+R`, `review`, `fix`) is not
-stepping in. You added nothing of your own, the repair is checked and reviewed, and it merges by itself when it passes.
+把看板自己的话发回代理（评审结果、或出了什么错：`Ctrl+R`、`review`、`fix`）不算插手。你没加自己的东西，修复会被检查和评审，通过就自行合并。
 
-An older version did count that as stepping in, and left such tasks waiting for a yes. Such a task is let go only where
-the board can prove it from what its agent was told: its task once, before any review, and since then nothing but
-reviews of its own, letter for letter as the board words them. With anything else in that conversation (a failure's
-details sent back included: they are not kept, so they cannot be told from words of yours), or a conversation the
-board cannot read (only Claude Code's can be), the task asks you once more. A hold made after the board stopped
-counting a send-back is never lifted this way.
+旧版本把这算作插手，让这类任务等你批准。只有看板能从代理收到的话里证明清白时才放行：任务自己的话只在任何评审之前有过一次，此后除了看板措辞、逐字逐句的自家评审别无其它。那段对话里有别的东西（包括退回的失败详情：它们不留档，无法与你的话区分），或看板读不到的对话（只有 Claude Code 的读得到），任务就再问一次。看板停止把「发回」算作插手之后加的冻结，绝不会以这种方式解除。
 
-### It counts from the moment you change it
+### 从你改动的那一刻起生效
 
-Also for tasks under way.
+进行中的任务也一样。
 
-- **Turned on:** a running task merges when it turns green, and a green task already waiting for your yes merges at
-  once. Turned on for every task, that is every such task: look at what is waiting first.
-- **Turned off:** a task waiting to merge by itself (for GitHub's checks or a merge queue) goes back to waiting for your
-  yes. So does one whose merge the board had started but not yet made: the setting is asked again right before the
-  merge.
+- **打开：**运行中的任务变绿就合并，已经绿着等你批准的任务立即合并。对所有任务打开时，就是每一个这样的任务：先看看什么在等。
+- **关闭：**等自行合并的任务（等 GitHub 的检查或合并队列）退回等你批准。看板已开始但还没做成合并的也一样：合并前会再读一次设置。
 
-### A repo cannot switch it on for itself
+### 仓库不能替自己打开它
 
-A repo's own committed file cannot turn this on. `"land": "auto"` in `.omh.json` used to; that file now holds
-seven facts only ([settings](settings.md)). So code an agent writes can never make its own work merge unasked. To merge
-by itself in one repo, say so yourself: `set merge.by itself --repo <name>`. `show <id>` says what a task really runs
-on, and where each value comes from.
+仓库自己提交的文件不能打开它。`.omh.json` 里的 `"land": "auto"` 曾经可以；那个文件现在只放七项事实（[设置](settings.md)）。所以代理写的代码永远不能让自己的成果不经询问就合并。要在一个仓库里自行合并，你自己说：`set merge.by itself --repo <name>`。`show <id>` 会说明任务实际依据什么运行，以及每个取值来自哪里。
 
-## When the agent stops with an error or a question
+## 代理带错误或问题停下时
 
-- **An error, a usage limit, a cut-off or a refusal** is saved as "Agent stopped" with the real text. A provider error
-  that passes by itself is retried first ([a turn cut off by the provider](provider-errors.md)).
-- **A login error** makes the task "Needs a login", and that comes first. Older failure details are not sent, and
-  pull-request feedback does not wake the agent, until you have logged in and then replied, pressed `Ctrl+R` or typed
-  in the agent's terminal.
-- **A question.** A turn only waits on you when the agent ran `report … --state blocked`. A final message that merely
-  ends in a question goes on to check and review, and you still approve at the end
-  ([an agent that waits for you is not finished](waiting-for-you.md)).
+- **错误、用量上限、被截断或拒绝**记为“Agent stopped”，保留原文。能自行恢复的服务商错误会先重试（[被服务商截断的回合](provider-errors.md)）。
+- **登录错误**让任务变成“Needs a login”，并且优先。旧的失败详情不会发出，PR 反馈也不会唤醒代理，直到你登录后回复、按 `Ctrl+R` 或在代理终端里输入。
+- **提问。**只有代理执行了 `report … --state blocked`，回合才会等你。只是以问句结尾的最终消息照常进入检查和评审，你最后仍要批准（[等待你的代理不算完成](waiting-for-you.md)）。

@@ -1,80 +1,57 @@
-# An agent that waits for you is not finished
+# 等你的代理没有完成
 
-**An agent that stops because it needs you (a question, a permission, a sign-in) is waiting, not finished.** Nothing
-that follows a finish happens: no check, no review, no push, no pull request, no merge, no "done". The task's row says
-what it needs, with its mark (`?`, `!` or the sign-in mark), and stays there until you answer.
+**代理因为需要你（提问、权限、登录）而停下，是在等，不是完成。** 完成之后的事一件都不发生：不检查、不评审、不推送、不开 PR、不合并、没有“done”。任务的行写明它要什么，带标记（`?`、`!` 或登录标记），一直停在那到你回答。
 
-This holds for every task, [research-only](research.md) ones too:
+这对每个任务都成立，[只研究](research.md)任务也一样：
 
-- however many times in a row the agent asks (an interview of fifteen questions is fifteen waits and no review);
-- whether or not a report or a closing note is already there.
+- 代理连续问多少次都一样（十五个问题的访谈就是十五次等待、没有评审）；
+- 有没有报告或收尾小结都一样。
 
-## A chat-only task always waits
+## 只聊天任务总是等待
 
-A [chat-only task](chat.md) is a conversation: **every** stop of its agent waits for you, with or without the command
-below. Nothing is ever checked, reviewed, pushed or merged for it, and it is done only when you end it (yes on the board,
-`omh finish <id>`).
+[只聊天任务](chat.md)是一场对话：它的代理**每次**停下都等你，有没有下面那条命令都一样。永远不为它检查、评审、推送或合并，只有你结束它才算完成（看板上点 yes，`omh finish <id>`）。
 
-## How an agent says it waits
+## 代理如何表示在等你
 
-There are two ways for an agent to stop. The board tells them apart by one thing only:
+代理停下有两种方式。看板只凭一件事区分：
 
-| It means | The agent | What follows |
+| 含义 | 代理 | 随之而来 |
 |---|---|---|
-| **I am waiting for you** | runs `omh report <id> --state blocked --kind <question\|permission\|auth> --msg "<why>"`, then stops | nothing: the task waits for your answer |
-| **I am finished** | stops, with a short summary | the finish line: check, review, your approval ([how work gets done](how-work-gets-done.md)) |
+| **我在等你** | 跑 `omh report <id> --state blocked --kind <question\|permission\|auth> --msg "<why>"`，然后停下 | 没有：任务等你回答 |
+| **我完成了** | 带简短小结停下 | 收尾流水线：检查、评审、你的批准（[工作如何完成](how-work-gets-done.md)） |
 
-The board cannot read a question out of a last message, a report or a closing note. An agent that asks in plain words
-and stops counts as finished, and its work is checked and reviewed as it stands. So every agent's rules say plainly:
+看板无法从最后一条消息、报告或收尾小结里读出提问。用大白话提问然后停下的代理算完成，工作按原样受检查和评审。所以每个代理的规则都明说：
 
-- that command is the only way to say "I am waiting";
-- it holds for **one stop**. Your answer arrives as the agent's next message and ends the wait. An agent that asks
-  again runs the command again, every time, also for each question of an interview;
-- a stop without it means finished, whatever the last message, report or closing note says;
-- it is never run to put off the review of finished work.
+- 那条命令是说“我在等”的唯一方式；
+- 它只管**一次停下**。你的回答作为代理的下一条消息到达，结束等待。再问就再跑命令，每次都跑，访谈的每个问题也是；
+- 没有它就是完成，不管最后消息、报告或收尾小结写什么；
+- 绝不用它拖延已完成工作的评审。
 
-The command answers the agent with the same: `Reported: you are waiting, not finished, so no check and no review follow this stop.`
+命令用同一句话回答代理：`Reported: you are waiting, not finished, so no check and no review follow this stop.`
 
-Waiting is the only state an agent reports for its own task. `report <id> --state done` (or `error`, or `idle`) run
-from the task's own agent's pane, or its reviewer's, is refused, nothing changes and the command fails: the task
-finishes when the agent ends its turn, and the board then checks, reviews and merges it. Marking a task done with
-nothing merged stays yours (and the Coordinator's, on your word), as does `finish <id>`.
+等待是代理为自己的任务上报的唯一状态。从任务自己的代理面板或其评审者面板跑 `report <id> --state done`（或 `error`、`idle`）会被拒绝，什么都不变，命令失败：任务在代理结束回合时完成，看板随后检查、评审、合并。没合并就标完成仍归你（以及协调者，凭你的话），`finish <id>` 同理。
 
-## A report saved early
+## 提前保存的报告
 
-A research-only task's result is a report, and saving it finishes nothing. An agent may save an interim report, add to
-it, and keep asking. While the task waits, the report already has its link (the task panel's **Report**), so you can
-read what it has so far. The task is finished when its agent stops without saying it waits.
+只研究任务的结果是报告，保存它不算完成。代理可以存中间报告、继续补充、继续提问。任务等待期间，报告已有链接（任务面板的 **Report**），你可以读它到目前为止的内容。代理不说等待而停下时，任务才算完成。
 
-## Asking cannot dodge a review
+## 提问躲不掉评审
 
-A task that waits is never done, pushed or merged. The first turn that ends without the command is checked and
-reviewed as usual.
+等待的任务永远不会完成、推送或合并。第一个没带命令结束的回合照常受检查和评审。
 
-## A review that is already running
+## 已在进行的评审
 
-If a task turns out to be waiting while its review runs (its agent said so in a turn that began after the review did),
-the review is **stopped**: the reviewer's tab closes, no verdict is kept, nothing goes back to the agent as a failed
-round, and no round is counted. A review of work whose agent still waits for an answer tells you nothing useful. The
-work is reviewed when it is finished.
+如果任务在评审进行中被发现是在等（代理在评审开始之后的某个回合说的），评审**被停止**：评审者的标签页关闭，不保留结论，没有东西作为失败轮退回代理，也不计轮。还在等回答的工作，评审告诉你没用。等工作完成再评。
 
-A review that ran because an agent asked in plain words, without the command, is a real review of what was there: it is
-kept and shown. Reply to the agent and the round counter starts again.
+因为代理用大白话提问（没带命令）而跑的评审，是对当时内容的真实评审：保留并显示。回复代理后轮计数重新开始。
 
-## Details: how the board decides which turn waits
+## 细节：看板如何判定哪个回合在等
 
-The agent says it waits in the turn it then ends. The end of that turn reaches the board twice, in no fixed order:
-Herdr sees the agent's pane at rest, and the agent's own turn-end report starts the finish line. So the board does not
-go by who saw the end first. It goes by the turn itself, read from the agent's saved conversation:
+代理在它随后结束的那个回合里说它在等。那个回合的结束以两种方式到达看板，先后不定：Herdr 看到代理的面板停着，代理自己的回合结束报告启动收尾流水线。所以看板不按谁先看到结束。它看回合本身，从代理保存的会话记录里读：
 
-- A turn that **began before** the agent said it waits, and ended after, is the turn it waits in. Its end is not a
-  finish, even when Herdr took a flicker of the agent's status for a new turn meanwhile. The task is put back to
-  waiting, with the kind and words the agent gave.
-- A turn that **began after** it (you replied from the board, or typed in the agent's own terminal) is your answer being
-  worked on. Its end is a finish like any other, unless the agent says again that it waits.
+- **在**代理说等**之前**开始、之后结束的回合，就是它在等的那个回合。它的结束不是完成，即使期间 Herdr 把代理状态的一闪当成新回合。任务被放回等待，带代理给的类型和话语。
+- **在**它**之后**开始的回合（你从看板回复，或在代理自己的终端里打字）是你的回答在被处理。它的结束和任何回合一样是完成，除非代理又说在等。
 
-Normally only the end of the saved conversation is read. A very long turn (a large tool result, hours of work) has its
-prompt further back: then the whole file is read for it, that once.
+通常只读保存的会话记录的结尾。很长的回合（大的工具结果、几小时的工作）它的提示词在更早处：那时为它读整个文件，只此一次。
 
-If the saved conversation cannot be read at all, a task that still says it waits goes on waiting: the board does not
-guess a finish. Reply from the board and the next turn is judged as usual.
+如果保存的会话记录完全读不到，仍说在等的任务继续等：看板不猜完成。从看板回复，下一回合照常判定。

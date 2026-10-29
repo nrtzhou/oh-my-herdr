@@ -1,225 +1,144 @@
-# Colours
+# 颜色
 
-**The board uses Herdr's own theme, and colour means status only.** A mark's colour says where a task or a coordinator
-stands, and the text box's edge takes the status colour of whoever you type to. Names are never coloured: machines,
-projects and tasks are all in the base colour. Colour is never the only clue: every state has its own mark and words
-too, and with `NO_COLOR` the board still reads.
+**看板沿用 Herdr 自己的主题，颜色只表示状态。** 标记的颜色说明任务或协调者当前的状态，输入框的边框取你正在对话对象的状态色。名字从不上色：机器、项目、任务的标题都用基础色。颜色也从不是唯一线索：每个状态都有自己的标记和文字，设置 `NO_COLOR` 后看板照样可读。
 
-| Colour | Means |
+| 颜色 | 含义 |
 |---|---|
-| amber (Herdr's `yellow`) | an agent works |
-| red | it needs you (blocked or failed) |
-| green | ready to approve |
-| blue | under review |
-| teal | done |
-| dim grey | to do |
-| magenta | queued: waits for a free slot, or for other tasks (its own mark, a clock, `◷`) |
-| light grey | the board runs its own check |
-| purple | an automation |
-| the base colour | every name: a machine's, a project's, a task's title |
-| the fainter grey | what goes with a name: counts (`2 machines · 5 tasks`, `7 tasks`), keys (`HP`, `HOME`), times, and tags after a title or a name (`[auto]`, `[research]`, `[chat]`, `[autopilot]`, `×3`) |
+| amber（Herdr 的 `yellow`） | 有工作代理在干活 |
+| red | 需要你（受阻或失败） |
+| green | 待批准 |
+| blue | 评审中 |
+| teal | 完成 |
+| dim grey | 待办 |
+| magenta | 排队：等空闲槽位，或等其他任务（专属标记：时钟 `◷`） |
+| light grey | 看板在跑自己的检查 |
+| purple | 一项自动化 |
+| 基础色 | 所有名字：机器、项目、任务的标题 |
+| 更淡的灰色 | 名字的附属信息：计数（`2 machines · 5 tasks`、`7 tasks`）、按键（`HP`、`HOME`）、时间，以及标题或名字后的标签（`[auto]`、`[research]`、`[chat]`、`[autopilot]`、`×3`） |
 
-## The board is in Herdr's theme
+## 看板沿用 Herdr 的主题
 
-Everything the board draws is in the theme Herdr shows, so the two never look like different programs. Herdr does not
-hand its theme to a plugin, so the board reads what Herdr reads: the `[theme]` and `[ui]` tables of this machine's
-`~/.config/herdr/config.toml`, resolved as Herdr resolves them (the theme's name and its other names, `auto_switch` with
-`dark_name` and `light_name`, `[theme.custom]`, the older `ui.accent`).
+看板画的一切都在 Herdr 显示的主题里，两者不会像两个程序。Herdr 不把主题交给插件，所以看板读 Herdr 读的东西：本机 `~/.config/herdr/config.toml` 的 `[theme]` 和 `[ui]` 表，按 Herdr 的方式解析（主题名及其别名、`auto_switch` 配 `dark_name` 和 `light_name`、`[theme.custom]`、旧的 `ui.accent`）。
 
-- **No theme set means Herdr's default**, Catppuccin, exactly as Herdr shows it. The board never falls back to the
-  terminal's own colours while Herdr beside it shows its default.
-- **`auto_switch`**: the board asks its terminal whether it is light or dark, as Herdr does, and takes the theme's light
-  or dark one.
-- **The `terminal` theme** paints with the terminal's own sixteen colours, in Herdr and on the board alike. Its greys are
-  the exception ([below](#the-greys-are-quiet-but-always-readable)).
-- **A theme changed in Herdr** shows the next time the board opens. The popup, the task panel, the reply view and the
-  review page take the same theme. Another machine's tasks are drawn by this board, in this theme.
+- **没设主题就是 Herdr 的默认主题**，Catppuccin，和 Herdr 显示的一模一样。旁边的 Herdr 显示默认主题时，看板绝不退到终端自己的颜色。
+- **`auto_switch`**：看板像 Herdr 一样问终端当前是浅色还是深色，取主题的浅色或深色版。
+- **`terminal` 主题**用终端自己的十六色来画，Herdr 和看板都一样。它的灰色是例外（[见下](#灰色安静但始终可读)）。
+- **在 Herdr 里换了主题**，下次打开看板就生效。弹窗、任务面板、回复视图和评审页用同一主题。别的机器的任务也由这个看板用这个主题绘制。
 
-To choose by hand, set [`board.theme`](settings.md): `herdr` (the default, all of the above), `dark` or `light` (that
-theme's dark or light one), or one of Herdr's themes by name: `catppuccin`, `catppuccin-latte`, `terminal`,
-`tokyo-night`, `tokyo-night-day`, `dracula`, `nord`, `gruvbox`, `gruvbox-light`, `one-dark`, `one-light`, `solarized`,
-`solarized-light`, `kanagawa`, `kanagawa-lotus`, `rose-pine`, `rose-pine-dawn`, `vesper`.
+手动选择：设置 [`board.theme`](settings.md)：`herdr`（默认，以上全部）、`dark` 或 `light`（该主题的深色或浅色版），或按名字选 Herdr 的主题：`catppuccin`、`catppuccin-latte`、`terminal`、`tokyo-night`、`tokyo-night-day`、`dracula`、`nord`、`gruvbox`、`gruvbox-light`、`one-dark`、`one-light`、`solarized`、`solarized-light`、`kanagawa`、`kanagawa-lotus`、`rose-pine`、`rose-pine-dawn`、`vesper`。
 
-### When the board cannot know the theme
+### 看板无法得知主题时
 
-- **Herdr opened from another machine (`herdr --remote`).** Herdr's screen is then painted by its client, with the config
-  of the machine the client runs on, and Herdr passes neither that config nor its theme to the server the board runs on.
-  If that machine's config names another theme, Herdr shows that theme around a board in this machine's. Set
-  `board.theme` to that theme's name (`omh set board.theme nord`), or give both machines the same `[theme]`.
-  A plain `ssh` to this machine with Herdr started here is not this case: client and server are on one machine, and the
-  board matches.
-- **The web Board.** The web UI (Ovis) does not read Herdr's theme; it has colours of its own (its CSS variables, light and
-  dark and its palettes). The Board there uses those, so it matches what Herdr looks like on the web, not in a terminal
-  ([the board in the web UI](web-ui.md)).
+- **Herdr 从别的机器打开（`herdr --remote`）。** 此时 Herdr 的画面由客户端绘制，用客户端所在机器的配置，Herdr 不会把那份配置或它的主题传给看板所在的服务器。如果那台机器的配置指定了别的主题，Herdr 显示那个主题，而看板用本机的主题。把 `board.theme` 设成那个主题名（`omh set board.theme nord`），或让两台机器用同一个 `[theme]`。用普通 `ssh` 连到本机、Herdr 就在这台机器上启动，不属于这种情况：客户端和服务器在同一台机器，看板自然一致。
+- **网页看板。** 网页 UI（Ovis）不读 Herdr 的主题；它有自己的颜色（CSS 变量，浅色、深色和它的调色板）。那里的看板用这些，所以和 Herdr 网页版一致，而不是终端里的样子（[网页 UI 里的看板](web-ui.md)）。
 
-## A status is in Herdr's own colour
+## 状态用 Herdr 自己的颜色
 
-A task's status is drawn in the colour Herdr's sidebar and agent list use for that state, whatever else the theme does:
-working is Herdr's `yellow` (amber), blocked or failed its `red`, done its `teal`. The mark, the group's heading, the bar,
-the percent and the minutes left take it.
+任务状态用 Herdr 侧栏和代理列表为该状态使用的颜色，不管主题怎么配：进行中是 Herdr 的 `yellow`（amber），受阻或失败是 `red`，完成是 `teal`。标记、分组标题、进度条、百分比和剩余分钟数都用它。
 
-The board has colours of its own only for what Herdr has no state for:
+只有 Herdr 没有对应状态的场合，看板才用自己的颜色：
 
-| State | Colour | Which one |
+| 状态 | 颜色 | 具体是哪个 |
 |---|---|---|
-| under review | blue | the theme's `blue` where that is told apart from all it sits beside, else the board's `#3b82f6` ([the board](board.md)) |
-| ready to approve | green | the theme's `green` |
-| to do | dim grey | the theme's grey for greyed-out words (`overlay0`), made readable as said below, where that is told apart from the green and the blue; else another grey. With the terminal's own colours it is a grey mixed from the terminal's own background and text colour, measured |
-| queued | magenta | one of the board's own magentas, the first told apart from every status colour, the automations' purple, the greys, text and background, and seen on the ground: `#e056fd` with Herdr's default theme, `#d946ef` with the terminal's own colours ([below](#a-queued-task-is-magenta)) |
+| 评审中 | blue | 主题的 `blue`，前提是它与相邻颜色都能分辨；否则用看板的 `#3b82f6`（[看板](board.md)） |
+| 待批准 | green | 主题的 `green` |
+| 待办 | dim grey | 主题给灰色文字用的灰（`overlay0`），按下面说的方式保证可读，前提是它与 green 和 blue 都能分辨；否则用另一种灰。用终端自己的颜色时，是按实测从终端背景色和文字色混合出的灰 |
+| 排队 | magenta | 看板自己的 magenta 之一：与所有状态色、自动化的 purple、各种灰、文字和背景都能分辨，且实地可见：Herdr 默认主题下是 `#e056fd`，用终端自己的颜色时是 `#d946ef`（[见下](#排队中的任务是-magenta)） |
 
-- They are told apart from each other in every built-in theme (the tests measure it).
-- "To do" is a dim grey in the list (the heading, the `○` mark, the task's number) and in the box alike: dimmer than plain
-  text, and always readable.
-- While the board runs its own check, the mark is a plain light grey, the theme's `subtext0`
-  ([the check's progress](check-progress.md)).
+- 在每个内置主题里它们互相都能分辨（测试会测量）。
+- 「待办」在列表（标题、`○` 标记、任务编号）和框里都是 dim grey：比正文暗，但始终可读。
+- 看板跑自己的检查时，标记是朴素的 light grey，即主题的 `subtext0`（[检查的进度](check-progress.md)）。
 
-## A queued task is magenta
+## 排队中的任务是 magenta
 
-A queued task has a colour no other state uses: magenta, the purple between the automations' violet and red. A task
-started while every slot of `board.agents` is taken, or tabbed with `--after` while the tasks it waits for are not all
-done ([one task after another](after.md)), has it for its clock `◷`, its place in the queue (`Q#2`), the State line in
-the task panel and its agent's text box. Its row's second line, `Waiting for a free slot` or `Queued after SKL-6`, is the same quiet grey as any other
-task's line, and is cut where any other line is. A task that only waits for others, never tabbed, stays "to do", and its
-row says nothing of the wait.
+排队中的任务用别的状态都不用的颜色：magenta，介于自动化的 violet 和 red 之间的紫。任务在 `board.agents` 槽位全满时启动，或用 `--after` 排在其他任务后面而那些任务还没全部完成（[一个任务接一个任务](after.md)），它的时钟 `◷`、队列位置（`Q#2`）、任务面板的 State 行和它代理的输入框就用这个颜色。它那一行的第二行，`Waiting for a free slot`（等待空闲槽位）或 `Queued after SKL-6`（排在 SKL-6 之后），和其他任务的行一样是安静的灰色，截断方式也一样。只等其他任务、从没用 `--after` 的任务仍是「待办」，行里不显示等待。
 
-**Colour is not the only clue**: the `◷` is a clock no other state has, one column wide (to do is the plain `○`), and `Q#2`,
-`Waiting for a free slot` and `Queued after SKL-6` are words. With `NO_COLOR` they still say it. The web Board shows it
-the same way.
+**颜色不是唯一线索**：`◷` 是别的状态都没有的时钟，占一列（待办是朴素的 `○`），`Q#2`、`Waiting for a free slot`、`Queued after SKL-6` 都是文字。设置 `NO_COLOR` 后它们照样说明状态。网页看板同样如此。
 
-## An automation is purple
+## 自动化是 purple
 
-Automations are not tasks, so nothing of theirs may be mistaken for a status. They have one colour of their own, used
-for the heading `automations` in the list, the mark of each of their rows (`⟳`, dimmed while it is off), the `[auto]`
-mark of an automation's line in the `?` menu. The `[auto]` tag of a task one made is a tag like any other: dimmed.
+自动化不是任务，它的任何东西都不能被误认成状态。它有自己的颜色，用在列表的标题 `automations`、每行的标记（`⟳`，关闭时变暗）、`?` 菜单里自动化那行的 `[auto]` 标记。自动化创建的任务的 `[auto]` 标签和其他标签一样：变暗。
 
-It is **Herdr's own `mauve`**, the one colour of Herdr's theme no status uses, so it changes with the theme like
-everything else. It is used where it is a purple (from violet to pink) and told apart from the status colours (red,
-green, amber, teal, blue, grey), from plain text, from both greys of greyed words and from the background. The tests
-measure that in every built-in theme.
+用的是 **Herdr 自己的 `mauve`**，Herdr 主题里唯一没被任何状态占用的颜色，所以它和其他东西一样随主题变。用它因为它呈 purple（从 violet 到 pink），且与状态色（red、green、amber、teal、blue、灰色）、正文、灰色文字的两种灰以及背景都能分辨。测试会在每个内置主题里测量这一点。
 
-| Theme | The automations' colour |
+| 主题 | 自动化的颜色 |
 |---|---|
-| Catppuccin (Herdr's default), Latte, Tokyo Night and Day, Dracula, Gruvbox dark and light, One Dark and Light, Solarized dark and light, Rosé Pine Dawn | the theme's `mauve` |
-| Nord, Kanagawa, Rosé Pine, Vesper | the board's `#a855f7`: Vesper's `mauve` is its amber, the colour of "working", and the other three's are dusty ones that sit on the theme's greys |
-| Kanagawa Lotus (light) | the board's darker `#7c3aed`: its `mauve` sits on its text colour |
-| `terminal` | the terminal's own magenta, so it follows the terminal as the rest of that theme does |
+| Catppuccin（Herdr 默认）、Latte、Tokyo Night and Day、Dracula、Gruvbox dark and light、One Dark and Light、Solarized dark and light、Rosé Pine Dawn | 主题的 `mauve` |
+| Nord、Kanagawa、Rosé Pine、Vesper | 看板的 `#a855f7`：Vesper 的 `mauve` 就是它的 amber，即「进行中」的颜色；另外三个的 `mauve` 偏灰，落在主题的灰色上 |
+| Kanagawa Lotus（浅色） | 看板更深的 `#7c3aed`：它的 `mauve` 落在它的文字色上 |
+| `terminal` | 终端自己的 magenta，和该主题其余部分一样跟随终端 |
 
-A `mauve` of your own (`[theme.custom]`) is held to the same rule.
+你自己在 `[theme.custom]` 里指定的 `mauve` 遵守同样的规则。
 
-**Colour is not the only clue**: the heading is a heading by its place and its word, the mark is an arrow going round
-where every task's mark is another shape, and `on` or `off` is a word on every row. With `NO_COLOR` all of that still
-stands. One that is off is quiet as a done task is: its mark dimmed, its words greyed.
+**颜色不是唯一线索**：标题靠位置和文字表明它是标题，标记是循环箭头，而每个任务的标记是别的形状，每行还有 `on` 或 `off` 文字。设置 `NO_COLOR` 后这些都还在。关闭的自动化像完成的任务一样安静：标记变暗，文字变灰。
 
-On the web Board it is a purple of the board's own (`#a855f7`, pulled towards the page's text colour so it reads on light
-and dark), since the web UI has no purple among its status colours.
+网页看板上用看板自己的 purple（`#a855f7`，向页面文字色靠拢，浅色深色背景下都可读），因为网页 UI 的状态色里没有 purple。
 
-## Autopilot has no colour of its own
+## 自动驾驶没有专属颜色
 
-A coordinator on [autopilot](autopilot.md) keeps its row's own mark, in its own colour, as when it is off. Autopilot
-shows only in the board's own patterns: a dimmed `[autopilot]` after the row's name, as a task's `[research]`; a status
-line under the row in the grey of a task's (`Autopilot · next check-in in 12m · 3 of 20 today`, `Working on HSW-92`,
-`Needs you · …`); and `1 on autopilot` in its machine's summary. Its wakes in the chat stand under the name `Autopilot`,
-as the board's own words stand under `Board`, in the same greys. With `NO_COLOR` all of it still reads.
+处于[自动驾驶](autopilot.md)的协调者保留自己行里的标记和颜色，和关闭时一样。自动驾驶只体现在看板自己的样式上：行名字后变暗的 `[autopilot]`，像任务的 `[research]`；行下方与任务同灰色的状态行（`Autopilot · next check-in in 12m · 3 of 20 today`（自动驾驶 · 12 分钟后下次检查 · 今日 3/20）、`Working on HSW-92`（正在做 HSW-92）、`Needs you · …`（需要你 · …））；以及机器摘要里的 `1 on autopilot`（1 个在自动驾驶）。它在聊天里的唤醒消息以 `Autopilot` 为名显示，就像看板自己的消息以 `Board` 为名，同样的灰色。设置 `NO_COLOR` 后这些照样可读。
 
-## The greys are quiet but always readable
+## 灰色安静但始终可读
 
-The board has three greys:
+看板有三种灰色：
 
-- the one for greyed-out words: a task's number, a time, a count in the header, "↓ 3 done", the words between two
-  hints, a label;
-- a brighter one for words that must be read: what a row says, the keys on the hint line;
-- the dim grey of "to do".
+- 给灰色文字用的：任务编号、时间、顶部的计数、`↓ 3 done`、两个提示之间的文字、标签；
+- 更亮的一种给必须读清的文字：行的内容、提示行上的按键；
+- 「待办」的 dim grey。
 
-They are Herdr's own (`overlay0`, `subtext0`), but Herdr's themes do not all keep them readable. Nord's grey for
-greyed-out words is 1.7 to 1 against its background, and nine more themes are under 3 to 1. So each grey is held to a
-floor:
+它们是 Herdr 自己的（`overlay0`、`subtext0`），但 Herdr 的主题不都能保证它们可读。Nord 给灰色文字用的灰与背景对比度只有 1.7 比 1，另有九个主题低于 3 比 1。所以每种灰色都有下限：
 
-- **The measure** is the WCAG 2 contrast ratio between the grey and its background: 1 to 1 is the same colour, 21 to 1
-  is black on white.
-- **The floor is 4.5 to 1**, what WCAG asks of text. Where a theme's own plain text is so quiet that 4.5 would leave the
-  grey less than 1.5 times dimmer than it, the floor comes down with the text, but **never under 3 to 1** (One Dark 4.4,
-  Kanagawa Lotus 4.1, Solarized 3.7, Tokyo Night Day and Solarized Light 3.0).
-- **A grey under its floor is pulled towards the theme's plain text colour, only as far as the floor.** So it keeps the
-  theme's tint, and a grey that already reads is left alone.
-- **"To do" is also dimmer than plain text by the same measure**: plain text stands out from the background at least 1.3
-  times as much. In every built-in theme it is between 1.4 and 3.7 times.
-- **The background is the real one where it is known.** The board paints no background: it draws on the terminal's own.
-  When it opens, it asks the terminal for its text colour and background (Herdr answers for its panes with those of the
-  terminal you sit at) and measures against that background. With no answer, it measures against the theme's.
-- **On the selected row**, whose background is the theme's, a grey keeps 3 to 1, or as much of it as that row's own text
-  has to give (Tokyo Night Day and Solarized Light: 2.4 and 2.3, where plain text itself has 3.5 and 3.1).
-- **A finished task's mark** (`✓`) is its colour made quieter: halfway to the background, or as near to that as keeps it
-  3 to 1 (what WCAG asks of a mark), on the selected row too. It used the faint attribute once, which fell to 1.7 to 1 on
-  a light background.
+- **测量方式**是 WCAG 2 对比度：1 比 1 是同一颜色，21 比 1 是白底黑字。
+- **下限是 4.5 比 1**，即 WCAG 对正文的要求。如果主题的正文本身很暗，4.5 会让灰色只比正文暗不到 1.5 倍，下限就随正文一起降，但**绝不低于 3 比 1**（One Dark 4.4、Kanagawa Lotus 4.1、Solarized 3.7、Tokyo Night Day 和 Solarized Light 3.0）。
+- **灰色低于下限时，向主题正文色拉，只拉到下限为止。** 保留主题的色调，本来可读的灰不动。
+- **「待办」按同一测量也比正文暗**：正文脱离背景的程度至少是它的 1.3 倍。每个内置主题里在 1.4 到 3.7 倍之间。
+- **背景用真实的那个，只要能知道。** 看板不画背景：画在终端自己的背景上。打开时它问终端的文字色和背景（Herdr 为面板回答的是你所在终端的），按那个背景测量。问不到就按主题的背景测。
+- **选中的行**背景是主题的，灰色保持 3 比 1，或按该行正文能给的尽量保持（Tokyo Night Day 和 Solarized Light：2.4 和 2.3，那里的正文本身是 3.5 和 3.1）。
+- **完成任务的标记**（`✓`）是其颜色变暗后的版本：向背景方向走到一半，或尽量靠近但仍保持 3 比 1（WCAG 对标记的要求），选中的行也一样。它以前用 faint 属性，浅色背景下会掉到 1.7 比 1。
 
-### In the `terminal` theme
+### 在 `terminal` 主题下
 
-There the board does not know the colours behind the terminal's sixteen, and none of the terminal's own ways to grey a
-word can be trusted:
+这里看板不知道终端十六色背后的真实颜色，而终端给文字变灰的几种方式都不可靠：
 
-- **"bright black"** is nearly the background on many dark schemes: on a dark navy one it made "to do" unreadable (1.3
-  to 1);
-- **"white"** is nearly the background on light ones;
-- **the faint attribute** halves the text colour, and a quiet scheme has no contrast to spare: on Solarized light (text
-  4.1 to 1) faint text is 1.9 to 1.
+- **"bright black"** 在很多深色配色里几乎等于背景：在一套深海军蓝配色里它让「待办」不可读（1.3 比 1）；
+- **"white"** 在浅色配色里几乎等于背景；
+- **faint 属性**把文字色减半，而安静的配色没有富余对比度：Solarized 浅色（正文 4.1 比 1）下 faint 文字只有 1.9 比 1。
 
-So the board uses none of the three for words:
+所以这三种都不用于文字：
 
-- **If the terminal told its text colour and background** (most do, and Herdr does for its panes), the greys are mixed
-  from those two and held to the same floor as any other, dimmer than the text they were mixed from. They are the only
-  true colours the board draws in this theme.
-- **If it did not tell both**, greyed-out words and "to do" are the terminal's plain text colour, the one colour there
-  known to be readable. A grey that must be dimmer than text cannot be chosen without knowing the text: one measured
-  against the background alone came out stronger than the real text on Solarized light. Nothing is dimmer than text then,
-  and nothing is unreadable: "to do" is told from a task's own words by its heading and its `○`, as with `NO_COLOR`.
+- **如果终端报告了文字色和背景**（大多数会，Herdr 为面板也会），灰色就从这两者混合出来，遵守和其他灰色一样的下限，且比混合来源的文字暗。这是该主题下看板画的唯一真实颜色。
+- **如果没报告全**，灰色文字和「待办」就用终端的正文色，那里唯一已知可读的颜色。不知道文字色就选不出比文字暗的灰：只对着背景测量出的灰，在 Solarized 浅色下反而比真实正文更亮。这样没有任何东西比文字暗，也没有不可读的：「待办」靠标题和 `○` 与任务正文区分，和 `NO_COLOR` 时一样。
 
-The selected row is the one place left to the terminal: its background in this theme is the terminal's "bright black",
-as in Herdr's own sidebar, and what reads on that cannot be known.
+选中的行是唯一留给终端的地方：这个主题下它的背景是终端的 "bright black"，和 Herdr 自己的侧栏一样，其上什么可读无法预知。
 
-A colour you name yourself in `[theme.custom]` from the terminal's sixteen (`overlay0 = "gray"`) is kept as it is: it
-cannot be measured.
+你在 `[theme.custom]` 里用终端十六色起的名字（`overlay0 = "gray"`）原样保留：无法测量。
 
-### On the web Board
+### 在网页看板上
 
-The web Board uses the web UI's own colours. Its "to do" and its greyed-out words are the web UI's dim text
-(`--text-dim`), which is 4.5 to 1 or more against the page, its panels and a hovered row on every palette of the web UI
-(measured on herdr-web-ui 0.4.8, Ovis before its rename: 4.5 to 9.9). The board's own teal for done is 3.6 to 1 or more there.
+网页看板用网页 UI 自己的颜色。它的「待办」和灰色文字用网页 UI 的暗文字（`--text-dim`），在网页 UI 每套调色板上与页面、面板和悬停行的对比度都是 4.5 比 1 以上（在 herdr-web-ui 0.4.8、Ovis 改名前实测：4.5 到 9.9）。看板自己给「完成」用的 teal 在那里是 3.6 比 1 以上。
 
-The rules below hold there too: names in the base colour, the hierarchy by weight and how far in a row stands, the
-filter row's lit filter in its own colour (on a tint of it, as the web UI marks a status), and the chat's frame and the
-name of whoever it talks to in that one's status colour. Inside the board's own conversation your words are the web
-UI's strong text, theirs its dim text.
+下面的规则在那里同样成立：名字用基础色，层级靠字重和行首缩进，过滤行中点亮的过滤器用自己的颜色（垫在同色浅底上，和网页 UI 标状态的方式一样），聊天框的边框和对话对象的名字用对方的状态色。在看板自己的对话里，你的话是网页 UI 的强文字色，对方的是暗文字色。
 
-## Names have no colour; the hierarchy is weight and indent
+## 名字没有颜色；层级靠字重和缩进
 
-- **Machines** are in bold, in the base colour (`All machines` too). **Projects** are in normal weight, one step in.
-  **Tasks** are in normal weight, another step in. No accent on a machine's name, no colour on a project's or a task's.
-- **What goes with a name is dimmed**: counts, keys, times, and the tags after a title (`[auto]`, `[research]`,
-  `[chat]`, `[archived]`, `×3`).
-- **Status keeps its colours**: the marks, a status group's heading, the filter row's lit filter and the selected row
-  are as they were.
+- **机器**用粗体，基础色（`All machines` 也一样）。**项目**用常规字重，缩进一级。**任务**用常规字重，再缩进一级。机器名不加强调色，项目名和任务名不上色。
+- **名字的附属信息变暗**：计数、按键、时间，以及标题后的标签（`[auto]`、`[research]`、`[chat]`、`[archived]`、`×3`）。
+- **状态保持自己的颜色**：标记、状态分组的标题、过滤行点亮的过滤器和选中的行照旧。
 
-## The box says who you type to
+## 输入框告诉你在跟谁说话
 
-The text box's edge takes the status colour of whoever it talks to, as their mark has it; its ladder already says who
-([machine and project coordinators](machine-and-project-coordinators.md#the-chat-box-names-who-it-talks-to)). Inside it,
-your words are in the base colour you type in, theirs grey.
+输入框的边框取对话对象的状态色，和对方的标记一样；边框的层级已经写着对方是谁（[机器和项目的协调者](machine-and-project-coordinators.md#聊天框标明你在和谁说话)）。框内，你的话用你输入时的基础色，对方的用灰色。
 
-| Who the box talks to | Colour of its edge |
+| 输入框在跟谁说话 | 边框颜色 |
 |---|---|
-| idle, never started, to do, done | the base colour |
-| working | amber |
-| needs you (asks you, wants your OK) | red |
-| failed, could not start | red |
-| ready to approve, under review, queued | that status's colour |
-| nobody: a new task where no coordinator can run, find | the base colour |
+| 空闲、从未启动、待办、完成 | 基础色 |
+| 进行中 | amber |
+| 需要你（向你提问，要你确认） | red |
+| 失败、无法启动 | red |
+| 待批准、评审中、排队 | 该状态的颜色 |
+| 没人：没有协调者能运行、找不到的新任务 | 基础色 |
 
-- The lit step of the ladder is in the same colour, reversed. It is the same wherever there is such a box: under the
-  list, in the reply view, under the task panel and full screen, in the popup, and on the web Board, where the frame of
-  the text field takes the colour.
-- **Colour is never the only clue.** The ladder names who it is (`vm-str › gtm`, `gtm › GTM-14`), the grey words in the
-  empty box say who gets it (`Send message to gtm's coordinator`, `your message starts an agent on it`), and while you
-  type the hint line does (`enter send to HSW-34's agent`). With `NO_COLOR` the board draws no colour at all.
+- 层级中点亮的那一级用同样的颜色，反白。凡是这种输入框都一样：列表下方、回复视图、任务面板下方和全屏、弹窗，以及网页看板（那里文字框的边框取色）。
+- **颜色从不是唯一线索。** 层级写着对方是谁（`vm-str › gtm`、`gtm › GTM-14`），空框里的灰色文字写着发给谁（`Send message to gtm's coordinator`（发消息给 gtm 的协调者）、`your message starts an agent on it`（你的消息会在它上面启动一个工作代理）），输入时提示行也写着（`enter send to HSW-34's agent`（回车发送给 HSW-34 的代理））。设置 `NO_COLOR` 后看板完全不画颜色。
 
-On the web Board, done is a teal of the board's own: the web UI has one colour for done, and it is the green of "ready to
-approve" there, so the two would be one colour.
+网页看板上，「完成」用看板自己的 teal：网页 UI 只有一个「完成」色，在那里就是「待批准」的 green，两者会变成同一个颜色。

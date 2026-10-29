@@ -1,88 +1,65 @@
-# The Watcher
+# 观察者
 
-**The Watcher is the small hidden model call behind each task's "doing now" line and its progress guess**
-([roles](roles-and-commands.md)). It looks about once a minute, only at agents that are working and whose screen
-changed, and one call covers every agent. That keeps it cheap.
+**观察者是藏在每个任务“正在做”那行和进度猜测背后的小型隐藏模型调用**（[角色](roles-and-commands.md)）。约每分钟看一次，只看在干活且屏幕有变化的代理，一次调用覆盖所有代理。这样才便宜。
 
-Change how often with `watcher.every` ([settings](settings.md)), a time with its unit, at least 5 seconds:
+用 `watcher.every` 改频率（[设置](settings.md)），带单位的时间，至少 5 秒：
 
 ```
 omh set watcher.every 120s
 ```
 
-Each look starts a whole program (`claude -p`, `codex exec`, `pi -p`, or another program's one-shot mode:
-[agents](agents.md)), so it is built to start as few as it can.
+每次查看启动一个完整程序（`claude -p`、`codex exec`、`pi -p`，或其他程序的一次性模式：[代理程序](agents.md)），所以它被设计成尽可能少启动。
 
-## When it looks
+## 何时查看
 
-- **At most about once a minute per working agent** (`watcher.every`). It used to be every 15 seconds.
-- **Only at an agent that is working.** One that is idle, waits for you or has finished is not looked at.
-- **Only when its screen changed.** The words on screen are compared with the last look. A spinner, a timer or a token
-  count that moved is not a change, so an agent waiting on a long command costs nothing.
-- **At the reviewer during a review**, and only while Herdr says the reviewer's own pane is working.
-- **One call for everyone.** A call takes every agent whose minute is up, longest wait first, up to 8 per call. Nobody is
-  looked at before its minute is up. To bring agents that started at different moments into the same call, a call
-  holds off while another agent is more than half-way to its minute, but nobody waits more than half as long again (90
-  seconds at the default). So six working agents are one program start a minute, not six.
-- **One call at a time, on the whole machine**, never a second before the first comes back. The turn is a small file in
-  the data folder (`watcher-call.json`), so an open board and the keeper ticking at the same moment cannot both start a
-  call. A process that died holding the turn frees it within a minute. Calls start at least 15 seconds apart.
-- **It gives way when the machine is busy.** The pace follows the load (the one-minute load average per core):
-  - up to three quarters of the cores in use: the usual pace;
-  - all cores in use: half as often;
-  - from one and three quarter times what the machine can do: five times less often (one look in five minutes).
-- **A failing call backs off.** Each failure in a row (no answer, a provider error) doubles the wait, up to eight times.
-  The first answer brings back the usual pace.
+- **每个在干活的代理最多约一分钟一次**（`watcher.every`）。以前是每 15 秒。
+- **只看在干活的代理。** 空闲、等你或已完成的不看。
+- **只在屏幕有变化时。** 屏幕上的字和上次对比。转圈、计时器、token 计数的跳动不算变化，所以在等长命令的代理不花钱。
+- **评审期间看评审者**，且只在 Herdr 说评审者自己的面板在干活时。
+- **一次调用看所有人。** 一次调用收进所有到点的代理，等得最久的先来，每次最多 8 个。没到点的不看。为了让不同时刻启动的代理进同一次调用，当另一个代理已过半程时调用会等一等，但没人多等超过一半（默认下 90 秒）。所以六个在干活的代理是一分钟一次程序启动，不是六次。
+- **全机器同时只有一次调用**，第一个回来前绝不发第二个。接力标记是数据文件夹里的小文件（`watcher-call.json`），所以开着的看板和同时巡检的看守不会都发起调用。握着它死掉的进程一分钟内释放。调用间隔至少 15 秒。
+- **机器忙时让路。** 节奏跟随负载（每核一分钟负载均值）：
+  - 最多四分之三的核在用：正常节奏；
+  - 所有核在用：频率减半；
+  - 从机器能力的 1.75 倍起：频率降到五分之一（五分钟看一次）。
+- **调用失败会退避。** 连续每次失败（无响应、服务商错误）等待翻倍，最多八倍。第一次成功恢复常态。
 
-It works the same with the board open or closed: the open board and the keeper run the same code, one at a time
-([how work gets done](how-work-gets-done.md)).
+看板开着关着都一样：开着的看板和看守跑同一份代码，一次一个（[工作如何完成](how-work-gets-done.md)）。
 
-## Between looks
+## 两次查看之间
 
-The Watcher guesses only a percent. The board works out the minutes left from that percent and the time spent, each
-time it draws, so they keep counting between looks and do not jump.
+观察者只猜一个百分比。看板每次绘制时从百分比和已用时间算出剩余分钟，所以两次查看之间照常计数，不会跳。
 
-Herdr's sidebar is sent the row itself ([Herdr's sidebar](sidebar.md)), so it gets the line, the percent and the
-minutes afresh as soon as one of them changes, look or no look. The Watcher itself writes nothing to Herdr.
+Herdr 侧栏收到的正是那一行（[Herdr 侧栏](sidebar.md)），行、百分比、分钟一变就立刻刷新，不管有没有在看。观察者自己不往 Herdr 写任何东西。
 
-## Before the first look
+## 首次查看之前
 
-Every new run of an agent (started, told to go on, sent back after a review, a conflict or a retry) starts with no
-guess. The first look takes about a minute. Meanwhile the task's line is never a bare "…":
+代理每次新运行（启动、被叫继续、评审或冲突或重试后送回）都从没有猜测开始。第一次查看约要一分钟。期间任务那行绝不是干巴巴的“…”：
 
-- **It had a sentence before:** that sentence stays, with its age in front (`12m ago: Running the check`), so it is not
-  read as new. The percent starts again at 0.
-- **Its first run:** `Just started`, or `Review just started` for a reviewer (a new agent every round). After three
-  minutes with still no sentence (the Watcher's calls fail), it says `No status yet`.
-- **With the Watcher off,** no sentence comes and the line stays empty.
+- **之前有一句：**那句留下，前面加时间（`12m ago: Running the check`），免得被当成新消息。百分比从 0 重来。
+- **首次运行：**`Just started`，评审者是 `Review just started`（每轮换一个新代理）。三分钟后仍没有句子（观察者的调用失败），显示 `No status yet`。
+- **观察者关掉时，**没有句子，那行保持空白。
 
-The Watcher's prompt shows it a few example sentences (`Fixing the two failing tests`,
-`Waiting for the PR review on GitHub`), and so do the agents' instructions for reporting. What they write is shown
-exactly as written. The list, the task panel, the whole-task page and Herdr's sidebar all say the same words.
+观察者的提示词给它几句示例（`Fixing the two failing tests`、`Waiting for the PR review on GitHub`），代理的上报指令里也有。它们写什么就显示什么。列表、任务面板、整任务页和 Herdr 侧栏都用同样的话。
 
-## A lighter start
+## 更轻的启动
 
-With Claude as the Watcher (the default):
+以 Claude 为观察者（默认）：
 
-- It starts with nothing of yours loaded: no MCP servers, plugins, hooks, skills or `CLAUDE.md`
-  (`--safe-mode --strict-mcp-config --disable-slash-commands`), and a two-line instruction instead of Claude Code's own
-  long one. Logging in works as always.
-- A Claude too old to know these options is started the plain way from then on.
-- The prompt is smaller: the last 30 screen lines (3000 characters) instead of 40 (5000), and 800 characters of the
-  task's description instead of 1500.
+- 启动时不加载你的任何东西：没有 MCP 服务器、插件、钩子、技能或 `CLAUDE.md`（`--safe-mode --strict-mcp-config --disable-slash-commands`），两行指令代替 Claude Code 自己的长指令。登录照常。
+- Claude 太旧不认识这些选项时，从那时起按普通方式启动。
+- 提示词更小：屏幕最后 30 行（3000 字符）而不是 40 行（5000），任务描述 800 字符而不是 1500。
 
-Codex and pi start as before: pi's options for loading less saved nothing when measured.
+Codex 和 pi 照旧启动：pi 的省加载选项实测没省到东西。
 
-## Measured
+## 实测
 
-On the 8-core machine this was built on (Claude Code 2.1.296, `claude-haiku-5-5`, load average about 9.5 while
-measuring), processor time of the program itself:
+在这台构建用的 8 核机器上（Claude Code 2.1.296、`claude-haiku-5-5`，测量时负载均值约 9.5），程序本身的处理器时间：
 
-| | One call | Six working agents, a minute |
+| | 一次调用 | 六个在干活的代理，一分钟 |
 |---|---|---|
-| Before: every 15 seconds, a call per agent, up to 4 at once | 1.55 s of processor time, 5.1 s in all | 24 calls: about 37 s of processor time |
-| Now: once a minute, one call for all, lighter start | 0.9 s, 2.6 s in all (six agents in one call: 1.1 s, 4.6 s) | 1 call: about 1.1 s of processor time |
-| Now, on a machine at twice its capacity | the same | a call every five minutes: about 0.2 s a minute |
+| 以前：每 15 秒，每代理一次调用，最多 4 个并发 | 处理器时间 1.55 秒，总共 5.1 秒 | 24 次调用：约 37 秒处理器时间 |
+| 现在：一分钟一次，一次看所有人，更轻的启动 | 0.9 秒，总共 2.6 秒（六个代理一次调用：1.1 秒、4.6 秒） | 1 次调用：约 1.1 秒处理器时间 |
+| 现在，两倍负载的机器上 | 相同 | 五分钟一次调用：每分钟约 0.2 秒 |
 
-That is about a thirtieth of the processor time, and never more than one Watcher program running. For comparison, the
-other programs' plain one-shot calls: `codex exec` 1.4 s of processor time, `pi -p` 2.0 s.
+约三十分之一的处理器时间，且绝不超过一个观察者程序在跑。对比：其他程序的普通一次性调用：`codex exec` 处理器时间 1.4 秒，`pi -p` 2.0 秒。

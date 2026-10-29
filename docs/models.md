@@ -1,19 +1,15 @@
-# Models and effort
+# 模型与思考力度
 
-**Pick a model by writing it after the program, with a slash: `codex/gpt-6.1-sol`.** Leave it out and the program uses
-its own default. Effort (how hard the agent thinks) is a setting of its own. A wrong name or level is refused when you
-set it, with the ones that work.
+**模型写在程序后面，用斜杠分开：`codex/gpt-6.1-sol`。** 不写就用程序自己的默认。思考力度（代理思考得多用力）是独立的设置。名字或级别写错，设置时就被拒，并给出能用的。
 
 ```
 omh models            every program, a few names each, and its effort levels
 omh models codex      every name codex takes, written as a setting writes them, and its effort levels
 ```
 
-Every agent the board starts has a **program**, and if you want, a **model** and an **effort**. You choose them per role:
-the working agent (`worker.`), the reviewer (`reviewer.`), the Coordinator (`coordinator.`), the plan's writer (`plan.`),
-the Watcher (`watcher.`), and the lists that name agents (`worker.fallback`, `reviewer.fallback`, `attempts.by`).
+看板启动的每个代理都有一个**程序**，还可以有一个**模型**和一个**思考力度**。按角色选：工作代理（`worker.`）、评审者（`reviewer.`）、协调者（`coordinator.`）、计划撰写者（`plan.`）、观察者（`watcher.`），以及点名代理的列表（`worker.fallback`、`reviewer.fallback`、`attempts.by`）。
 
-## Examples
+## 示例
 
 ```
 omh set worker.agent codex/gpt-6.1-sol          you, for every task
@@ -24,33 +20,27 @@ omh set worker.fallback "codex, claude/sonnet"
 omh coordinator new --agent claude/sonnet --effort low   the next Coordinator only
 ```
 
-Or ask the Coordinator in your own words ("do this one with Opus on high effort", "let Codex review it"): it looks the
-names up with `omh models` and sets them the same way. It writes only a name from that list ("sol 6.1" is
-`gpt-6.1-sol`, or it asks you), and when you name no model it gives none: the program then uses its own default. Where a
-value comes from when several places set it: [settings](settings.md).
+也可以用自己的话吩咐协调者（“这个用 Opus、高力度做”“让 Codex 评审”）：它用 `omh models` 查名字，用同样的方式设置。它只写那个列表里的名字（“sol 6.1” 就是 `gpt-6.1-sol`，不然就问你）；你不提模型它就不设：程序用自己的默认。多个地方都设了值时以谁为准：[设置](settings.md)。
 
-## A model
+## 模型
 
-The model travels with its program, so a Claude model is never handed to Codex. The name is **the program's own**, and
-each program names its models its own way:
+模型跟着程序走，Claude 的模型永远不会交给 Codex。名字用**程序自己的**，各程序命名方式不同：
 
-| Program | Written as | Its names |
+| 程序 | 写法 | 它的名字 |
 |---|---|---|
-| `claude` | `claude/opus`, `claude/claude-opus-5-5`, `claude/claude-opus-5-5[1m]` | a short name (`default`, `fable`, `opus`, `sonnet`, `haiku`, `opusplan`: each the newest of its kind) or one of its full names (`omh models claude`) |
-| `codex` | `codex/gpt-6.1-sol` | what Codex lists for the account it is signed in with (its app-server's `model/list`; `codex debug models` when that cannot be asked) |
-| `pi` | `pi/anthropic/claude-opus-5-5` (its provider first), `pi/anthropic/claude-opus-5-5:high` | what `pi --list-models` lists |
-| `cursor` | `cursor/claude-opus-5-5-high`, `cursor/claude-opus-4-8[effort=high]` | what `cursor-agent models` lists; a listed model's name without its last part takes parameters in brackets |
-| `opencode` | `opencode/anthropic/claude-opus-5-5` (its provider first) | what `opencode models` lists |
-| `droid`, `mastracode` | no model | chosen in the program's own settings |
-| the others | `agy/gemini-3-pro` | not checked: the names the program's own help gives |
+| `claude` | `claude/opus`、`claude/claude-opus-5-5`、`claude/claude-opus-5-5[1m]` | 短名（`default`、`fable`、`opus`、`sonnet`、`haiku`、`opusplan`：各是同类中最新的）或它的全名之一（`omh models claude`） |
+| `codex` | `codex/gpt-6.1-sol` | 当前登录账号在 Codex 列出的名字（其 app-server 的 `model/list`；问不到时用 `codex debug models`） |
+| `pi` | `pi/anthropic/claude-opus-5-5`（先写服务商）、`pi/anthropic/claude-opus-5-5:high` | `pi --list-models` 列出的名字 |
+| `cursor` | `cursor/claude-opus-5-5-high`、`cursor/claude-opus-4-8[effort=high]` | `cursor-agent models` 列出的名字；列表里的模型名去掉最后一段后可用方括号带参数 |
+| `opencode` | `opencode/anthropic/claude-opus-5-5`（先写服务商） | `opencode models` 列出的名字 |
+| `droid`、`mastracode` | 不写模型 | 在程序自己的设置里选 |
+| 其他 | `agy/gemini-3-pro` | 不检查：程序自己的 help 给出的名字 |
 
-OpenCode 2's full-screen app takes no `-m` (it quits on it), so the board first makes its conversation on the model,
-in the folder it starts in (`opencode api session.create`), then opens that one: `opencode --auto --session <id>`.
-A conversation it reopens keeps the model it has. OpenCode 1 is given `-m <model>`, as before (#394).
+OpenCode 2 的全屏应用不接受 `-m`（一给就退出），所以看板先在启动目录里按模型建好会话（`opencode api session.create`），再打开那一个：`opencode --auto --session <id>`。重开的会话保留原有模型。OpenCode 1 照旧给 `-m <model>`（#394）。
 
-### A wrong name is refused when you set it
+### 写错的名字当场被拒
 
-Not found out later, when the agent fails to start. The answer says what the program takes, and the nearest name:
+不是等代理启动失败才发现。回答会说明程序接受什么，以及最接近的名字：
 
 ```
 $ omh set worker.agent codex/sol-6.1
@@ -58,78 +48,47 @@ worker.agent: codex has no model "sol-6.1" for your ChatGPT sign-in (pro plan). 
 gpt-6.1-sol, gpt-6-astra, gpt-6-sol, … (codex's own list for that sign-in). Write it after the program: codex/gpt-6.1-sol.
 ```
 
-- **The list is asked of the program**, with the account you are logged in with, and kept for an hour. A name that is not
-  on it is asked again first, so a model the program has just added is taken at once.
-- **Codex's names depend on how you signed in.** A ChatGPT sign-in takes other names than an API key, and a name that is
-  fine elsewhere is refused by Codex at the first turn ("The 'sol-6.1' model is not supported when using Codex with a
-  ChatGPT account"). So the board asks Codex itself, through its app-server, which names this sign-in can use and which
-  sign-in it is (`omh models codex` says it). Where the app-server cannot be asked (an older Codex), it reads
-  `codex debug models`.
-- pi, cursor and opencode list only the models their own sign-ins and keys reach, so their lists are already yours.
-- **When the list cannot be read** (the program is installed but not logged in, offline, or its list command fails), the
-  name is refused too, with what the program said. Run its list command in a terminal to fix that, or leave the model
-  out.
-- **Claude Code has no command that lists its models**, so its names are written in the board's table of programs. A
-  Claude model newer than that table is refused until the board is updated. Its short name (`claude/opus`) always means
-  the newest of its kind.
+- **列表是向程序问的**，用你登录的账号，保存一小时。不在列表上的名字先再问一次，程序刚加的模型立刻可用。
+- **Codex 的名字取决于登录方式。** ChatGPT 登录和 API key 接受的名字不同，在别处没问题的名字会在第一回合被 Codex 拒绝（“The 'sol-6.1' model is not supported when using Codex with a ChatGPT account”）。所以看板通过 app-server 直接问 Codex：这次登录能用哪些名字、是哪种登录（`omh models codex` 会说明）。app-server 问不到时（旧版 Codex），读 `codex debug models`。
+- pi、cursor、opencode 只列出自己的登录和 key 能到的模型，所以列表本来就是你的。
+- **列表读不到时**（程序装了但没登录、离线、或列表命令失败），名字同样被拒，附程序说的话。在终端跑它的列表命令修好，或者不写模型。
+- **Claude Code 没有列模型的命令**，所以它的名字写在看板的程序表格里。比表格新的 Claude 模型会被拒，直到看板更新。它的短名（`claude/opus`）永远指同类中最新的。
 
-### A model refused while the agent works
+### 代理运行中被拒绝的模型
 
-A name can still be refused when the agent runs: one written in a settings file by hand (only a value being set is
-checked), a sign-in that changed, a program on another machine, or the program's own default model. The board catches
-that at the end of the turn and never leaves the task in the agent with only its error:
+名字仍可能在代理运行时被拒：手写在设置文件里的值（只检查正在设置的那个）、登录变了、另一台机器上的程序、或程序自己的默认模型。看板在回合结束时接住，绝不把任务连同一个错误留在代理里：
 
-- **It gave the program that model:** the same program starts again at once on its own default model, in the same
-  worktree, told what was done so far. The row says so: `gpt-6.1 can't be used with your ChatGPT sign-in: started again on
-  codex's own default model`, and the task panel lists it under "Took over". The reviewer the same: the review starts
-  again on its program's default model.
-- **The default model is refused too, or it gave none:** the task waits for you, with the reason and a name to try
-  (`Agent stopped: gpt-6.1 can't be used with your ChatGPT sign-in; try gpt-6.1-sol`) and the next step in the panel:
-  choose one for the task (`omh set worker.agent codex/gpt-6.1-sol --task <id>`), or fix the program's own
-  default (Codex: `model` in `~/.codex/config.toml`), then `Ctrl+L` (retry). The program is ended, so the retry starts it
-  again on the model as it is set then.
-- With a `worker.fallback` (or `reviewer.fallback`), the next on that list comes after the default model
-  ([fallback](fallback.md)).
+- **它把模型给了程序：**同一个程序立刻用自己的默认模型重启，在同一工作树，被告知已完成的部分。行上写着 `gpt-6.1 can't be used with your ChatGPT sign-in: started again on codex's own default model`，任务面板列在 “Took over” 下。评审者同理：评审用程序默认模型重来。
+- **默认模型也被拒，或它没给模型：**任务等你，附原因和一个可试的名字（`Agent stopped: gpt-6.1 can't be used with your ChatGPT sign-in; try gpt-6.1-sol`），面板里有下一步：为任务选一个（`omh set worker.agent codex/gpt-6.1-sol --task <id>`），或修好程序自己的默认（Codex：`~/.codex/config.toml` 里的 `model`），然后 `Ctrl+L`（重试）。程序已被结束，重试会按当时设置的模型重新启动它。
+- 设了 `worker.fallback`（或 `reviewer.fallback`）时，默认模型之后轮到列表上的下一个（[备用代理](fallback.md)）。
 
-**A name is not checked** (it goes to the program as you wrote it) when:
+**这些情况不检查名字**（原样传给程序）：
 
-- the program has no list and no names written in the table;
-- the program is not installed here;
-- the program is pointed at a provider of its own: Claude Code with `ANTHROPIC_BASE_URL` or a cloud
-  (`CLAUDE_CODE_USE_BEDROCK`, `…_VERTEX`, `…_FOUNDRY`), or Codex with a `model_provider` in its `config.toml`.
+- 程序没有列表，表格里也没写名字；
+- 程序没装在这里；
+- 程序指向自己的服务商：Claude Code 用 `ANTHROPIC_BASE_URL` 或云（`CLAUDE_CODE_USE_BEDROCK`、`…_VERTEX`、`…_FOUNDRY`），或 Codex 在 `config.toml` 里配了 `model_provider`。
 
-## An effort
+## 思考力度
 
-`<role>.effort` is how hard the agent thinks: `default` (the program's own) or a level, such as `low`, `medium` or `high`.
+`<role>.effort` 是代理思考得多用力：`default`（程序自己的）或一个级别，如 `low`、`medium`、`high`。
 
-- **Each program has its own levels, and the board asks the program for them**, as it does for model names:
-  - Codex: what `codex debug models` lists for each model (today `low` to `max`, and `ultra` on some). A level is checked
-    against the model you chose (`codex/gpt-6-luna` has no `ultra`); with no model, against every level any model takes.
-  - The others: what their `--help` lists at their effort argument (`claude --help`: `low` to `max`; `pi --help`: `off`
-    to `max`).
-  - The levels are kept for an hour. A level that is not on the list is asked again first, so a level the program has
-    just added is taken at once.
-  - **When they cannot be read** (the program is not installed here, is offline, or its help names none), the levels
-    written in the board's table of programs are used ([the table in agents](agents.md#the-programs)). Never a refusal
-    of every level.
-- A level the role's program (or its model) does not have is refused, with the ones it has:
+- **每个程序有自己的级别，看板向程序问**，和模型名一样：
+  - Codex：`codex debug models` 为每个模型列出的（目前 `low` 到 `max`，部分模型有 `ultra`）。级别按你选的模型检查（`codex/gpt-6-luna` 没有 `ultra`）；不写模型时，按所有模型的全部级别检查。
+  - 其他：它们的 `--help` 在力度参数处列出的（`claude --help`：`low` 到 `max`；`pi --help`：`off` 到 `max`）。
+  - 级别保存一小时。不在列表上的级别先再问一次，程序刚加的级别立刻可用。
+  - **读不到时**（程序没装在这里、离线、或 help 没列），用看板程序表格里写的级别（[agents 里的表格](agents.md#程序一览)）。绝不会拒绝所有级别。
+- 角色的程序（或模型）没有的级别被拒，附它有的：
 
   ```
   $ omh set worker.effort minimal
   worker.effort: codex has no effort "minimal": it takes low, medium, high, xhigh, max, ultra, as `codex debug models` lists them (or default, for its own).
   ```
 
-- A program that takes no effort at start takes only `default`.
-- Cursor takes its effort in the model's name (`cursor/claude-opus-4-8[effort=high]`). pi also takes one after its model
-  (`:high`).
-- An effort set for one program, and kept when you choose another (program or model), is left out at start if the new
-  one does not have it. A start goes by the levels the program said last: it never waits to ask.
-- `<role>.fast` is Codex's faster service tier. Elsewhere it does nothing.
+- 启动时不接受力度的程序只接受 `default`。
+- Cursor 的力度写在模型名里（`cursor/claude-opus-4-8[effort=high]`）。pi 也接受跟在模型后面的（`:high`）。
+- 给一个程序设的力度，在你换程序或换模型后保留；新程序没有它时，启动时忽略。启动按程序上次给出的级别走：绝不等待询问。
+- `<role>.fast` 是 Codex 更快的服务档位。别处不起作用。
 
-## A new program
+## 新增程序
 
-How a program's models are listed and read is one entry in its row of the table of programs
-(`crates/core/src/agents/kinds/`, `models`): the command that lists them and its format (and Codex's app-server, `server`),
-or its short and full names. A
-program with neither is not checked. Its effort levels are read from its `--help` unless its row says otherwise
-(`efforts_read`: Codex's catalog, or only the table); its `efforts` are the levels used when they cannot be read.
+一个程序的模型怎么列、怎么读，是程序表格那一行里的一个条目（`crates/core/src/agents/kinds/`，`models`）：列出它们的命令及格式（还有 Codex 的 app-server，`server`），或者它的短名和全名。两者都没有的程序不检查。思考力度级别从它的 `--help` 读，除非它的行另有说明（`efforts_read`：Codex 的目录，或只有表格）；`efforts` 是读不到时使用的级别。

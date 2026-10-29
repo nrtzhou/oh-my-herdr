@@ -1,11 +1,10 @@
-# Titles
+# 标题
 
-**A title is at most 60 characters.** A longer one is shortened, never refused, and its full text is kept.
+**标题最多 60 个字符。** 超长的标题会被缩短，不会被拒绝，而且全文会保留下来。
 
-The limit is the same everywhere a title is made or changed: a task you type in the box, `add`, and
-`report --title`.
+无论在哪里创建或修改标题，限制都一样：在输入框里敲的任务、`add`、以及 `report --title`。
 
-## A title that is too long
+## 过长的标题
 
 ```
 $ omh add "After the startup dialog handoff, finish jobs wrongly mark the task as failed"
@@ -13,38 +12,32 @@ proj/12: added The title was over 60 characters, so it was shortened to "After t
 jobs wrongly mark…" and the full text was kept in the description. Rename it if a better short title exists.
 ```
 
-- It is cut at the end of a word and ends in `…`: `After the startup dialog handoff, finish jobs wrongly mark…`.
-- One long word with nowhere to cut is cut where the room ends.
-- A title that is too long only by its final full stop just loses the full stop.
-- The full text becomes the first paragraph of the description, above what was there. If the description already
-  says it, it is left alone.
+上面这条回复的意思是：标题超过 60 字符，被缩短为 `After the startup dialog handoff, finish jobs wrongly mark…`，全文保存在描述里；如果有更好的短标题，就重命名它。
 
-Why shorten instead of refusing: a task an agent adds for you is never lost over its title, and the answer tells you
-what to do.
+- 在单词末尾截断，结尾是 `…`：`After the startup dialog handoff, finish jobs wrongly mark…`。
+- 一个长单词无处可断时，就在空间用完处截断。
+- 只超出一个句号的标题，直接去掉句号。
+- 全文成为描述的第一段，放在原有内容之上。如果描述里已经写了，就保持不动。
 
-## Why 60
+为什么缩短而不是拒绝：代理替你加的任务不会因为标题而丢，回复里也会告诉你该怎么做。
 
-That is about the room a title gets on a list row: in a 120-column window with the task panel open, the list is 72
-cells wide and the mark and time take the rest. It is also what Herdr's sidebar gets for the task's space name, after
-the task's number. A 60-character title is read whole in both places. A 100-character sentence filled the row and
-pushed out everything else.
+## 为什么是 60
 
-## How characters are counted
+这是标题在列表行上能占的位置：120 列的窗口里打开任务面板后，列表宽 72 格，剩下的给标记和时间。Herdr 的侧栏里任务空间名排在任务号之后，得到的也是这么多位置。60 字符的标题在两处都能完整读到。100 字符的句子会挤满整行，把其他内容顶掉。
 
-By room on screen, the same way rows are drawn. Most letters count as one. A wide character (Chinese, Japanese,
-Korean, an emoji) takes two cells and counts as two, so 30 of them fill a title. A title at the limit is 60 cells,
-whatever the language.
+## 字符怎么数
 
-## Who is told
+按屏幕占位算，和画行的方式一致。多数字母算 1 格。宽字符（中文、日文、韩文、emoji）占 2 格、算 2 个字符，所以 30 个就填满标题。顶格的标题是 60 格，无论什么语言。
 
-So that titles are written to fit and need no cutting:
+## 谁会被告知
 
-- The Coordinator's rules give the limit where they say how to add and rename a task.
-- The board's how-to (`SKILL.md`) gives it where it says how to add a task.
+让标题写出来就合尺寸、无需截断：
 
-## Titles from before the limit
+- 协调者的规则在讲如何添加和重命名任务时给出这个限制。
+- 看板的 how-to（`SKILL.md`）在讲如何添加任务时给出这个限制。
 
-They stay as they are: nothing rewrites saved tasks. The list cuts a long title with `…` as it always did. The limit
-applies the next time you rename one.
+## 限制之前写下的标题
 
-The number is `TITLE_MAX` in `crates/core/src/store/titles.rs`, and nothing else knows it.
+保持原样：没有东西会改写已保存的任务。列表会像以前一样用 `…` 截断长标题。限制在下次重命名时才生效。
+
+这个数字是 `crates/core/src/store/titles.rs` 里的 `TITLE_MAX`，除此之外没有别处知道它。

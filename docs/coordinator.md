@@ -1,18 +1,11 @@
-# The Coordinator (the coordinator of all machines)
+# 协调者（所有机器的协调者）
 
-**This machine's top-level coordinator is the top row's**: `All machines` with every machine shown (`the coordinator
-of all machines`), or, on a board with only this machine, this machine's row (`vm-str's coordinator`). The board opens
-on the top row, so the chat starts with it. Type what needs doing and it turns it into tasks. It is one long-lived
-agent chat, not a call per message: everything you type goes into the same conversation, so "delegate that one too"
-works, and it can ask you something back. Herdr and the commands still call it the Coordinator.
+**本机的顶层协调者（Coordinator）就是顶行的**：`All machines` 显示全部机器（`the coordinator of all machines`，所有机器的协调者），或者在只有本机的看板上，是本机的行（`vm-str's coordinator`）。看板打开时停在顶行，聊天也从它开始。输入要做的事，它把它们变成任务（task）。它是一段长期存活的代理会话，不是每条消息一次调用：你输入的一切都进入同一段对话，所以「把那个也派发出去」有效，它也会反问你。Herdr 和命令仍然称它 Coordinator。
 
-Each machine and each repo has a coordinator of its own too, beside this one: `Space` on its machine's or its project's row
-([machine and project coordinators](machine-and-project-coordinators.md)). There is no other main Coordinator.
+每台机器和每个仓库（repo）也有自己的协调者，在它旁边：在机器行或项目行上按 `Space`（[机器与项目协调者](machine-and-project-coordinators.md)）。除此之外没有别的主协调者。
 
-- `Enter` sends your message. **It decides itself what to start**: say "and start it" and it puts an agent on what it adds.
-- `Alt+C` shows and hides its latest message on the board.
-
-From a shell:
+- `Enter` 发送消息。**启动什么由它自己定**：说「and start it」，它会给新增的任务放上代理。
+- `Alt+C` 在看板（board）上显示/隐藏它的最新消息。
 
 ```
 omh coordinator                     how it stands
@@ -24,146 +17,86 @@ omh coordinator new [--agent KIND[/MODEL]] [--effort E]    a different one, this
 omh coordinator stop
 ```
 
-Restart and new are commands, not board keys. You can also just ask the Coordinator to do them. `new --agent …` changes
-only the next one: your default stays as it is.
+restart 和 new 是命令，不是看板按键。你也可以直接让协调者执行它们。`new --agent …` 只影响下一次：你的默认值保持不变。
 
-`coordinator tell` run where herdr cannot be found (an SSH forced command, cron, systemd: herdr is not on PATH, not in
-`~/.local/bin`, `~/.cargo/bin`, `~/bin`, `/usr/local/bin` or `/opt/homebrew/bin`, and not on a login shell's PATH)
-keeps the message in the queue but does not say `sent`: it says the message is queued, not delivered, and why, and exits
-1. The board and its keeper deliver it once they run in herdr; `HERDR_BIN_PATH` set to herdr's full path delivers from
-there. `omh doctor` names messages that wait in a queue for more than a minute.
+在找不到 herdr 的地方运行 `coordinator tell`（SSH 强制命令、cron、systemd：herdr 不在 PATH 上，不在 `~/.local/bin`、`~/.cargo/bin`、`~/bin`、`/usr/local/bin` 或 `/opt/homebrew/bin`，也不在登录 shell 的 PATH 上），消息会留在队列里但不会说 `sent`：它会说明消息已入队、未送达以及原因，并以退出码 1 退出。看板和它的看守（keeper）在 herdr 里运行后就会送达；把 `HERDR_BIN_PATH` 设为 herdr 的完整路径则从那里送达。`omh doctor` 会点出在队列中等待超过一分钟的消息。
 
-## Its row, and its settings
+## 它的行与它的设置
 
-**Its row is the top row**: `All machines`, or the only machine. It reads as every coordinator's row does: its mark
-(`○` idle, `◐` working, `?` it asks you), its time on the right, what it does under it (on
-[autopilot](autopilot.md), `[autopilot]` after its name and what autopilot does under it) ([machine and project coordinators](machine-and-project-coordinators.md)). With one other machine picked, the top
-row is that machine's, and this one is not on the board.
+**它的行就是顶行**：`All machines`，或者唯一的那台机器。它的读法和所有协调者的行一样：它的标记（`○` 空闲，`◐` 进行中，`?` 它问你），右侧是时间，下面是它在做什么（开启[自动驾驶](autopilot.md)时，名字后有 `[autopilot]`，下面是自动驾驶在做什么）（[机器与项目协调者](machine-and-project-coordinators.md)）。选中另一台机器时，顶行是那台机器的，本机不在看板上。
 
-- `Space` there talks to it; `Space` on another row talks to that row's agent, and again comes back here. `Alt+O` goes
-  into it.
-- `Alt+P`, `Alt+T` and `Ctrl+E` on its row show it and its settings; `Ctrl+S` starts it, `Ctrl+X` stops it and
-  `Ctrl+O` puts it on autopilot and takes it off.
-- Its settings (`coordinator.*`) are looked up as a task's are: **this coordinator → you → built in**. One set for it
-  alone goes in the `coordinators` part of your `config.json` (`set … --main-coordinator`). A change counts from its next
-  fresh chat ([settings](settings.md)).
+- 在那里按 `Space` 与它交谈；在别的行按 `Space` 与那行的代理交谈，再按一次回到这里。`Alt+O` 进入它。
+- 在它的行上按 `Alt+P`、`Alt+T` 和 `Ctrl+E` 可查看它和它的设置（settings）；`Ctrl+S` 启动它，`Ctrl+X` 停止它，`Ctrl+O` 给它开启/关闭自动驾驶。
+- 它的设置（`coordinator.*`）的查找方式与任务相同：**此协调者 → 你 → 内置**。只给它单独设的值放在 `config.json` 的 `coordinators` 部分（`set … --main-coordinator`）。改动从它的下一次全新会话起生效（[设置](settings.md)）。
 
-## Your message, and where you were
+## 你的消息与你当时所在的位置
 
-Your words reach it exactly as typed. Which repo you were in and which task you had open are kept beside each message,
-and the Coordinator looks them up itself (`omh coordinator where` lists the last few messages, each with its
-own).
+你的话原样送达。你当时所在的仓库和打开的任务记录在每条消息旁，协调者会自己去查（`omh coordinator where` 列出最近几条消息，各带自己的位置）。
 
-A board opened from the Coordinator's own pane stays in the repo it was last in: that pane's folder is nobody's repo.
+从协调者自己的面板（pane）打开的看板停在它上次所在的仓库：那个面板的文件夹不属于任何仓库。
 
-## Starting what it adds
+## 启动它新增的内容
 
-You just send your message; the Coordinator works out what to do with it. It adds the tasks, and starts them when you
-ask for that in your words ("fix the login page and start it"). On autopilot it starts what it adds by itself
-([autopilot](autopilot.md)). `Ctrl+S` with words typed does nothing: there is no second way to send.
+你只管发消息，协调者自己决定怎么做。它添加任务，只有你在话里要求时才启动它们（「fix the login page and start it」）。开着自动驾驶时它自动启动新增的任务（[自动驾驶](autopilot.md)）。输入文字后按 `Ctrl+S` 无效：没有第二种发送方式。
 
-- `coordinator tell <text> --delegate` from a shell has every task it adds from that message delegated at once, however
-  many, with nothing more to confirm. The message carries one line under your words saying so (the board's chat shows
-  your words alone), and a task the Coordinator adds during that message's turn is delegated by `add` itself.
-- A message that adds nothing (a question, a status check, a word about an existing task) delegates nothing extra.
+- 从 shell 运行 `coordinator tell <text> --delegate`，会让该消息新增的每个任务立即派发（delegate），不论多少，无需再确认。消息在你的话下面带一行说明这一点（看板聊天只显示你的话），协调者在该消息的回合（turn）中新增的任务由 `add` 本身派发。
+- 什么都不新增的消息（提问、查状态、关于已有任务的一句话）不会额外派发任何东西。
 
-## What it says it did
+## 它说它做了什么
 
-When it acted on the board, its message ends with one short line naming the ids in plain words: added, updated (a
-title, a description, settings), removed, started an agent, approved, archived, restored. For example: "Added proj/12
-and started an agent on it". The commands answer in the same words ([roles and commands](roles-and-commands.md)).
+当它在看板上做了操作，它的消息末尾会有一行短句，用平实的话点出相关 id：新增、更新（标题、描述、设置）、移除、启动代理、批准、归档、恢复。例如：「Added proj/12 and started an agent on it」。命令用同样的话回答（[角色与命令](roles-and-commands.md)）。
 
-## Going into it
+## 进入它
 
-On the board you see only what it said and what you said, never its program's screen ([the board](board.md)). For the
-whole conversation, its dialogs, slash commands and menus, **go into it** in Herdr:
+在看板上你只看到它说的和你说的，永远看不到它程序的界面（[看板](board.md)）。要看完整对话、它的对话框、斜杠命令和菜单，在 Herdr 里**进入它**：
 
-- It is an ordinary agent in the `Coordinator` tab of your home space.
-- The plugin action `omh.coordinator` (bind a key to it) goes straight to its pane from anywhere in Herdr,
-  and starts it first if it is not running.
-- Get back the way you do from any agent: your board key, or `omh`.
+- 它是主空间（home space，Herdr 标为 `~`）的 `Coordinator` 标签页（tab）里的普通代理。
+- 插件动作 `omh.coordinator`（给它绑一个按键绑定）从 Herdr 任何位置直达它的面板，没运行就先启动它。
+- 返回的方式和从任何代理返回一样：你的看板按键，或 `omh`。
 
-## What it is
+## 它是什么
 
-- An ordinary Herdr agent, in a tab named `Coordinator`, in your home space (`~`).
-- It runs in a folder of its own inside the board's data folder. `OMH_COORDINATOR_DIR` names another; use
-  that folder for nothing else, since the board writes the Coordinator's rules there.
-- It starts with the same arguments as any working agent: all its tools, nothing held back.
-- Your first message starts it, and it stays. If its program exited or Herdr restarted, your next message starts it
-  again in the same conversation.
-- **Closing the board does not stop it**, and the board says so as you close it. One Coordinator serves every board of
-  the machine (a tab, the popup, the web board) and `coordinator tell`, and a turn of it may still be at work.
-  `omh coordinator stop` closes its tab; your next message starts it again, in the same conversation.
-- The agent's own new-chat command (`/clear`, `/new`) is followed: the chat and a restart go with the conversation it
-  is in now.
-- Its program, model and effort are settings (`coordinator.agent`, …): [roles and commands](roles-and-commands.md).
-- `coordinator new`, `restart` and `stop` leave [autopilot](autopilot.md) as it is. `stop` on one on autopilot says
-  that its next wake starts it again.
+- 普通的 Herdr 代理，在主空间（`~`）一个名为 `Coordinator` 的标签页里。
+- 它在看板数据文件夹里自己的文件夹中运行。`OMH_COORDINATOR_DIR` 可指定另一个；那个文件夹不要作他用，因为看板会把协调者的规则写在那里。
+- 它的启动参数和任何工作代理（worker）一样：全部工具，毫不保留。
+- 你的第一条消息启动它，之后它一直在。如果它的程序退出或 Herdr 重启，你的下一条消息会在同一段对话里再次启动它。
+- **关闭看板不会停止它**，关看板时看板也会这么说。一个协调者服务本机的所有看板（标签页、弹窗、web 看板）和 `coordinator tell`，它可能还有一个回合在工作。`omh coordinator stop` 关闭它的标签页；你的下一条消息会在同一段对话里再次启动它。
+- 代理自己的新会话命令（`/clear`、`/new`）会被遵从：会话和重启都跟随它当前所在的对话。
+- 它的程序、模型和 effort 是设置（`coordinator.agent`……）：见[角色与命令](roles-and-commands.md)。
+- `coordinator new`、`restart`、`stop` 不改动[自动驾驶](autopilot.md)。对开着自动驾驶的协调者执行 `stop` 会提示：它下次被唤醒时会再次启动。
 
-## Its standing rules are a file
+## 它的常备规则是一个文件
 
-The rules (what the Coordinator is, how it uses the board) are written as `AGENTS.md` in the folder it starts in
-(`~/.omh/data/coordinator/<session>/chat`, see [the home folder](home-folder.md)). The program reads that file
-by itself at the start of every conversation. So it still knows its rules after its own `/new` or `/clear`, after
-`coordinator restart` and `coordinator new`, after `coordinator new --agent <another kind>` (the next program reads the
-same file), and when you start the program in that folder by hand.
+规则（协调者是什么、它怎么用看板）写在它启动文件夹里的 `AGENTS.md`（`~/.omh/data/coordinator/<session>/chat`，见[主文件夹](home-folder.md)）。程序每次对话开始时自己读这个文件。所以无论它自己执行 `/new` 或 `/clear`、执行 `coordinator restart` 和 `coordinator new`、执行 `coordinator new --agent <another kind>`（下一个程序读同一个文件），还是你手动在那个文件夹里启动程序，它都知道自己的规则。
 
-| Kind | Reads | So the board writes |
+| 种类 | 读取 | 看板因此写入 |
 |---|---|---|
-| Claude Code | `CLAUDE.md` (2.1.296 also reads an `AGENTS.md` beside it) | `AGENTS.md`, and a `CLAUDE.md` that only passes on to it (`@AGENTS.md`): the rules arrive once |
+| Claude Code | `CLAUDE.md`（2.1.296 也会读旁边的 `AGENTS.md`） | `AGENTS.md`，外加一个只做转交的 `CLAUDE.md`（`@AGENTS.md`）：规则只送达一次 |
 | Codex | `AGENTS.md` | `AGENTS.md` |
 | pi | `AGENTS.md` | `AGENTS.md` |
-| any other kind | not known | `AGENTS.md`, and one line before its first message that points at the file |
+| 其他种类 | 未知 | `AGENTS.md`，并在它第一条消息前加一行指向该文件 |
 
-- **Kept up to date.** The files are written again at every start and before every message. So a new version's rules
-  are in place under a running Coordinator, which reads them at its next new chat or restart.
-- **A running one hears that they changed, once.** The board keeps a fingerprint of the rules each coordinator's
-  program started with. When the rules differ by the time the board types your next message in (a new version of the
-  board, a new `coordinator.instructions`), one line goes before it: "[The board was updated: your standing rules in
-  <file> changed; read them again.]". An autopilot wake keeps its first words (`Autopilot:`): the line goes after it,
-  and says the message is a real wake whatever older rules said. That happens once, and never as a message of its own: that would cost a turn
-  and could land in the middle of one. A program started by an older board, which kept no fingerprint, hears it too.
-- **Your own notes are kept.** The board owns only the block between its two marker lines. What you write above or
-  below it in `AGENTS.md` or `CLAUDE.md` stays, and the Coordinator reads it too.
-- **One way per kind, never two.** The Coordinator gets no launch flag for its rules any more (it used to: Claude's and
-  pi's appended system prompt, Codex's `developer_instructions`). A file works the same for every kind and outlives the
-  program. A flag is gone with the process, must be passed again by whoever starts the program, and Codex's could not
-  carry this much text on one launch line. With the file in place, a flag would say the same thing twice. Only a kind
-  the board does not know, which may or may not read `AGENTS.md`, also gets the pointing line.
-- **Working agents and reviewers are different.** They work in your repo, whose `AGENTS.md` is yours, so their rules
-  still ride on their launch.
+- **保持最新。** 每次启动和每条消息之前都会重写这些文件。所以新版本的规则会在运行中的协调者之下就位，它在下次新会话或重启时读到。
+- **运行中的它会得知规则变了，仅一次。** 看板保留每个协调者程序启动时规则的指纹。当看板要打入你的下一条消息时规则已经不同（看板的新版本、新的 `coordinator.instructions`），消息前会加一行："[The board was updated: your standing rules in <file> changed; read them again.]"（看板已更新：<file> 里的常备规则变了，请重读）。自动驾驶唤醒保留开头的 `Autopilot:`：这行加在其后，并说明这条消息是真实的唤醒，无论旧规则怎么说。这只会发生一次，绝不会作为它自己的消息：那会多花一个回合，还可能插进某个回合中间。由旧版看板启动、没有保留指纹的程序也会得知。
+- **你自己的笔记会保留。** 看板只拥有两行标记之间的那个块。你在 `AGENTS.md` 或 `CLAUDE.md` 里写在它上方或下方的内容会留下，协调者也会读到。
+- **每种程序一种方式，绝不用两种。** 协调者不再通过启动参数传规则（过去是：Claude 和 pi 的附加系统提示词，Codex 的 `developer_instructions`）。文件对每种程序都一样有效，而且比程序活得久。参数随进程消失，得由启动程序的人再传一遍，而且 Codex 的参数没法在一行启动命令里带这么多文字。有了文件，参数就会把同一件事说两遍。只有看板不认识的种类——它可能读也可能不读 `AGENTS.md`——才会额外得到那行指向。
+- **工作代理和评审者（reviewer）不同。** 它们在你的仓库里工作，仓库的 `AGENTS.md` 是你的，所以它们的规则仍随启动传递。
 
-## Where it lives in Herdr
+## 它在 Herdr 里的位置
 
-It has no space of its own in the sidebar. It is a tab named `Coordinator` in the home space, the one Herdr labels
-`~`: a whole tab, never a pane inside one of yours. In the sidebar's list of agents it is named `Coordinator`, with its
-state as shown above the board's box (`Coordinator · idle`) and its latest message under it
-([Herdr's sidebar](sidebar.md)).
+它在侧栏（sidebar）里没有自己的空间。它是主空间（Herdr 标为 `~`）里一个名为 `Coordinator` 的标签页：整个标签页，绝不是你某个标签页里的面板。在侧栏的代理列表中它叫 `Coordinator`，状态显示在看板输入框上方（`Coordinator · idle`），下面是它最新的消息（[Herdr 的侧栏](sidebar.md)）。
 
-- **Found or started from anywhere.** A message from the board in a pane, from the board in Herdr's popup, or from a
-  shell (`coordinator tell`) goes to the running Coordinator. If none runs (its program exited, its tab or the home
-  space was closed, Herdr restarted), the message starts it again in the same conversation, in a `Coordinator` tab of
-  the home space. There is never a second one, and no space is made for it.
-- **No home space on this machine?** One is made (at your home folder, as Herdr would), then the tab is added.
-- **Nothing you look at changes.** The tab, and a home space that had to be made, open without focus: you stay where
-  you are, and the board and every other tab keep their size and layout.
-- **Which space is home.** The one labelled `~`. Herdr labels a space after the folder its first tab is in, so the
-  label changes when you `cd` elsewhere in that tab. The board remembers the space it last put the tab in, and uses
-  that when no space is labelled `~`. A task's space is never taken for it.
-- **Rename its tab if you like.** The board finds the Coordinator by its pane, as it does a task's agent and reviewers
-  ([a task's tabs](tabs.md)). If the board lost track of it (its saved state is gone), it looks for the pane in the
-  Coordinator's own folder, in whatever space that is: a Coordinator running there gets your message, in its current
-  conversation, and an empty `Coordinator` tab left in that folder is reused rather than a second one opened.
-- **`coordinator stop`, `restart` and `new` close its tab**, never the home space around it.
+- **从任何地方找到或启动。** 来自面板里看板的消息、Herdr 弹窗里看板的消息，或来自 shell 的消息（`coordinator tell`），都会送达运行中的协调者。如果没在运行（它的程序退出、它的标签页或主空间被关、Herdr 重启），消息会在同一段对话里再次启动它，在主空间的一个 `Coordinator` 标签页里。永远不会有第二个，也不会为它新建空间。
+- **本机没有主空间？** 会先建一个（在你的主文件夹，按 Herdr 的做法），然后加上那个标签页。
+- **你眼前的画面不变。** 标签页以及不得不新建的主空间打开时不抢焦点：你停在原处，看板和其他每个标签页的大小布局都不变。
+- **哪个空间是主空间。** 标着 `~` 的那个。Herdr 按空间里第一个标签页所在的文件夹给空间命名，所以你在那个标签页里 `cd` 到别处，标签就会变。看板记得它上次把标签页放在哪个空间，当没有空间标着 `~` 时就用那个。任务的空间永远不会被占用。
+- **标签页可以改名。** 看板按面板找协调者，就像找任务的代理和评审者一样（[任务的标签页](tabs.md)）。如果看板跟丢了（它保存的状态丢了），它会在协调者自己的文件夹里找那个面板，不论它在哪个空间：在那里运行的协调者会收到你的消息，在它当前的对话里；那个文件夹里空着的 `Coordinator` 标签页会被复用，而不是再开一个。
+- **`coordinator stop`、`restart`、`new` 只关它的标签页**，绝不关周围的主空间。
 
-### Moving over from the old layout
+### 从旧布局迁移
 
-The Coordinator used to have a space of its own named "Coordinator". One that still runs there is moved into the tab
-as it is: the same program, mid-whatever it was doing, nothing restarted. Herdr closes the old space when its last pane
-leaves.
+协调者过去有一个名为 "Coordinator" 的独立空间。仍在那里面运行的会被原样移进标签页：同一个程序，做到一半的事继续，什么都不重启。Herdr 在最后一个面板离开时关闭旧空间。
 
-- This happens by itself within a minute of the update (the keeper or an open board does it), or at your next message
-  if that comes first.
-- On a Herdr that will not move a pane, your next message closes its pane in the old space and starts it again in the
-  tab, in the same conversation. `stop`, `restart` and `new` do the same.
-- Only its own pane is ever closed. If you put panes or tabs of your own in that space, it stays open with those.
+- 更新后一分钟内自动完成（由看守或打开着的看板完成），如果先来了你的下一条消息，就在那时完成。
+- 对于不会移动面板的 Herdr，你的下一条消息会关掉它在旧空间里的面板，在标签页里同一段对话中重新启动它。`stop`、`restart`、`new` 也一样。
+- 只会关掉它自己的面板。如果你把自己的面板或标签页放在那个空间里，它会连同它们保持打开。

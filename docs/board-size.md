@@ -1,141 +1,88 @@
-# The board's size
+# 看板的尺寸
 
-**The board holds still.** Agents starting and ending never change its size, and a size change that lasts less than a
-second is not drawn. If the board looks cut off or half empty, another Herdr window on the same session (a second
-device, a browser tab) has the size: type a key in this window to get it back.
+**看板纹丝不动。**代理的启动和结束从不改变它的尺寸，持续不到一秒的尺寸变化不绘制。如果看板看起来被裁掉或半空，同一会话上的另一个 Herdr 窗口（第二台设备、浏览器标签页）拿走了尺寸：在本窗口敲个键就能拿回来。
 
-The board is drawn for the size of the terminal it runs in. This page says what changes that size, what does not, and
-how the board hides a change that lasts only a moment.
+看板按所在终端的尺寸绘制。这一页说什么会改变尺寸、什么不会，以及看板怎么隐藏只持续一瞬的变化。
 
-Two things used to make the board's screen jump and jump back. Both were found by recording a real board:
+过去有两件事会让看板画面跳来跳去。都是录真实看板发现的：
 
-1. **The board loading its new version**, which happens when an agent's work lands. This is the one tied to agents.
-2. **A second Herdr window on the same session** taking the size and giving it back. Nothing ties this one to agents.
+1. **看板加载新版本**，发生在代理的工作成果落地时。这是与代理相关的那个。
+2. **同一会话上的第二个 Herdr 窗口**拿走尺寸又还回来。这个与代理无关。
 
-## What does not change it: agents starting and ending
+## 不会改变它：代理的启动与结束
 
-Nothing the board starts opens on the board's screen, takes its focus, or takes room from its pane:
+看板启动的任何东西都不会在看板画面上打开、抢走焦点，或占用它面板的空间：
 
-| Helper | Where it runs |
+| 辅助程序 | 运行在哪 |
 |---|---|
-| A task's agent | a Herdr space of its own (`herdr worktree create`, or `workspace create` outside git), opened with `--no-focus` |
-| Its reviewer | a tab of its own in the task's space (`tab create --no-focus`, see [a task's tabs](tabs.md)); closed when the review ends |
-| The Coordinator | a tab of its own in your home space, opened without focus ([the Coordinator](coordinator.md)); closed when it is stopped |
-| The Watcher | a hidden model call: no pane at all |
+| 任务的代理 | 自己的 Herdr 空间（`herdr worktree create`，git 之外用 `workspace create`），以 `--no-focus` 打开 |
+| 它的评审者 | 任务空间里自己的标签页（`tab create --no-focus`，见[任务的标签页](tabs.md)）；评审结束时关闭 |
+| 协调者 | 你主空间里自己的标签页，无焦点打开（[协调者](coordinator.md)）；被停止时关闭 |
+| 观察者 | 一次隐藏的模型调用：根本没有面板 |
 
-Measured on Herdr 0.9.3 with a real board, agent, reviewer, Watcher and Coordinator: through a task's whole life (start,
-review, approval, merge, its space closed) and a Coordinator started and stopped, the board's terminal kept its size,
-Herdr's layout for its pane did not change, and no row of the board moved. (The reviewer was then still a pane split off
-the agent's pane; it has since moved to a tab of its own, which the same test covers.)
+在 Herdr 0.9.3 上用真实看板、代理、评审者、观察者和协调者实测：走完一个任务的整个生命周期（启动、评审、批准、合并、关闭它的空间）以及一个协调者的启动和停止，看板终端的尺寸没变，Herdr 对它面板的布局没变，看板一行都没动。（那时评审者还是从代理面板分出来的面板；之后移到了自己的标签页，同一测试覆盖它。）
 
-On Herdr, a space opened without focus, a pane split off a pane in another space, an agent starting there, and a space
-closing do nothing to a pane in the space you look at.
+在 Herdr 上，无焦点打开的空间、从别的空间的面板分出的面板、其中启动的代理、以及空间关闭，对你正在看的空间里的面板毫无影响。
 
-A test holds the plugin to it (`tests/board_still_sight.rs`): every space and pane it opens is opened with `--no-focus`,
-it never focuses anything while a task runs, and it never splits or closes the board's own pane. Going into an agent on
-purpose (`Alt+O` on a task) is the one thing that moves Herdr's window, as before.
+有个测试守住插件这一点（`tests/board_still_sight.rs`）：它打开的每个空间和面板都带 `--no-focus`，任务运行期间绝不聚焦任何东西，绝不拆分或关闭看板自己的面板。有意进到代理里（任务上 `Alt+O`）仍会移动 Herdr 的窗口，和以前一样。
 
-## What does change it
+## 会改变它的东西
 
-- **Another Herdr window on the same session**: a second device, a second terminal, a browser tab. Herdr 0.9.3 gives
-  every pane the size of the window that was last typed in or resized. With a phone and a desktop on one session, the
-  board's terminal goes back and forth between the two sizes: seen on a real board as 141×46 → 138×44 → 141×46 within
-  0.6 seconds, and as 141×46 → 47×44 when a phone-sized window took the session. Each time the board changed shape and
-  changed back.
-  - It is Herdr's doing, for every pane, not just the board's: a key typed in the window you look at gives that window
-    the size.
-  - It is not tied to agents. With a local and a remote window (`herdr --remote`) of different sizes on one scratch
-    session, spaces, tabs and agents opened and closed in the background changed no pane's size, whichever window was
-    typed in last. (Once, on the real board, the 0.6-second change came in the same half second as a reviewer starting.
-    Herdr's log shows that reviewer's pane spawned at the other window's size, so that window had the session at that
-    moment.)
-- **A viewer attached to the board's own terminal** (`herdr terminal attach`, which Herdr's web UI starts for each pane
-  it shows): it holds that one terminal at its size. [The board](board.md) says so and disconnects it.
-- **A pane split off the board's own pane, or your own window resized.** Only by you: the plugin never does the first.
+- **同一会话上的另一个 Herdr 窗口**：第二台设备、第二个终端、浏览器标签页。Herdr 0.9.3 把每个面板给到最后输入过或调整过大小的窗口的尺寸。手机和电脑同在一个会话时，看板终端在两个尺寸间来回：真实看板上见过 0.6 秒内 141×46 → 138×44 → 141×46，以及手机尺寸的窗口接管会话时 141×46 → 47×44。每次看板都变了形又变回来。
+  - 这是 Herdr 的行为，对每个面板都如此，不只看板：在你看的窗口里敲键就把尺寸给了那个窗口。
+  - 与代理无关。同一临时会话上大小不同的本地窗口和远程窗口（`herdr --remote`），无论最后在哪个窗口输入，后台开关的空间、标签页和代理都没改变任何面板的尺寸。（有一次，真实看板上那 0.6 秒的变化与评审者启动落在同一半秒里。Herdr 日志显示那个评审者的面板是按另一窗口的尺寸生成的，所以那一刻会话在那个窗口手里。）
+- **附着在看板终端上的查看器**（`herdr terminal attach`，Herdr 网页 UI 为它显示的每个面板启动的那个）：它把那个终端按自己的尺寸攥着。[看板](board.md)会说明并断开它。
+- **从看板面板分出的面板，或你自己调整了窗口大小。**只可能是你：插件绝不做前一件。
 
-## A size that lasts a moment is not drawn
+## 只持续一瞬的尺寸不绘制
 
-A board laid out for another size and, a moment later, for its own again looks like a glitch: the side panel goes and
-comes back, every row moves twice. So the open board waits:
+按另一个尺寸排好、片刻后又回到原尺寸的看板像出了故障：侧栏没了又回来，每行动两下。所以打开的看板会等：
 
-- **A new size has to last one second** before the board lays itself out for it. Until then the screen stays exactly as
-  it was, cut to the room the terminal has: columns go from the right and rows from the top, so the text box and its
-  hints stay. A size that is back within the second leaves nothing changed.
-- **Every change waits**, also one right after another: a short change just after a lasting one is held the same way. A
-  window you drag shows the screen as it was, cut, and is laid out again once a second, not at each step.
-- **Herdr's answers are checked.** Herdr is asked what it shows of the board's pane, and answers a moment later. An
-  answer given for a size the terminal no longer has is put aside and Herdr is asked again. An answer that disagrees with
-  the terminal is drawn for only when Herdr says the same again a second later. (Before, such an answer was drawn for
-  until the next one came, two seconds on.)
+- **新尺寸要持续一秒**看板才按它布局。在那之前画面保持原样，按终端现有空间裁切：列从右边减、行从顶上减，输入框和它的提示保留。一秒内变回来的尺寸什么也不改变。
+- **每次变化都等**，接连的变化也一样：持久变化之后紧跟的短变化同样被压住。你拖动窗口时画面保持原样、被裁切，每秒重新布局一次，而不是每一步都来。
+- **Herdr 的回答要核对。**看板问 Herdr 它显示的面板内容，回答片刻后才到。针对终端已不再有的尺寸给出的回答被搁置，重新问 Herdr。与终端不符的回答，只有当一秒后 Herdr 再次报同样内容时才绘制。（以前这种回答会一直画到下一个回答来，两秒起步。）
 
-The cost: after you resize the window yourself, the board follows a second later, and while you drag, once a second.
+代价：你自己调整窗口后看板晚一秒跟上，拖动时每秒跟一次。
 
-## A second Herdr window cannot be disconnected
+## 第二个 Herdr 窗口断不开
 
-The board takes its terminal back from a viewer attached to it. Against a second Herdr window on the whole session,
-that changes nothing: Herdr puts the terminal back at the size of the window last typed in. A real session's log showed
-the board taking its terminal 179 times in twelve minutes, every four seconds, while a second window was on the session.
+看板能从附着的查看器手里夺回自己的终端。对整个会话上的第二个 Herdr 窗口这没用：Herdr 把终端按最后输入的窗口的尺寸放回去。一个真实会话的日志显示，第二个窗口挂在会话上时，看板十二分钟内夺了 179 次终端，每四秒一次。
 
-Now it takes the terminal twice. If the sizes are still apart, it stops, and says what gives the size back:
+现在它夺两次。尺寸仍不一致就罢手，并说明谁攥着尺寸：
 
 ```
  ! Held at 54×24: a key typed in this window frees it. Another herdr window on this session (a second device, a browser tab) has it at its own size, so herdr's own window (142×47) shows the board cut off or half empty
 ```
 
-It tries again the next time the sizes come apart after having agreed. The board keeping the size of its own pane is
-fixed behaviour: there is no setting that turns it off.
+下次尺寸一致后又分开时再试。看板保住自己面板的尺寸是固定行为：没有设置能关掉它。
 
-## A view somebody is looking through keeps the terminal
+## 有人在看的视图攥着终端
 
-One kind of viewer is not disconnected: the board opened in the terminal view of Herdr's web UI, in a browser or on a
-phone. Disconnecting it only started a contest (seen on herdr-web-ui 0.4.8, Ovis before its rename: the web UI
-reattached by itself, and the two took the terminal from each other every four seconds, so the board could not be used
-there).
+有一种查看器不会被断开：在 Herdr 网页 UI 的终端视图里打开的看板，在浏览器或手机上。断开它只会挑起争夺（在 herdr-web-ui 0.4.8、改名前的 Ovis 上见过：网页 UI 自己又附上来，双方每四秒互相夺终端，看板在那里没法用）。
 
-- **How it is recognised:** by its age. It was opened in the last twenty seconds, or it came back within twenty seconds
-  of being disconnected. Once taken for one, it stays one for as long as it runs.
-- The board is then drawn for the whole terminal, as that view has it, and its first line says so for whoever looks at
-  Herdr's own window meanwhile:
+- **怎么认出来：**看它的时间。它在最近二十秒内打开，或断开后二十秒内回来。一旦认定，只要它还在运行就一直是它。
+- 看板于是按整个终端绘制，与该视图一致，第一行向同时看 Herdr 自己窗口的人说明：
 
   ```
    Drawn for a remote view of this pane at 119×47 (herdr's web UI has it open): herdr's own window (184×78) shows a cut-out of it until that view is closed
   ```
 
-- When the view is closed, the window has its terminal again.
-- A view nobody looks through (an attach an old browser left behind) is disconnected as before: it is old, and it does
-  not come back.
-- A view that was open before the board started is disconnected once, comes back, and then stays.
+- 视图关闭后，窗口拿回终端。
+- 没人在看的视图（旧浏览器留下的 attach）照旧断开：它够老，也不会回来。
+- 看板启动前就开着的视图被断开一次，回来，然后一直留下。
 
-## The board loading its new version
+## 看板加载新版本
 
-An open board loads its new version by itself when the program's file changes under it: when the plugin updates the
-program ([installing](install.md)), or, if you run a program you build yourself from the repo you work on with the
-board, every time you build it again.
+打开的看板在程序文件变化时自行加载新版本：插件更新程序时（[安装](install.md)），或者如果你用看板跑自己从工作仓库构建的程序，每次重新构建都会。
 
-**Before:** the reload stopped the screen the usual way. That leaves the full-screen view and prints the board once more
-on the plain screen under it; the new board then cleared the view and drew. Recorded on a real terminal, a frame every
-20 ms: the whole board one line off for 0.36 seconds, then an empty screen for 0.09 seconds, then the board again.
+**以前：**重载照常停掉画面。这会退出全屏视图，在下面的普通屏上再印一遍看板；新看板随后清屏重画。真实终端录制，每 20 ms 一帧：整个看板错一行 0.36 秒，然后空屏 0.09 秒，然后又是看板。
 
-**Now:** the old board gives back the modes it took (keyboard, paste) but stays in the full-screen view with its last
-frame up. The new board, already in that view, neither enters it again nor clears it (Herdr clears the view on entering
-it a second time), and draws its first frame over the old one. Recorded the same way: no frame between the two boards
-but the board itself. If the new board cannot start, the terminal gets its plain screen back.
-(`crates/board/src/board/run/term.rs`, `crates/board/src/board/run/start.rs`.)
+**现在：**旧看板交还它占用的模式（键盘、粘贴），但留在全屏视图里，最后一帧留在屏幕上。新看板已在该视图中，既不重新进入也不清屏（Herdr 第二次进入视图时会清屏），第一帧直接画在旧帧上面。同样方式录制：两版看板之间除了看板本身没有任何帧。新看板起不来时，终端拿回普通屏。（`crates/board/src/board/run/term.rs`、`crates/board/src/board/run/start.rs`。）
 
-### On the real board, as it happened
+### 真实看板上的实况
 
-2026-10-12, read from the board's own processes, the checkout's history, and a trace of the board's terminal size taken
-every 50 ms while it ran:
+2026-10-12，从看板自己的进程、检出的历史，以及运行期间每 50 ms 记一次的看板终端尺寸轨迹读出：
 
-- Work landed in the plugin's checkout at 21:37:34, 21:40:44, 21:48:55, 22:07:47 and 22:10:46. The board restarted itself
-  at 21:37:43, 21:40:59, 21:49:00, 22:07:56 and 22:11:07, nine to twenty-one seconds after each (it waits until the files
-  stop changing). Every restart followed a merge. (After five restarts in a row a board stops restarting, so the merges
-  after 22:11 restarted nothing.)
-- The size trace ran over the third of these. The board's terminal, 141×46 before and after, was 140×46 from
-  21:49:00.853 to 21:49:01.073: the second the board restarted, five seconds after the merge. A Herdr pane is one column
-  narrower on the plain screen than in the full-screen view (the scrollbar), so that column is the board leaving the
-  full-screen view. Nothing else changed the terminal's size in that trace while agents, reviewers and spaces came and
-  went (ten of them).
-- The same in a scratch Herdr pane of the same size, 141×46, with the board as it was: its code changed, the board
-  restarted, the terminal was 140×46 for 0.78 seconds with the board's first line blank, then 141×46 again. With the fix:
-  141×46 throughout, and the board's lines never blank or moved.
+- 工作成果在 21:37:34、21:40:44、21:48:55、22:07:47、22:10:46 落进插件的检出。看板在 21:37:43、21:40:59、21:49:00、22:07:56、22:11:07 自行重启，每次在九到二十一秒之后（它等文件不再变化）。每次重启都跟在一次合并之后。（连续五次重启后看板会停止重启，所以 22:11 之后的合并没有引发重启。）
+- 尺寸轨迹覆盖了其中第三次。看板终端前后都是 141×46，从 21:49:00.853 到 21:49:01.073 是 140×46：看板重启那一秒，合并之后五秒。Herdr 面板在普通屏上比全屏视图里窄一列（滚动条），所以那一列就是看板退出全屏视图。轨迹里代理、评审者和空间来了又走（十个），再没有别的东西改变终端尺寸。
+- 在同样 141×46 的临时 Herdr 面板里、用当时的看板复现：改它的代码、看板重启，终端 0.78 秒是 140×46、看板第一行空白，然后回到 141×46。修复后：全程 141×46，看板各行从不空白、从不移动。

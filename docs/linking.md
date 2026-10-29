@@ -1,69 +1,42 @@
-# Linking
+# 链接
 
-**On Linux, this repo's builds link with [mold](https://github.com/rui314/mold), the fastest linker there is.** Where
-mold is not installed, they link the way Rust does by itself. You do not need to install anything for a build to work.
+**在 Linux 上，本仓库的构建用 [mold](https://github.com/rui314/mold) 链接，它是现有的最快链接器。**没装 mold 的地方，按 Rust 自己的方式链接。构建要跑起来不需要你装任何东西。
 
-Why it matters: every build after an edit links the program and the test program again, and both hold the whole
-library. mold halves the link time, about 0.4 s saved per build.
+为什么重要：每次编辑后的构建都要重新链接程序和测试程序，两者都带着整个库。mold 把链接时间砍半，每次构建约省 0.4 秒。
 
-`OMH_NO_MOLD=1` turns mold off. Switching it on or off rebuilds nothing.
+`OMH_NO_MOLD=1` 关掉 mold。开关它不会触发重新构建。
 
-## How it works
+## 工作原理
 
-- **The flags.** `.cargo/config.toml` gives Linux builds (x86_64 and aarch64) `-Clink-arg=-Bscripts/ld/`. So the C
-  compiler runs `scripts/ld/ld` as its `ld`, which is a link to `scripts/linker.sh`. This holds for every build in the
-  repo: the check, the workspace setup, and your own `cargo build` or `cargo test`.
-- **x86_64 Linux** also gets `-Clinker-features=-lld`. There Rust asks the C compiler for its own lld by default, and
-  this flag stops it.
-- **ARM Linux (aarch64) gets only the `-B` flag.** `-Clinker-features` is unstable there (as on macOS; it is stable on
-  x86_64 Linux). With it, every build on stable Rust stops at once, saying the flag is unstable on the
-  `aarch64-unknown-linux-gnu` target. It is not needed there: Rust does not ask for its lld on that target, so the C
-  compiler runs `scripts/ld/` all the same and links with mold too.
-- **The script.** `scripts/linker.sh` runs mold: one pinned version, checked against its published sha256, kept in
-  `~/.cache/omh` beside the shared build cache. The workspace setup installs it
-  (`sh scripts/linker.sh --install`, in `scripts/setup.sh`).
-- **mold uses all the cores**, like Rust's lld. A link takes a fraction of a second. On this task's share of the cores
-  ([testing](testing.md)), mold kept little of its gain.
-- **Where mold is not installed** (GitHub CI, a fresh machine, no network, a platform with no mold build), the script
-  runs the linker Rust would use: its own lld (`rust-lld`, which Rust puts first on the linker's PATH) on x86_64, the
-  system's `ld` elsewhere (aarch64).
-- **Release builds link as before.** A link whose files go under a `release` folder (`cargo build --release`, also
-  with `--target`) uses that same default linker. The release files are built for musl targets, which
-  `.cargo/config.toml` does not name.
-- **macOS** keeps Apple's own linker (ld-prime, the default since Xcode 15). It is as fast as lld there, and mold has no
-  macOS build.
+- **flag。**`.cargo/config.toml` 给 Linux 构建（x86_64 和 aarch64）加 `-Clink-arg=-Bscripts/ld/`。于是 C 编译器把 `scripts/ld/ld` 当作它的 `ld` 来运行，而那是指向 `scripts/linker.sh` 的链接。仓库里每次构建都如此：检查、工作区（workspace）设置、你自己的 `cargo build` 或 `cargo test`。
+- **x86_64 Linux** 还会加 `-Clinker-features=-lld`。那里 Rust 默认向 C 编译器要它自己的 lld，这个 flag 阻止它。
+- **ARM Linux（aarch64）只加 `-B` flag。**`-Clinker-features` 在那里不稳定（macOS 也是；x86_64 Linux 上是稳定的）。带上它，stable Rust 上每个构建都会立刻停下，说该 flag 在 `aarch64-unknown-linux-gnu` 目标上不稳定。那里也不需要它：Rust 在那个目标上不要它的 lld，所以 C 编译器照样跑 `scripts/ld/`，同样用 mold 链接。
+- **脚本。**`scripts/linker.sh` 运行 mold：固定一个版本，对照其发布的 sha256 校验，与共享构建缓存一起放在 `~/.cache/omh`。工作区设置负责安装它（`sh scripts/linker.sh --install`，在 `scripts/setup.sh` 里）。
+- **mold 用满所有核**，和 Rust 的 lld 一样。链接只要零点几秒。在本任务分到的那几核上（[测试](testing.md)），mold 收益不大。
+- **没装 mold 的地方**（GitHub CI、全新机器、没有网络、没有 mold 构建的平台），脚本改用 Rust 本来会用的链接器：x86_64 上是它自己的 lld（`rust-lld`，Rust 把它放在链接器 PATH 最前），其他地方（aarch64）是系统的 `ld`。
+- **发布构建照旧链接。**产物放进 `release` 目录的链接（`cargo build --release`，带 `--target` 的也算）用同样的默认链接器。发布文件是为 musl 目标构建的，`.cargo/config.toml` 没提它们。
+- **macOS** 保留 Apple 自己的链接器（ld-prime，Xcode 15 起的默认）。它在那里和 lld 一样快，而 mold 没有 macOS 构建。
 
-## A test guards every platform
+## 测试守住每个平台
 
-`tests/linking.rs` runs `rustc --print cfg` with the flags the config gives each platform: x86_64 and aarch64 Linux
-(gnu and musl), macOS, and every target the config names. It fails when rustc rejects them or one is a `-Z` flag.
-rustc complains before it needs that target's library, so the test catches a config that breaks ARM Linux on any
-machine, CI's included.
+`tests/linking.rs` 用配置给每个平台的 flag 运行 `rustc --print cfg`：x86_64 和 aarch64 Linux（gnu 和 musl）、macOS、以及配置点名的每个目标。rustc 拒绝它们、或其中出现 `-Z` flag 时测试失败。rustc 在需要该目标的库之前就会抱怨，所以任何机器（包括 CI）上破坏 ARM Linux 的配置都会被这个测试抓住。
 
-## Why flags, and not a linker named in the config
+## 为什么用 flag，而不是在配置里指定链接器
 
-Cargo remembers what it built by the settings it built it with. A linker named in the config
-(`linker = "scripts/linker.sh"`) would be given as that worktree's whole path. Then every library would look out of
-date in a build copied from another worktree (the warm start, [testing](testing.md)) and in the shared build cache,
-which keys a compile by its arguments. The two flags are the same words in every worktree, so neither notices them.
+Cargo 按构建时的设置记账。在配置里指定链接器（`linker = "scripts/linker.sh"`）会带上该工作树的完整路径。于是从另一个工作树复制来的构建（热启动，[测试](testing.md)）和共享构建缓存（按编译参数做键）里，每个库都会显得过期。那两个 flag 在每个工作树里都是一模一样的字，谁也不会注意它们。
 
-The `-B` folder is relative, and the C compiler looks for it from where the compile runs: the repo itself, for the
-program and its tests. The libraries' build scripts and macros compile in their own folders, where there is no
-`scripts/ld/`. They link with the system's `ld`: small programs, built once.
+`-B` 目录是相对路径，C 编译器从编译运行的位置去找它：对程序和它的测试来说就是仓库本身。库的构建脚本和宏在它们自己的目录里编译，那里没有 `scripts/ld/`。它们用系统的 `ld` 链接：小程序，只构建一次。
 
-## What it saves
+## 省下多少
 
-Measured on vm-str (16 cores, Rust 1.98.1, other tasks building at the same time), after a one-line change to
-`src/lib.rs`, building as the check does (the program, then the test programs), six times each. Each cell is the range
-of one link's time:
+在 vm-str 上实测（16 核，Rust 1.98.1，同时有其他任务在构建），对 `src/lib.rs` 改一行后，按检查的方式构建（程序，然后测试程序），各跑六次。每格是一次链接的时间范围：
 
-| Link | Rust's own lld (before) | mold on the check's 2 cores | mold on all cores (as shipped) |
+| 链接 | Rust 自带的 lld（之前） | mold 用检查的 2 核 | mold 用全部核（发布时如此） |
 |---|---|---|---|
-| The program (39 MB) | 0.22–0.27 s | 0.16–0.20 s | 0.09–0.12 s |
-| The test program (`tests/main.rs`) | 0.37–0.45 s | 0.28–0.33 s | 0.14–0.19 s |
-| The library's own tests | 0.12–0.16 s | 0.06–0.10 s | 0.05–0.09 s |
-| The program with debug data (`dev`, 134 MB) | 0.39–0.51 s | — | 0.17–0.22 s |
-| **All links after one edit** | **about 0.8 s** | about 0.6 s | **about 0.4 s** |
+| 程序（39 MB） | 0.22–0.27 s | 0.16–0.20 s | 0.09–0.12 s |
+| 测试程序（`tests/main.rs`） | 0.37–0.45 s | 0.28–0.33 s | 0.14–0.19 s |
+| 库自己的测试 | 0.12–0.16 s | 0.06–0.10 s | 0.05–0.09 s |
+| 带调试数据的程序（`dev`，134 MB） | 0.39–0.51 s | — | 0.17–0.22 s |
+| **一次编辑后的全部链接** | **约 0.8 s** | 约 0.6 s | **约 0.4 s** |
 
-mold links in about half the time. The whole build hardly changes, though (about 2.7 s for the program and 6 s more for
-the tests, and runs vary as much as the gain): compiling is nearly all of it, because Rust's lld was already fast.
+mold 链接时间约减半。整个构建却几乎不变（程序约 2.7 秒，测试再多 6 秒，各次运行的波动和收益一样大）：编译占了几乎全部，因为 Rust 的 lld 本来就快。

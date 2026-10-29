@@ -1,47 +1,36 @@
-# A task's tabs in Herdr
+# Herdr 里任务的标签页
 
-Every task with an agent gets its own Herdr space. Inside it, each helper has its own tab:
+每个有代理的任务都有自己的 Herdr 空间。里面每个帮手有自己的标签页：
 
-| Tab | Who is in it |
+| 标签页 | 里面是谁 |
 |---|---|
-| `Agent` | the agent doing the task |
-| `Reviewer #1`, `Reviewer #2`, … | the reviewer, one tab per review round |
-| `Planner` | the agent writing the task's plan ([a plan first](plan.md)) |
-| `Plan review` | the reviewer checking that plan |
-| `Agent A`, `Agent B`, … and `Picker` | [several attempts](attempts.md) at one task, and the reviewer who compares them |
+| `Agent` | 干这个任务的代理 |
+| `Reviewer #1`、`Reviewer #2`、… | 评审者（reviewer），每轮评审一个标签页 |
+| `Planner` | 写任务计划的代理（[先计划](plan.md)） |
+| `Plan review` | 检查那份计划的评审者 |
+| `Agent A`、`Agent B`、… 和 `Picker` | 一个任务的[并行尝试](attempts.md)，以及比较它们的评审者 |
 
-When a [fallback agent](fallback.md) takes over, the tab says which program is on it now: `Agent (codex)`,
-`Reviewer #2 (claude)`.
+[备用代理](fallback.md)接手时，标签页会说明现在是哪个程序在干：`Agent (codex)`、`Reviewer #2 (claude)`。
 
-Two tabs live outside the task spaces: `Coordinator` in the home space ([the Coordinator](coordinator.md)) and
-`omh`, the board itself ([the board](board.md)).
+两个标签页在任务空间之外：主空间里的 `Coordinator`（[协调者](coordinator.md)）和 `omh`，看板本身（[看板](board.md)）。
 
-## When tabs open and close
+## 标签页何时打开和关闭
 
-- **`Agent`** gets its name each time the agent starts: the first time, after a restart, and when the board reopens a
-  space that was closed.
-- **`Reviewer #N`** opens when a review starts and closes when it ends, whatever the result. It also closes when you
-  stop the task, and when a review is cut off and tried again. `N` is the review round, the same number as the row's
-  `R#2` tag. A reviewer is never a pane inside the agent's tab.
-- **`Planner`** (set by `plan.agent`) closes after you say yes to the plan. `Plan review` is used when
-  `plan.approve` is `reviewer`.
-- **Attempts:** when one attempt is picked, the other attempts' tabs close. The kept one keeps its name.
-- **Done:** when the task is merged or archived, its whole space closes, tabs and all.
+- **`Agent`** 每次代理启动时拿到名字：第一次、重启后、以及看板重新打开被关掉的空间时。
+- **`Reviewer #N`** 在评审开始时打开、结束时关闭，无论结果如何。你停止任务时、评审被掐断重试时也会关闭。`N` 是评审轮次，与行上 `R#2` 标签的数字相同。评审者绝不是代理标签页里的面板。
+- **`Planner`**（由 `plan.agent` 设置）在你对计划说 yes 后关闭。`plan.approve` 为 `reviewer` 时会用到 `Plan review`。
+- **并行尝试：** 选出一个尝试时，其他尝试的标签页关闭。留下的那个保留名字。
+- **完成：** 任务合并或归档时，它整个空间关闭，标签页全在内。
 
-## Nothing jumps
+## 不会跳走
 
-A new reviewer tab does not take your focus. Herdr is told not to switch to it, so you stay where you are. Because it
-is its own tab, the agent's pane and the board keep their size. Go to the tab to watch the reviewer. Meanwhile the task
-panel and the chat show what it says.
+新的评审者标签页不会抢走你的焦点。Herdr 被告知不要切过去，所以你留在原地。因为它是自己的标签页，代理的面板和看板保持原来的大小。想看评审者就去那个标签页。期间任务面板和聊天显示它说的话。
 
-## Details
+## 细节
 
-- The board finds each helper by its pane, not by its tab's name. Renaming a tab yourself breaks nothing.
-- A running reviewer's tab and pane are saved with the task. If the board restarts mid-review, it still shows what the
-  reviewer says, takes its verdict and closes its tab.
-- A tab left over from an interrupted review is closed before the next review starts.
-- A reviewer started by an older version of the board, as a pane in the agent's tab, has that pane closed and nothing
-  else.
+- 看板靠面板找每个帮手，不靠标签页的名字。你自己改标签页名字不会弄坏任何东西。
+- 进行中的评审者的标签页和面板随任务一起保存。看板在评审中途重启后，仍然显示评审者说的话、取它的结论、关闭它的标签页。
+- 中断的评审留下的标签页会在下一场评审开始前关闭。
+- 旧版看板启动的评审者（作为代理标签页里的面板）只会把那个面板关掉，别的不动。
 
-The names and the code are in `crates/flow/src/flow/tabs.rs`. What Herdr does with tabs is in
-[checked on Herdr](checked-on-herdr.md).
+名字和代码在 `crates/flow/src/flow/tabs.rs`。Herdr 对标签页的处理见 [checked on Herdr](checked-on-herdr.md)。

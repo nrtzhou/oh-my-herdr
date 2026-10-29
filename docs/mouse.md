@@ -1,72 +1,50 @@
-# The mouse
+# 鼠标
 
-The board uses the mouse for three things:
+看板用鼠标做三件事：
 
-- **The wheel** scrolls the chat when the pointer is over it, and moves the selection anywhere else.
-- **A click** on a task selects it. A click on a heading folds or unfolds it.
-- **A drag** selects text and copies it when you let go.
+- **滚轮**：指针在聊天上时滚动聊天，在其他地方移动选中项。
+- **点击**：点任务选中它；点标题折叠或展开它。
+- **拖动**：选中文字，松手时复制。
 
-Every action is still a key. The keys that scroll the chat without a mouse, `Alt+K` and `Alt+J`, are in
-[the keys](keys.md).
+每个操作仍然有对应按键。不用鼠标滚动聊天的按键 `Alt+K` 和 `Alt+J` 在[按键](keys.md)里。
 
-## The wheel
+## 滚轮
 
-- **Over the chat** (its box, whose edge says who you talk to): it scrolls a message that is longer than its
-  box, two lines a step, faster when you spin it. It works while you type, and never touches your draft.
-- **Anywhere else** it does what `↑` and `↓` do. Over the list it moves the selection one task a step. On the
-  whole-task page (`Alt+T`) it scrolls the page, two lines a step, also with a draft in the text box. In the `?` menu it
-  moves the pick.
-- A question, the first-run screen and a paste on show keep the screen still.
+- **在聊天上**（它的框，框边上写着你在和谁说话）：滚动比框长的消息，一步两行，转得快滚得快。打字时也能用，绝不动你的草稿。
+- **在其他任何地方**，它做 `↑` 和 `↓` 做的事。在列表上一步移动一个任务的选中项。在整页任务视图（`Alt+T`）上滚动页面，一步两行，文本框里有草稿时也一样。在 `?` 菜单里移动选项。
+- 提问框、首次运行画面、粘贴预览会保持画面不动。
 
-**While the text box holds words**, the wheel over the list only moves the view, never the selection. That is because
-who the words go to is locked (the hint line under the box says who: `enter send to HSW-34's agent`), and a turn of the
-wheel must not send your answer to another agent. The next key brings the view back to the selected task.
+**文本框里有字时**，列表上的滚轮只移动视野，不动选中项。因为这些字发给谁已经锁定（框下的提示行写着发给谁：`enter send to HSW-34's agent`），转一下滚轮不能把你的回答发给另一个代理。下一个按键会把视野带回选中的任务。
 
-## Clicks
+## 点击
 
-- **A click on a task's row selects it**, like `↑` and `↓`. On the selected row it does nothing more.
-- **A click on a heading folds it**, or unfolds it, like `Enter` on it ([list headings](list-headings.md)).
-- With words in the box, a click selects nothing and the board says why: `Send or put away what you typed first`.
-- **A click on the filter row** shows that filter, and on its first item goes round the machines as `Alt+M` does
-  ([the board](board.md#the-filter-row)).
-- A click anywhere else (the header, the chat, the task panel) does nothing.
+- **点任务的行选中它**，和 `↑`、`↓` 一样。点已选中的行没有更多效果。
+- **点标题折叠它**，或展开它，和在它上面按 `Enter` 一样（[列表标题](list-headings.md)）。
+- 框里有字时，点击不选中任何东西，看板会说明原因：`Send or put away what you typed first`（先发送或收起你打的字）。
+- **点过滤器行**显示那个过滤器，点它的第一项则像 `Alt+M` 一样在各机器间轮换（[看板](board.md#过滤行)）。
+- 点其他任何地方（标题区、聊天、任务面板）没有效果。
 
-## Selecting and copying
+## 选中与复制
 
-Drag over text: it is highlighted. Let go: it is copied to the clipboard. A double click selects a word. A click
-anywhere clears the highlight.
+在文字上拖动：高亮。松手：复制到剪贴板。双击选中一个单词。点任何地方清除高亮。
 
-The board draws this selection itself, the same on every terminal. That is needed because a program that asks for the
-mouse gets all of it: Herdr, or a terminal outside Herdr, can no longer select text in the board. The copy goes out as
-the terminal's clipboard code (OSC 52), which Herdr passes on with its `copied to clipboard` note. The code is
-`crates/board/src/board/run/mouse.rs`.
+这个选中是看板自己画的，在所有终端上一致。这是必要的，因为一个申请了鼠标的程序会拿到全部鼠标事件：Herdr、或 Herdr 之外的终端，都无法再在看板里选中文字。复制通过终端的剪贴板代码（OSC 52）发出去，Herdr 会转交并给出 `copied to clipboard` 提示。代码在 `crates/board/src/board/run/mouse.rs`。
 
-What this changes for you:
+这对你意味着：
 
-- **Dragging selects and copies as before**, but the board draws the highlight, not Herdr. It selects what is on the
-  board's own screen, line by line, box edges included, as Herdr's selection of a pane did.
-- **Herdr's own selection settings do not apply in the board's pane.** `copy_on_select = false` (keep the selection
-  until `Ctrl+C`) is ignored there: the board always copies when you let go.
-- **The terminal's own selection** (the one that crosses Herdr's sidebar and panes) is unchanged. Herdr already holds
-  the mouse, so hold the terminal's modifier as anywhere in Herdr: `Shift` and drag in most terminals, `Option` in
-  iTerm2, `Fn` in macOS Terminal.
-- **Links** (the pull request, the evidence links) are terminal links (OSC 8). Clicking one is the terminal's job
-  (`Cmd`+click on a Mac), as before. A plain click on a link reaches the board, which does nothing with it. A task's
-  report or pull request also opens with a key, `Ctrl+D` ([research.md](research.md#where-a-report-goes)).
-- **The wheel over the list moves the selection**, as it did before: Herdr used to turn the wheel into `↑` and `↓`.
-- **Some terminals copy nothing on OSC 52** (macOS Terminal; tmux without `set-clipboard on`). There the highlight shows
-  but nothing is copied. Herdr's own copy works the same way, so a terminal that copied from Herdr copies from the
-  board. Where neither works, use the terminal's own selection with its modifier.
+- **拖动照旧选中并复制**，但高亮由看板画，不是 Herdr。它选中看板自己屏幕上的内容，逐行，包含框边，和 Herdr 对面板的选中一样。
+- **Herdr 自己的选中设置在看板的面板里不生效。** `copy_on_select = false`（保留选中直到 `Ctrl+C`）在那里被忽略：看板在你松手时总是复制。
+- **终端自己的选中**（横跨 Herdr 侧栏和面板的那个）不变。Herdr 已经占着鼠标，所以像在 Herdr 任何地方一样按住终端的修饰键：多数终端是 `Shift` 加拖动，iTerm2 是 `Option`，macOS 终端是 `Fn`。
+- **链接**（PR、证据链接）是终端链接（OSC 8）。点链接是终端的事（Mac 上 `Cmd`+点击），和以前一样。不带修饰键点链接会落到看板手里，看板对它什么都不做。任务的报告或 PR 也可以用按键打开：`Ctrl+D`（[research.md](research.md#报告放在哪里)）。
+- **列表上的滚轮移动选中项**，和从前一样：Herdr 以前会把滚轮转成 `↑` 和 `↓`。
+- **有些终端对 OSC 52 什么都不复制**（macOS 终端；没开 `set-clipboard on` 的 tmux）。那里高亮看得见，但没有复制任何东西。Herdr 自己的复制方式相同，所以能从 Herdr 复制的终端也能从看板复制。两样都不行时，用终端自己的选中加它的修饰键。
 
-## Why the board takes the whole mouse
+## 为什么看板接管整个鼠标
 
-Terminals cannot ask for the wheel alone. Without the mouse, Herdr sends the wheel as `↑` and `↓`, without saying where
-the pointer is. The board could not tell a turn over the chat from one over the list.
+终端不能只要滚轮。不要鼠标时，Herdr 把滚轮发成 `↑` 和 `↓`，不说指针在哪。看板没法区分聊天上的滚动和列表上的滚动。
 
-## In the popup
+## 弹窗里
 
-The board works the same in the popup the board key opens (`board.open`: Herdr's own popup). This was tried for real in
-a pane of Herdr 0.9.3 and in the popup, where the wheel arrives with its position as in any pane
-([checked on Herdr](checked-on-herdr.md)). Drag-to-copy was not tried in the popup.
+看板按键打开的弹窗（`board.open`：Herdr 自己的弹窗）里行为相同。这在 Herdr 0.9.3 的面板和弹窗里都真实试过，滚轮连位置一起到达，和任何面板一样（[在 Herdr 上验证过](checked-on-herdr.md)）。弹窗里的拖动复制没试过。
 
-How the chat grows and where a message starts: [the board](board.md).
+聊天怎么变长、消息从哪里开始：[看板](board.md)。

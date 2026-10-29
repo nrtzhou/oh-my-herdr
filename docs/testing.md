@@ -1,353 +1,322 @@
-# Tests
+# 测试
 
-**For people working on this code. One command runs the tests: `npm run check`.** It builds the program, checks the
-repo's rules and runs the tests, against a fake Herdr and scripted fake agents: no model calls, no real board, no real
-Herdr. What to run, and when, is in [AGENTS.md](../AGENTS.md). This page says how the command works, and why.
+**面向本仓库的开发者。一条命令跑完测试：`npm run check`。** 它构建程序、检查仓库自身的规则、并跑测试，
+用的是假的 Herdr 和按脚本演的假代理：不调用模型、不用真实看板、不用真实 Herdr。何时该跑什么，见
+[AGENTS.md](../AGENTS.md)。本页讲这条命令怎么工作，以及为什么这样设计。
 
-| To run | Command |
+| 要跑什么 | 命令 |
 |---|---|
-| Everything | `npm run check`, or `npm run check -- --all` |
-| One area: its test files (`tests/board_panel.rs`, `tests/board_panel_*.rs`) | `npm run check board-panel`, `npm run check gate sync` |
-| Only the tests whose names hold a word | `npm run check textbox` |
-| Again, although it passed | add `--fresh` |
-| Only what a change since a commit reaches (the board's check on a fix round) | `npm run check -- --since <commit>` |
+| 全部 | `npm run check`，或 `npm run check -- --all` |
+| 单个领域：它的测试文件（`tests/board_panel.rs`、`tests/board_panel_*.rs`） | `npm run check board-panel`、`npm run check gate sync` |
+| 只跑名字里含某个词的测试 | `npm run check textbox` |
+| 明明通过了，还要重跑 | 加 `--fresh` |
+| 只跑某个提交以来的改动波及的（看板在修复轮的检查） | `npm run check -- --since <commit>` |
 
-The tests are in `tests/`, one file per area, with what they share in `tests/common/`, all of them one test program
-(`tests/main.rs`, [below](#one-test-program)). Small tests of one function sit beside it in the code (`#[cfg(test)]`, in
-`src/` and `crates/`).
+测试在 `tests/`，一个领域一个文件，共用部分在 `tests/common/`，全部属于同一个测试程序
+（`tests/main.rs`，见[下文](#一个测试程序)）。单个函数的小测试就写在代码旁边（`#[cfg(test)]`，在
+`src/` 和 `crates/` 里）。
 
-## One command
+## 一条命令
 
-Everything that runs tests uses the same command: you, an agent at work, the reviewer, and the board's own check (`check`
-in [`.omh.json`](../.omh.json)).
+所有跑测试的东西都用同一条命令：你、干活的工作代理（worker）、评审者（reviewer），以及看板（board）
+自己的检查（[`.omh.json`](../.omh.json) 里的 `check`）。
 
-- `npm test` is the same command. Both run `scripts/check.sh`; nothing of Node is used but the name.
-- `.herdr-superwork.json` says the same, for the board that works on this repo until its machines run omh (this
-  program's name before): it reads only that name.
+- `npm test` 是同一条命令。两者都跑 `scripts/check.sh`；除了名字，完全不用 Node 的东西。
+- `.herdr-superwork.json` 说的也是同一条命令，是给在本仓库上干活的看板用的，直到它的机器都跑 omh
+  （本程序以前的名字）为止：它只读那个名字。
 
-**Picking tests by name.** A name is first an area: `board-panel` (or `board_panel`) runs `tests/board_panel.rs` and every
-`tests/board_panel_*.rs`, exactly those (not `web_board_panel.rs`). A name that is no area is matched against each test's
-own name, as `cargo test` matches it: a test in `tests/` is named by its file and its function
-(`board_hints::the_hint_line_names_the_task_once_…`), and one beside the code by its module path. So
-`npm run check textbox` runs the tests that say `textbox`, wherever they are. A word that matches no test runs none, and
-passes.
+**按名字挑测试。** 名字先当领域看：`board-panel`（或 `board_panel`）跑 `tests/board_panel.rs` 和所有
+`tests/board_panel_*.rs`，就这些（不含 `web_board_panel.rs`）。不是领域的名字，就按 `cargo test` 的方式
+匹配每个测试自己的名字：`tests/` 里的测试由文件名和函数名组成
+（`board_hints::the_hint_line_names_the_task_once_…`），代码旁的测试用模块路径。所以
+`npm run check textbox` 跑所有名字里带 `textbox` 的测试，无论在哪。匹配不到任何测试的词，一个都不跑，
+直接通过。
 
-**What it does**, in this order, stopping at the first that fails:
+**它做什么**，按这个顺序，第一个失败就停：
 
-1. **Builds the program** with the `quick` profile (`Cargo.toml`): the program's own code with no optimisations and no
-   debug data, quick to build again after a small change, and the libraries it uses a little optimised (they are built
-   once, [below](#one-build-cache-for-every-worktree)). The release build, for the files people install, is another
-   profile ([installing](install.md)).
-2. **Writes the made tables** when they are out of date (`omh docs`): the keys in `docs/keys.md`, the settings
-   in `docs/settings.md`, and the map in your own folder. It says which it wrote: commit the tables.
-3. **Checks the repo's own rules** (`omh docs --guard`, which `tests/guard.rs` runs too): no source file past
-   300 lines, every source file starts with a comment that says what it holds, a key's chord written only in
-   `crates/flow/src/board/keys.rs`, and no made table out of date.
-4. **Runs the tests**, with the names you gave, in several processes at once (`scripts/run-tests.sh`,
-   [below](#several-processes-at-once)).
+1. **构建程序**，用 `quick` profile（`Cargo.toml`）：程序自己的代码不优化、不带调试数据，小改动后很快
+   重新构建；它用到的库稍作优化（只构建一次，见[下文](#所有工作树共享一个构建缓存)）。给人安装的文件用
+   release build，是另一个 profile（见[安装](install.md)）。
+2. **写入 made 表**，过期时才写（`omh docs`）：`docs/keys.md` 里的按键、`docs/settings.md` 里的设置，
+   以及你自己文件夹里的 map。它会说写了哪些：把这些表提交掉。
+3. **检查仓库自身的规则**（`omh docs --guard`，`tests/guard.rs` 也会跑）：源文件不超过 300 行；每个源文件
+   开头有一句注释说明内容；按键的 chord 只写在 `crates/flow/src/board/keys.rs`；没有过期的 made 表。
+4. **跑测试**，用你给的名字，多进程并行（`scripts/run-tests.sh`，见[下文](#多进程并行)）。
 
-It compiles through the build cache every worktree shares, and takes its share of the cores: all of them when it runs
-alone, half when two run (both below).
+它经由所有工作树（worktree）共享的构建缓存编译，并占用它那份 CPU 核心：单独跑时占全部，两个一起跑各占
+一半（都见下文）。
 
-The old program's check had to find names used and never defined, and which test files a change reached through its
-imports. The compiler does the first now (such a file does not build), and a build is one whole: there are no separate
-test files to pick.
+旧程序的检查得找出用了却没定义的名字，以及一个改动经 import 波及哪些测试文件。前者现在由编译器负责
+（这种文件根本编不过），而且构建是一个整体：没有分开的测试文件可挑。
 
-### It remembers what passed
+### 记住通过的运行
 
-A run that passed is remembered for the exact code it passed on: the git tree of the folder as it stands (uncommitted
-changes and new files included), the compiler's full version (`rustc -V`), and the names it was given. Asked again for
-the same, it answers at once (`The check already passed for this exact code.`) and runs nothing.
+一次通过的运行会按它通过时的精确代码记住：文件夹当前的 git tree（含未提交的改动和新文件）、编译器完整
+版本（`rustc -V`）、以及给它的名字。对同样的东西再问一次，它立刻回答
+（`The check already passed for this exact code.`，即"这份代码已经检查通过了"），什么也不跑。
 
-- The results are kept outside the worktrees (`~/.cache/omh-check`), so every worktree shares them: the
-  reviewer and the board's check, on the worker's commit, reuse the worker's passing run.
-- Committing changes no file, so it changes nothing here. Any edit does.
-- A failed run is never remembered.
-- A run with names is remembered as that run only: `npm run check textbox` passing says nothing about the whole.
-- `--fresh` runs regardless.
+- 结果存在工作树之外（`~/.cache/omh-check`），所有工作树共享：评审者和看板的检查在工作代理的提交上，
+  直接复用工作代理那次通过的运行。
+- 提交不改动任何文件，所以不改变这里的判定。任何编辑都会。
+- 失败的运行从不记录。
+- 带名字的运行只按那次运行记：`npm run check textbox` 通过不代表整体通过。
+- `--fresh` 无论如何都跑。
 
-### The shorter check of a fix round
+### 修复轮的更短检查
 
-On a later round of a task (a review or a failed check sent it back), the board runs
-`npm run check -- --since <commit>` instead of the whole check, where GitHub's checks still guard the merge:
-`check.again` in [`.omh.json`](../.omh.json), and when the board does so in
-[shorter checks on fix rounds](shorter-checks.md). The commit is the one the whole check last passed on.
+任务的后续轮次（评审（review）或检查失败把它打回来）中，看板跑 `npm run check -- --since <commit>`
+而不是完整检查，此时 GitHub 的检查仍在合并（merge）前把关：[`.omh.json`](../.omh.json) 里的
+`check.again`，看板何时这样做见[修复轮的更短检查](shorter-checks.md)。那个提交是完整检查最后一次通过的
+提交。
 
-It builds, writes the made tables and checks the rules as the whole check does. Then it runs every test beside the code
-(and the doc tests), and the test files the change since that commit reaches: committed since, not committed yet, and new
-files. `scripts/changed-tests.sh <commit>` picks them, for each file changed:
+它像完整检查一样构建、写 made 表、查规则。然后跑代码旁的每个测试（和文档测试），以及那个提交以来的改动
+波及的测试文件：之后提交的、还没提交的、新文件都算。`scripts/changed-tests.sh <commit>` 挑选它们，
+对每个改动的文件：
 
-| Changed | The test files it reaches |
+| 改动 | 波及的测试文件 |
 |---|---|
-| a test file (`tests/sync.rs`) | that file |
-| a module the files share (`tests/far/`) | the files that use it (`crate::far`) |
-| a kept frame (`tests/frames/`) | `board_frames` |
-| a file of the program (`crates/flow/src/sync/conflict.rs`) | those whose names hold its name or its folder's as a word (`sync_conflict`, `sync`, `sync_behind`), and those that write its module's path (`sync::conflict`); a `mod.rs` goes by its folder |
-| a page (`docs/keys.md`, `README.md`) | those that write its name, and `guard` |
+| 一个测试文件（`tests/sync.rs`） | 那个文件 |
+| 测试文件共用的模块（`tests/far/`） | 用到它的文件（`crate::far`） |
+| 一个留存的 frame（`tests/frames/`） | `board_frames` |
+| 程序的一个文件（`crates/flow/src/sync/conflict.rs`） | 名字里含它的名字或所在文件夹名的（`sync_conflict`、`sync`、`sync_behind`），以及写了它模块路径的（`sync::conflict`）；`mod.rs` 按所在文件夹算 |
+| 一个文档页（`docs/keys.md`、`README.md`） | 写了它名字的，以及 `guard` |
 
-**Every test runs** (it says why: `Every test runs: …`) when it cannot tell: for `tests/main.rs`, `tests/common/` and
-`tests/fixtures/` (every test uses them); `src/lib.rs`, `src/main.rs` and the crates' root files (`src/sw_*.rs`); a file
-of the program that no test file is named by or writes the path of; any other file (`Cargo.toml`, `crates/`, `scripts/`,
-`.github/`); a commit that is not on the branch; and a change that reaches every test file anyway.
+**跑全部测试**（它会说原因：`Every test runs: …`，即"全部测试都跑：……"），当它无法判断时：
+`tests/main.rs`、`tests/common/` 和 `tests/fixtures/`（每个测试都用）；`src/lib.rs`、`src/main.rs` 和各
+crate 的根文件（`src/sw_*.rs`）；没有任何测试文件以之命名或写出其路径的程序文件；其他任何文件
+（`Cargo.toml`、`crates/`、`scripts/`、`.github/`）；不在分支上的提交；以及反正会波及所有测试文件的改动。
 
-This picks by names, not by what the tests really run: a change can break a test it did not pick. That is why the board
-runs it only where GitHub runs the whole check on the pull request before anything merges.
+这按名字挑，不按测试实际跑什么挑：改动可能弄坏它没挑中的测试。所以看板只在 GitHub 会在合并前对 PR 跑
+完整检查的地方用它。
 
-- A shorter check that passed is remembered as itself (with its commit).
-- One that ran every test counts as the whole check too.
-- The whole check having passed on this exact code answers it at once.
+- 通过的更短检查按它自身记录（连同它的提交）。
+- 跑了全部测试的那次，也算完整检查。
+- 这份代码上完整检查已通过，就立刻回答。
 
-### One test program
+### 一个测试程序
 
-Every file in `tests/` is a module of one test program, `tests/main.rs` (`autotests = false` in `Cargo.toml`), the usual
-way in Rust. Cargo compiles and links the tests once. (A program per file meant 191 compiles, each linking the whole
-library again, and about 2.3 GB of programs in every worktree.)
+`tests/` 里每个文件都是同一个测试程序 `tests/main.rs` 的一个模块（`Cargo.toml` 里 `autotests = false`），
+Rust 的常规做法。Cargo 只编译、链接测试一次。（每文件一个程序曾是 191 次编译，每次重新链接整个库，
+每个工作树里约 2.3 GB 的程序。）
 
-- A test file is still the file of one area.
-- What the files share (`common`, `far`, `review_kit`, `move_home`) is declared once in `tests/main.rs`. A file reaches it
-  as `use crate::common;`.
-- **A new test file is one `mod` line in `tests/main.rs`**, in its place in the list. The guard fails a file left out,
-  which would never be built or run.
+- 测试文件仍是一个领域一个文件。
+- 文件共用的东西（`common`、`far`、`review_kit`、`move_home`）在 `tests/main.rs` 里声明一次。文件里用
+  `use crate::common;` 引到它。
+- **新测试文件就是 `tests/main.rs` 里的一行 `mod`**，放在列表里它该在的位置。漏掉的文件会被 guard 判
+  失败——那样它永远不会被构建或运行。
 
-All the tests run side by side in that one process, so whatever a test changes of the process is everyone's: the
-environment (a world takes its turn, below; a test that sets it without a world takes the same turn,
-`common::one_at_a_time()`) and the working folder (a world leaves its folder before it is removed).
+所有测试在同一个进程里并排跑，所以测试对进程的任何改动都是大家的：环境（world 排队轮流用，见下文；
+没有 world 却设置环境的测试走同一个队列，`common::one_at_a_time()`）和工作文件夹（world 在被删掉前先
+离开它的文件夹）。
 
-### Several processes at once
+### 多进程并行
 
-Most tests make a world, and in one process worlds take turns: one test program run as cargo runs it took about 90
-seconds, on 4 threads or on 16 alike. So the check runs it as several processes at once (`scripts/run-tests.sh`):
+大多数测试会造一个 world，而在一个进程里 world 要排队：cargo 直接跑单个测试程序约需 90 秒，4 线程还是
+16 线程都一样。所以检查用多个进程并行跑（`scripts/run-tests.sh`）：
 
-1. it builds the test programs (`cargo test --no-run`);
-2. it lists the tests each holds that the names pick;
-3. it deals them out in turn to the processes, runs them all, and says how many passed.
+1. 构建测试程序（`cargo test --no-run`）；
+2. 列出各自包含的、被名字挑中的测试；
+3. 轮流分给各进程，全部跑完，报告通过了多少。
 
-A process that failed is printed whole, as cargo test would have printed it. Each process has worlds of its own (a
-world's folder is named by the process), and the turns are only within it.
+失败的进程整段打印，像 cargo test 那样。每个进程有自己的 world（world 的文件夹以进程命名），排队只发生
+在进程内部。
 
-**How many:** twice its share of the cores when the tests start ([below](#its-share-of-the-cores)), since a process whose
-tests take turns uses about half a core. A lone check on 16 cores runs 32 processes a test program: its tests take 15 to
-20 seconds, against 44 to 56 on the 2 cores of the old fixed share. `OMH_TEST_PROCS` sets another number (1:
-everything in one process, as before).
+**开多少个：** 测试开始时按核心份额的两倍（见[下文](#它分到的核心)），因为测试排队跑的进程大约只用半个
+核心。16 核上单跑一次检查，一个测试程序开 32 个进程：测试只要 15 到 20 秒，对比旧的固定 2 核份额下的
+44 到 56 秒。`OMH_TEST_PROCS` 可设别的数（1：全部塞进一个进程，和以前一样）。
 
-### Builds take turns
+### 构建轮流进行
 
-Cargo lets one build at a time use a folder's `target/`: a second one says `Blocking waiting for file lock` and goes on
-when the first is done. Each worktree has a `target/` of its own, so this happens only within one folder. There are no
-other turns and no slots: one run is one build and one run of the tests.
+Cargo 同一时间只让一个构建用某个文件夹的 `target/`：第二个会说 `Blocking waiting for file lock`
+（阻塞，等待文件锁），等第一个完成再继续。每个工作树有自己的 `target/`，所以这只发生在同一文件夹内。
+没有别的排队、没有槽位：一次运行就是一次构建加一次跑测试。
 
-### One build cache for every worktree
+### 所有工作树共享一个构建缓存
 
-The libraries the program uses are the same in every worktree, so they are compiled once per machine and kept in one
-cache: [sccache](https://github.com/mozilla/sccache), one pinned version checked against its published sha256.
+程序用的库在每个工作树里都一样，所以每台机器只编译一次，放进一个缓存：
+[sccache](https://github.com/mozilla/sccache)，固定一个版本，对照发布的 sha256 校验。
 
-- The workspace setup (`scripts/setup.sh`, `workspace.setup` in `.omh.json`) installs it with
-  `scripts/build-cache.sh` and builds through it. The check compiles through it when it is there.
-- It lives in `~/.cache/omh` with its cache (2 GB at most, oldest dropped first) and one server for every
-  worktree (a socket there, so another sccache of yours is left alone). The check starts the server only when none
-  answers, one start at a time: `sccache --start-server` starts another beside a running one and takes the socket from
-  it, which had given every check a server of its own. That is outside every worktree, so removing a worktree
-  (`workspace.cleanup`) frees that worktree's `target/` and nothing shared.
-- Where it is not installed (CI, which keeps its own cache; another platform; no network), builds go on as before, each
-  worktree alone.
-- `OMH_NO_CACHE=1` turns it off. A `RUSTC_WRAPPER` of your own wins.
-- **Is it hit?** `sh scripts/build-cache.sh --stats`: the counts of its server since it started (it stops after ten idle
-  minutes, and its counts with it). Each build compiles in its own process (`SCCACHE_CLIENT_SIDE`), so `Compile
-  requests` stays 0 however much is hit: read `Cache hits (Rust)` against `Cache misses (Rust)`. A fresh build of the
-  program in an empty `target/` measured 101 hits and 15 misses (the program's own crates, and the compiler macros).
-- **Nothing that changes from run to run goes in a `CARGO_` variable.** Cargo hands the compiler every variable whose
-  name starts with `CARGO_`, and sccache keys each compile on them: the same build with `CARGO_BUILD_JOBS` set and not
-  set measured 0 hits against 101. So the check gives cargo its share of the cores as `-j`, never in that variable.
-- The builds link with mold where it is installed ([linking](linking.md)).
+- 工作区 setup（`scripts/setup.sh`、`.omh.json` 里的 `workspace.setup`）用 `scripts/build-cache.sh`
+  装它并经它构建。缓存在时，检查也经它编译。
+- 它住在 `~/.cache/omh`，带着缓存（最多 2 GB，先丢最旧的）和一个所有工作树共用的 server（socket 放在
+  那里，你另开的 sccache 不受影响）。只有没 server 应答时检查才启动它，一次只启一个：
+  `sccache --start-server` 会在运行中的那个旁边再启一个并抢走它的 socket，以前这曾给每个检查启一个
+  自己的 server。这在所有工作树之外，所以删掉工作树（`workspace.cleanup`）只释放那个工作树的 `target/`，
+  共享的东西不受影响。
+- 没装的地方（CI，它有自己的缓存；别的平台；没网络），构建照旧，各工作树独立。
+- `OMH_NO_CACHE=1` 关掉它。你自己设的 `RUSTC_WRAPPER` 优先。
+- **命中了吗？** `sh scripts/build-cache.sh --stats`：server 自启动以来的计数（空闲十分钟后退出，计数
+  随之消失）。每次构建在自己的进程里编译（`SCCACHE_CLIENT_SIDE`），所以 `Compile requests` 恒为 0，
+  别看它：看 `Cache hits (Rust)` 对 `Cache misses (Rust)`。空 `target/` 里全新构建一次，实测 101 命中、
+  15 未命中（程序自己的 crate，以及编译器宏）。
+- **任何随运行而变的东西都不要放进 `CARGO_` 变量。** Cargo 把所有以 `CARGO_` 开头的变量都递给编译器，
+  sccache 以它们为每次编译的 key：同一构建，设与不设 `CARGO_BUILD_JOBS`，实测 0 命中对 101 命中。所以
+  检查把核心份额用 `-j` 传给 cargo，绝不用那个变量。
+- 装了 mold 的地方构建用 mold 链接（见[链接](linking.md)）。
 
-What it keeps is what a task does not change: the libraries. A fresh worktree finds most of them there. A few it builds
-again, because they write code into that worktree's own `target/` (their build scripts) or are compiler macros, which
-sccache never keeps: a few seconds. The program's own code is not shared: it differs in every task, and the compiler
-keeps its own notes on it in each `target/` (incremental compilation), which makes the next build after a small edit
-quick; a cache cannot take those.
+它留下的是任务不会改动的东西：库。新工作树发现大部分都在。少数要重新构建，因为它们把代码写进该工作树
+自己的 `target/`（它们的 build script），或是编译器宏——sccache 从不留它：几秒钟。程序自己的代码不共享：
+每个任务都不同，而且编译器在各 `target/` 里给它记自己的笔记（增量编译），小改动后的下一次构建因此很快；
+缓存拿不走这些。
 
-A shared `target/` instead of the cache was left out: cargo lets one build at a time into a `target/`, so tasks would
-wait on each other, and the program it builds for the tests is one file at one place there, which two tasks would
-overwrite under each other's tests.
+曾考虑共享 `target/` 代替缓存，但放弃了：cargo 同一时间只让一个构建进 `target/`，任务会互相等；而且它为
+测试构建的程序是那里的一个固定位置的一个文件，两个任务会在对方的测试底下互相覆盖。
 
-### A new worktree starts warm
+### 新工作树热启动
 
-The cache keeps the libraries, not the program's own code, and a build of that alone took about 35 seconds. So the setup
-does not start a fresh worktree's build from nothing: `scripts/warm-start.sh` copies in the last kept build of the main
-line (`target/quick`), and only what changed since is built again.
+缓存留库，不留程序自己的代码，光构建它约需 35 秒。所以 setup 不让新工作树从零构建：
+`scripts/warm-start.sh` 拷入主线最近留存的构建（`target/quick`），只重建此后改动的部分。
 
-- **Which build is kept:** after its build, a worktree whose commit is on the main line and newer than the kept build,
-  with nothing changed in it before or during the build, keeps its own as the next one's start.
-- **Measured** on a 16-core machine with ten agents at once (two cores a build): a fresh worktree's setup took 37
-  seconds before, a little over one now. The first worktree after the main line moved on builds the program again from
-  the compiler's notes, about 15 seconds, and keeps that build for the ones after it.
-- **Where:** `~/.cache/omh/warm/<repo>/`, one folder each, with `current` naming the newest. A new one is made
-  beside the old and then named, so worktrees set up at the same moment each copy a whole build. An old one goes 30
-  minutes after it stopped being current.
-- **The copy** is a clone where the file system can (APFS, Btrfs, XFS: no extra space), a plain copy elsewhere (ext4:
-  about 500 MB a kept build); never hard links, since cargo writes into some of its files in place.
-- **Timestamps:** cargo judges what is out of date by when files changed, and every file of a fresh worktree is new. The
-  files whose content is the kept build's commit's get an old time, so cargo takes them as built; the rest (changed on
-  the main line since, or in the folder) keep theirs and are built again.
-- **Folder paths:** cargo also takes as built what has the folder it was built in written into it
-  (`env!("CARGO_MANIFEST_DIR")`), which here would be another worktree. The copy builds such a part again, and the
-  program finds its own repo when it runs (`docs::root`), not when it is built.
-- **Crates:** the program is several crates ([crates](crates.md)), each with its code in its own folder, so cargo names
-  that code from the crate's folder: a crate none of whose files changed since the kept build is taken as built whole.
-- **Not copied:** a build by another compiler, or one grown past 2 GB (cargo never removes the libraries of older
-  versions). That worktree builds from nothing, and its build is kept instead.
-- `OMH_NO_WARM=1` turns it off.
+- **留哪个构建：** 构建后，如果一个工作树的提交在主线上、比留存的构建新，且构建前和构建中都没有改动，
+  就把自己这次构建留作下一个的起点。
+- **实测** 在 16 核机器上同时十个代理（每个构建两核）：新工作树的 setup 以前要 37 秒，现在略超 1 秒。
+  主线前进后的第一个工作树凭编译器的笔记重新构建程序，约 15 秒，并把这次构建留给之后的。
+- **在哪：** `~/.cache/omh/warm/<repo>/`，一个仓库一个文件夹，`current` 指向最新的。新的先建在旧的旁边
+  再改名，所以同一时刻 setup 的工作树各拷一份完整构建。旧的在不再是 current 后 30 分钟删掉。
+- **怎么拷：** 文件系统支持就用 clone（APFS、Btrfs、XFS：不占额外空间），其他地方用普通拷贝（ext4：
+  一份留存构建约 500 MB）；绝不用硬链接，因为 cargo 会就地写其中一些文件。
+- **时间戳：** cargo 按文件改动时间判断过期，而新工作树的每个文件都是新的。内容与留存构建的提交一致的
+  文件给旧时间，cargo 就当已构建；其余（此后主线上改过的，或文件夹里改过的）保持原时间，重新构建。
+- **文件夹路径：** cargo 还会把写入了构建时所在文件夹的东西当已构建（`env!("CARGO_MANIFEST_DIR")`），
+  在这会是另一个工作树。拷贝会重建这一部分；程序在运行时（`docs::root`）而不是构建时找到自己的仓库。
+- **crate：** 程序由多个 crate 组成（见[各 crate](crates.md)），各自代码在自己的文件夹，cargo 以 crate
+  的文件夹命名那段代码：自留存构建以来一个文件都没改的 crate 整个当已构建。
+- **不拷的：** 另一个编译器构建的，或已超过 2 GB 的（cargo 从不删旧版本的库）。那个工作树从零构建，
+  改留它的构建。
+- `OMH_NO_WARM=1` 关掉它。
 
-### Its share of the cores
+### 它分到的核心
 
-A check's build and tests take the machine's cores shared out between the checks running on it now: a lone check takes
-all of them, two take half each (rounded up), and none takes fewer than one. The workspace setup's build counts as one
-too. It used to be the cores divided by `board.agents`, however many ran: two cores on a 16-core machine with ten
-agents, also for a check that ran alone.
+检查的构建和测试占用机器的核心，在当下正跑的检查之间分：单跑的检查拿全部，两个各拿一半（向上取整），
+最少一个。工作区 setup 的构建也算一个。以前是核心数除以 `board.agents`，不管实际跑几个：16 核机器上
+十个代理就是两核，单独跑的检查也一样。
 
-- **Who is running:** each running check (and setup) writes a file in `~/.cache/omh/running/`, named by its
-  process and holding when that process started, and removes it when it ends. One that was killed leaves its file
-  behind: a file whose process is gone, or whose number now belongs to a process that started at another time, is not
-  counted and is removed by the next check that looks.
-- **When it counts:** before each build and again when the tests start (`scripts/share-cores.sh`, `sc_share`), so a
-  check that started alone and finds another running when it gets to its tests takes half from there, and one that
-  started beside another takes all again once that one is done. A build already running keeps the count it started
-  with.
-- **Where it goes:** cargo gets it as `-j` (not `CARGO_BUILD_JOBS`: [the build cache](#one-build-cache-for-every-worktree)
-  keys on that), the tests as `RUST_TEST_THREADS` and twice that many processes
-  ([above](#several-processes-at-once)).
-- **Yours wins:** `CARGO_BUILD_JOBS` or `RUST_TEST_THREADS` set yourself is used instead of the share (cargo still gets
-  it as `-j`). `OMH_TEST_PROCS` sets the number of test processes.
-- **Measured** on vm-str (16 cores, other agents working beside it, no other check running), three runs each, the old
-  share of 2 cores against all 16:
+- **谁在跑：** 每个运行中的检查（和 setup）在 `~/.cache/omh/running/` 写一个文件，以进程命名，记该进程
+  何时启动，结束时删掉。被杀掉的会留下文件：进程已消失、或进程号现在属于另一个启动时间不同的进程的
+  文件，不计数，并由下一个来查的检查删掉。
+- **何时计数：** 每次构建前，以及测试开始时（`scripts/share-cores.sh`、`sc_share`），所以独自启动、到
+  测试时才发现别的检查在跑的，从那时起拿一半；和别人一起启动的，等对方完成后又拿全部。已在跑的构建
+  保持它启动时的份额。
+- **用在哪：** cargo 以 `-j` 拿到它（不是 `CARGO_BUILD_JOBS`：[构建缓存](#所有工作树共享一个构建缓存)
+  以它为 key），测试拿到 `RUST_TEST_THREADS` 和两倍数量的进程（见[上文](#多进程并行)）。
+- **你的优先：** 自己设了 `CARGO_BUILD_JOBS` 或 `RUST_TEST_THREADS` 就用它代替份额（cargo 仍以 `-j`
+  拿到）。`OMH_TEST_PROCS` 设测试进程数。
+- **实测** 在 vm-str（16 核，旁边有其他代理干活，没有别的检查在跑），各跑三次，旧的 2 核份额对全部
+  16 核：
 
-  | | 2 cores (before) | 16 cores (now) |
+  | | 2 核（以前） | 16 核（现在） |
   |---|---|---|
-  | the whole check after a change to `crates/core` (every crate builds again) | 56–68 s | 26–30 s |
-  | its tests alone | 44–56 s | 15–20 s |
-  | building the test programs in an empty `target/` (a fresh worktree's first check) | 76–77 s | 56–61 s |
+  | 改 `crates/core` 后的完整检查（每个 crate 都重建） | 56–68 s | 26–30 s |
+  | 光跑测试 | 44–56 s | 15–20 s |
+  | 空 `target/` 里构建测试程序（新工作树的第一次检查） | 76–77 s | 56–61 s |
 
-  The build gains least: the crates build one on top of the other, and the test program is one big crate.
+  构建收益最小：crate 一个叠一个地构建，测试程序是一个大 crate。
 
-A check that stops early says why on stderr (`The check stopped while building the program (exit 101).`), also when the
-step that stopped it said nothing. `tests/check_script.rs` starts the check in an empty home, with no build cache, so a
-fresh machine always gets past its start, and on a machine of three cores with other checks running, live and dead, to
-see the share it gives cargo and the tests.
+提前停下的检查会在 stderr 说明原因（`The check stopped while building the program (exit 101).`，即
+"检查在构建程序时停下（exit 101）"），即使让它停的那步什么也没说。`tests/check_script.rs` 在空 home、
+无构建缓存的环境里启动检查，保证全新机器总能过启动这一关；还在三核、有别的检查（活着的和死了的）在跑的
+机器上跑，看它分给 cargo 和测试的份额。
 
-### It tells the board where it is
+### 它向看板报告进度
 
-When the board runs the check, it names a file in `OMH_PROGRESS`, and the command writes its progress there:
-which of its three steps it has done (`1/3 steps`), or that the answer was known at once. The board shows that on the
-task: [the check's progress](check-progress.md).
+看板跑检查时，会在 `OMH_PROGRESS` 里指定一个文件，命令把进度写进去：三步走完了几步（`1/3 steps`），
+或者答案已直接得出。看板在任务上显示它：[检查进度](check-progress.md)。
 
-### No time budget
+### 没有时间预算
 
-No test and no run has a time budget, and nothing is measured against the clock. The old check had budgets per file and
-lowered its own priority, because every test file was a program of its own that started more programs. A test here is a
-function in a test program, and the light ones start nothing. So: never wait for a quiet machine, and never cut a test to
-fit a time.
+测试和运行都没有时间预算，也不拿钟表衡量。旧检查有按文件的预算，还降低自身优先级，因为每个测试文件都
+是自己的程序、还会再启程序。这里的测试只是测试程序里的一个函数，轻量的什么都不启动。所以：绝不等机器
+空闲，绝不为赶时间砍测试。
 
-## Light tests
+## 轻量测试
 
-What makes a test slow is starting programs and waiting. A new test does neither:
+让测试慢的是启动程序和等待。新测试两样都不做：
 
-- **It calls the code**, in the test's own process. `world()` in `tests/common/mod.rs` gives it a board folder of its own,
-  a git repo and a fake Herdr. The board's code still builds the same Herdr command and reads the same answer and exit
-  status, but no program is started: `herdr::cli::set_fake` hands the call to the fake, which answers in the test's own
-  thread. `gh` is faked the same way (`flow::git::set_fake_gh`, `tests/common/gh.rs`).
-- **It does not sleep, and does not depend on the machine's speed.** `world()` sets the code's own waits to zero. The
-  clock is `sw::clock`: `set` stands it at a moment and `advance` moves it on, on the test's thread only. A moment in the
-  past or the future is written into the data, not waited for. Nothing compares against a duration it measured.
-- **The board's background jobs run when the test says.** What would be a detached runner (delegating, the finish line, a
-  merge) is put in a list instead (`OMH_INLINE`). `settle(id)` runs that list, then lets the hook look at the
-  agent's pane, round after round until nothing moves. `settle_all(id)` does the same for a task done several times at
-  once.
-- **It shares set-up inside one test**, rather than building a new world for every small assertion: a world is a git repo
-  and a first commit. `to_approval(&w, title)` is the scene most finish-line tests start from.
-- **git is the one program still started**, because the board's work is git work. Ask for each fact once.
+- **它直接调代码**，在测试自己的进程里。`tests/common/mod.rs` 里的 `world()` 给它自己的看板文件夹、
+  一个 git 仓库和一个假 Herdr。看板的代码仍然拼同样的 Herdr 命令、读同样的应答和退出状态，但不启动任何
+  程序：`herdr::cli::set_fake` 把调用交给假的，它在测试自己的线程里应答。`gh` 同样被假掉
+  （`flow::git::set_fake_gh`、`tests/common/gh.rs`）。
+- **它不 sleep，也不依赖机器快慢。** `world()` 把代码自身的等待设为零。时钟是 `sw::clock`：`set` 把它
+  定在某刻，`advance` 推进它，只在测试线程上。过去或未来的时刻写进数据，不是等出来的。没有东西拿实测
+  时长做比较。
+- **看板的后台作业由测试说跑才跑。** 本来会是分离 runner 的东西（派发（delegate）、收尾流水线
+  （finish line）、合并）放进一个列表（`OMH_INLINE`）。`settle(id)` 跑那个列表，然后让钩子（hook）一轮轮
+  看代理的面板（pane），直到没有变化。`settle_all(id)` 对一个同时完成多次的任务做同样的事。
+- **一个测试内部共享 setup**，而不是为每个小断言造新 world：world 就是一个 git 仓库加首次提交。
+  `to_approval(&w, title)` 是收尾流水线测试大多从这幕开始的场景。
+- **git 是唯一仍会启动的程序**，因为看板的活就是 git 的活。每个事实只问一次。
 
-A world sets the process's environment, so the tests that make a world take turns, in all the files (a lock in
-`tests/common/mod.rs`); the others run beside them. The check runs several processes at once to get past that (above).
+world 会设置进程的环境，所以造 world 的测试要排队，在所有文件里都是（`tests/common/mod.rs` 里一把锁）；
+其他测试与它们并行跑。检查开多个进程绕过这一点（见上文）。
 
-**A wait the board has to make is a number a test can make short.** The board's own waits are zero in a world, and a test
-of a real program gives it the short one it needs (`OMH_STAMP_MS`: how often an open board looks for a new
-version of itself; `OMH_TICK_MS`: how often a running check is looked at). Never wait a fixed time for
-something that says when it is done: a real terminal is read until its frame is drawn.
+**看板必须等的东西，就是测试可以调短的数。** 看板自身的等待在 world 里为零，测真实程序时给它需要的短值
+（`OMH_STAMP_MS`：打开的看板隔多久查一次自身新版本；`OMH_TICK_MS`：运行中的检查隔多久被看一次）。对会
+报告完成的东西绝不等固定时间：真实终端读到它的画面画完为止。
 
-### The stand-ins
+### 替身
 
-- **The fake Herdr** (`tests/common/herdr.rs`, with `panes.rs`, `agents.rs` and `worktrees.rs`): its whole world is one
-  JSON record (spaces, tabs, panes, their agents, every call it was asked), which a test reads (`w.state()`, `calls(&w)`)
-  or changes (`w.patch`, `set_status`). Its worktrees are made with git itself.
-- **Scripted agents** (`tests/common/agents.rs`): a test gives each role its turns,
-  `w.script(json!({"worker": [step, …], "reviewer": […], "picker": […], "coordinator": […]}))`. Each prompt plays the
-  role's next step: it writes files, commits, and writes the closing note, the plan, the verdict or the comparison where
-  the board tells an agent to. A step may end its turn with a recorded ending of a real agent's conversation
-  (`tests/fixtures/endings`, `tests/common/endings.rs`) and run the agent's own turn-end report.
-- **Notes written between the board's jobs.** A real agent writes its closing note after the board armed the turn it
-  ends. The fake writes the notes of the turns that ended so far between the board's jobs (`flush()`, which `settle`
-  calls), stamped after that moment, however slow the machine running the test.
-- **The rows every screen test draws** (`tests/common/fixtures.rs`): one task in each state the board shows, with the
-  long, wide and odd text that breaks a layout. A new state is one new row there, and every screen test draws it.
+- **假 Herdr**（`tests/common/herdr.rs`，连同 `panes.rs`、`agents.rs`、`worktrees.rs`）：它的整个世界是
+  一条 JSON 记录（空间（space）、标签页（tab）、面板、其中的代理、被要求的每次调用），测试读
+  （`w.state()`、`calls(&w)`）或改（`w.patch`、`set_status`）。它的工作树用 git 本身造。
+- **按脚本演的代理**（`tests/common/agents.rs`）：测试给每个角色（role）安排回合（turn），
+  `w.script(json!({"worker": [step, …], "reviewer": […], "picker": […], "coordinator": […]}))`。每条
+  提示词（prompt）演该角色的下一步：写文件、提交，并把收尾小结（closing note）、计划、结论或对比写到
+  看板指定代理写的地方。一步可以用一条录下的真实代理会话结尾（`tests/fixtures/endings`、
+  `tests/common/endings.rs`）结束它的回合，并跑代理自己的回合末报告。
+- **看板作业之间写的小结。** 真实代理在看板安排好它要结束的回合之后写收尾小结。假代理在看板的作业之间
+  写下已结束各回合的小结（`flush()`，`settle` 会调它），时间戳盖在那之后，不管跑测试的机器多慢。
+- **每个画面测试画的行**（`tests/common/fixtures.rs`）：看板展示的每种状态各一个任务，配上会撑破布局的
+  长文本、宽文本和古怪文本。新状态就是那里新增一行，每个画面测试都画它。
 
-## Four kinds of tests
+## 四类测试
 
-- **The board's state, updated.** `common::board::open(&w.root, rows)` opens the real board on a world, without a
-  terminal. `press(&["alt+t", "esc", "ctrl+l"])` and `typed("…")` go through the board's one `update`, what they start
-  runs at once, and `text()`, `screen(cols)`, `chat(cols)` and `draft(cols)` read the screen as plain text. Most tests of
-  the board are of this kind.
-- **Whole frames** (`tests/board_frames.rs`): the board drawn by the terminal drawer into cells, at ten sizes from 10×8 to
-  200×60, each with the list, the task beside it, the whole task, the `?` menu and a draft. Each is compared with the
-  frame kept in `tests/frames/`, once as text and once with each cell's colour as a letter (with a legend). A missing
-  frame is written; `UPDATE_FRAMES=1` writes them all again, for a change to what the board looks like. Look at what
-  changed before you commit it. Every frame also holds to the rules that need no picture: no line over the width, the
-  hint line last.
-- **The board as data for the web page** (`tests/web_board.rs`): `common::board::web(&w, call, args)` asks the web board
-  what the page would ask, on the same world: the same list, groups, marks and words as the terminal board, and its
-  buttons pressing the board's own keys.
-- **A real terminal**, a few: `tests/real_terminal.rs` starts the built program in a pseudo-terminal and drives it as a
-  terminal would: it starts and draws, takes a burst of keys, resizes cleanly, and on closing gives the terminal back
-  exactly as it was.
+- **看板状态的更新。** `common::board::open(&w.root, rows)` 在一个 world 上开真实看板，不用终端。
+  `press(&["alt+t", "esc", "ctrl+l"])` 和 `typed("…")` 走看板唯一的 `update`，它们启动的东西立刻运行，
+  `text()`、`screen(cols)`、`chat(cols)`、`draft(cols)` 把画面读成纯文本。大多数看板测试是这类。
+- **整幅 frame**（`tests/board_frames.rs`）：看板由终端绘制器画进格子，从 10×8 到 200×60 共十种尺寸，
+  每种含列表、旁边的任务、完整任务、`?` 菜单和草稿。每幅与 `tests/frames/` 里留存的 frame 对比，一次比
+  文本，一次把每格颜色当一个字母比（带图例）。缺的 frame 会写入；`UPDATE_FRAMES=1` 全部重写，用于改动
+  看板外观的情况。提交前先看改了什么。每幅 frame 还要守不需要图片的规则：没有行超宽，提示行在最后。
+- **给网页的看板数据**（`tests/web_board.rs`）：`common::board::web(&w, call, args)` 在同一个 world 上问
+  网页看板页面会问的东西：和终端看板同样的列表、分组、标记和文案，它的按钮按的是看板自己的按键。
+- **真实终端**，少数几个：`tests/real_terminal.rs` 在伪终端里启动构建好的程序，像终端一样驱动它：启动并
+  绘制，接住一串按键，干净地调整大小，关闭时把终端原样交还。
 
-**A test never reads or writes your real board.** `world()` gives it a home folder of its own (`HOME`,
-`OMH_HOME`), takes Herdr's own variables (a pane's id, its socket), `TMUX` and `NO_COLOR` out of the
-environment, and points Herdr at a socket of its own. A test that makes no world still has a scratch board:
-`scripts/run-tests.sh` sets `OMH_HOME` to a folder of the run's own and takes `OMH_DATA_DIR`,
-`OMH_CONFIG_DIR` and `OMH_REPORTS_DIR` out. And it sets `OMH_TESTING`: under it the
-store refuses the real `~/.omh` (found from the system's list of users, whatever `HOME` says; through a
-link too) and stops the test there, before anything is read or written in it, with a message that says what to do
-instead (`crates/core/src/store/never_real.rs`).
+**测试绝不读写你的真实看板。** `world()` 给它自己的 home 文件夹（`HOME`、`OMH_HOME`），把 Herdr 自己的
+变量（面板的 id、它的 socket）、`TMUX`、`NO_COLOR` 从环境里拿掉，并把 Herdr 指向它自己的 socket。不造
+world 的测试也有临时看板：`scripts/run-tests.sh` 把 `OMH_HOME` 设为本次运行自己的文件夹，并拿掉
+`OMH_DATA_DIR`、`OMH_CONFIG_DIR`、`OMH_REPORTS_DIR`。它还设 `OMH_TESTING`：在其下，store 拒绝真实的
+`~/.omh`（从系统用户列表查到，不管 `HOME` 怎么说；经链接也一样），并在任何读写发生前就停住测试，给出
+该怎么做（`crates/core/src/store/never_real.rs`）的提示。
 
-When you run the program by hand while working on it, or a program of your own built on its code, set
-`OMH_HOME` to a scratch folder first: a new version may convert what it finds in the real one. That one
-variable is enough, also in a tab the board opened: the board hands what it starts its home folder, not the folders
-in it (only one kept elsewhere: [the home folder](home-folder.md)). Never write into the real board's folder yourself: a reviewer's probe once
-left a fake task (`probe/12`) on the human's board, because a variable it inherited named the real data folder past
-its scratch `OMH_HOME`.
+手动跑这个程序、或跑你基于它代码构建的程序时，先设 `OMH_HOME` 到临时文件夹：新版本可能会转换它在真实
+文件夹里找到的东西。一个变量就够，在看板开的标签页里也一样：看板把它启动的东西指向自己的 home 文件夹，
+而不是其中的文件夹（只有一样留在别处：见[主文件夹](home-folder.md)）。绝不自己往真实看板的文件夹里写：
+有个评审者的探针曾把假任务（`probe/12`）留在了人类的看板上，因为它继承的一个变量把真实数据文件夹指到了
+它的临时 `OMH_HOME` 之外。
 
-**A real program is started only where the program itself is what is tested.** Those tests say so in their name
-(`real_programs_…`): the command line (`tests/cli.rs`), another machine's door (`tests/remote.rs`) and the real terminal
-(`tests/real_terminal.rs`). They run the program cargo built for the tests, inside the test's world, with no Herdr to
-reach. A repo's own `setup`, `check` and `teardown` commands are shell commands by nature, and run as such in the tests
-about them.
+**只在程序本身是被测对象时才启动真实程序。** 这类测试在名字里写明（`real_programs_…`）：命令行
+（`tests/cli.rs`）、另一台机器的入口（`tests/remote.rs`）、真实终端（`tests/real_terminal.rs`）。它们在
+测试的 world 里跑 cargo 为测试构建的程序，无 Herdr 可达。仓库自己的 `setup`、`check`、`teardown` 命令
+本就是 shell 命令，在相关测试里也作为 shell 命令运行。
 
-## On macOS too
+## 在 macOS 上也能跑
 
-GitHub runs the whole check on Linux, and on macOS the areas whose tests differ there (`.github/workflows/ci.yml`; the
-whole check passed there too). A test holds on both when it asks what both have:
+GitHub 在 Linux 上跑完整检查，在 macOS 上跑那些测试有差异的领域（`.github/workflows/ci.yml`；完整检查在
+那也通过了）。测试在两边都成立，靠的是问两边都有的东西：
 
-- a process's state from `ps -o stat= -p <pid>`, not `/proc` (macOS has none);
-- a lock through `libc::flock` in the test itself, not the `flock` command (macOS has none): a flock belongs to one
-  opening of the file, so the file opened again in the test finds it held as another program would;
-- `wc -l`'s count trimmed (macOS pads it with spaces);
-- a temp folder by its real path (`canonicalize`) where a script's `pwd` is compared with it (macOS's is under `/var`,
-  which is `/private/var`);
-- this machine's name as the board shows it, cut where it is long (GitHub's macOS runners' names are over 60 letters);
-- a copy of one of the system's programs only where it runs: a Mac may kill it, or kill it once it is signed again.
+- 进程状态取自 `ps -o stat= -p <pid>`，不是 `/proc`（macOS 没有）；
+- 锁在测试里用 `libc::flock`，不是 `flock` 命令（macOS 没有）：flock 属于文件的一次打开，所以测试里重新
+  打开该文件，会像别的程序一样发现它被持有；
+- `wc -l` 的计数要修剪（macOS 会拿空格补齐）；
+- 临时文件夹取真实路径（`canonicalize`），凡是要拿脚本的 `pwd` 与它比的地方（macOS 的在 `/var` 下，
+  即 `/private/var`）；
+- 本机名按看板显示的那样，在过长处截断（GitHub 的 macOS runner 名字超过 60 个字符）；
+- 拷贝系统程序只在能跑它的地方：Mac 可能杀掉它，或在它重新签名后杀掉它。
 
-A new area of that kind goes in the macOS job's list.
+这类新领域进 macOS job 的列表。
 
-## Looking at the real thing
+## 看真实效果
 
-Tests read the board as text and as frames. A real terminal or a browser screenshot is only for a task that changes what
-the board or the review page looks like. For any other task, the tests are the evidence.
+测试把看板读成文本和 frame。真实终端或浏览器截图只用于改变看板或评审页外观的任务。其他任何任务，测试
+就是证据。

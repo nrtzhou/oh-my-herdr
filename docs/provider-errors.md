@@ -1,62 +1,52 @@
-# A turn cut off by the provider
+# 被服务商中断的回合
 
-**When the model's provider fails mid-turn (at capacity, overloaded, a rate limit, a dropped connection), the board waits
-and tries again by itself**: after 1, 2, 4 and 8 minutes, so five tries over fifteen minutes. Only then does it give up
-and tell you. Errors that waiting cannot fix go to you at once.
+**模型的服务商在回合中途出错时（满载、过载、限流、断连），看板自己等待并重试**：隔 1、2、4、8 分钟，十五分钟内五次。然后才放弃并告诉你。等待修不好的错误立刻交给你。
 
-Such a turn is neither finished nor failed: the agent did not stop, its provider did.
+这样的回合既没完成也没失败：不是代理停了，是它的服务商停了。
 
-## How the board knows
+## 看板怎么知道
 
-The agent's own saved conversation records the error for the turn, and the board reads it there:
+代理自己保存的会话记录里记着该回合的错误，看板在那里读到：
 
-| Program | Where the error is |
+| 程序 | 错误在哪 |
 |---|---|
-| Codex | the `error` on `task_complete` |
-| Claude Code | an entry with `isApiErrorMessage` |
-| pi | a message with `stopReason` `error` |
+| Codex | `task_complete` 上的 `error` |
+| Claude Code | 带 `isApiErrorMessage` 的条目 |
+| pi | `stopReason` 为 `error` 的消息 |
 
-The program's own code for the error decides whether it passes (Codex's `codex_error_info`, Claude Code's `error` and HTTP
-status). Where there is none, its words do.
+程序自己的错误代码决定它算会过去（Codex 的 `codex_error_info`、Claude Code 的 `error` 和 HTTP 状态）。没有的话，看它说的话。
 
-## The reviewer
+## 评审者
 
-The board closes the review, waits, and starts it again.
+看板关掉评审，等待，重新开始。
 
-- Meanwhile the row says why and when: `Reviewer's model is at capacity, trying again in 2m`.
-- **A review that was cut off is not a review.** It uses up none of the task's `rounds`, has no number (the next one that
-  runs is still the "1st"), and is not in the list of reviews.
-- **If the last try is cut off too**, the task fails with the real reason and the provider's own words:
-  `Review failed: the reviewer's model is at capacity, still after 5 tries over 15m. Its error: Selected model is at capacity…`. `Ctrl+L` reviews again.
+- 期间行上写明原因和下次时间：`Reviewer's model is at capacity, trying again in 2m`。
+- **被掐断的评审不算评审。** 不耗任务的 `rounds`，没有编号（下一个仍是“1st”），也不进评审列表。
+- **最后一次也被掐断**，任务带着真实原因和服务商原话失败：`Review failed: the reviewer's model is at capacity, still after 5 tries over 15m. Its error: Selected model is at capacity…`。`Ctrl+L` 重审。
 
-## The working agent
+## 工作代理
 
-The same waits. Then the board tells the agent to carry on where it left off, as a turn of the plugin's own: counters and
-an approved merge survive it.
+同样的等待。然后看板让代理从断处继续，算插件自己的一个回合：计数器和已批准的合并都能活过它。
 
-- The row stays under `working` and says `Agent's connection dropped, trying again in 2m`.
-- **You can skip the wait.** A reply, `Ctrl+R` or `Ctrl+L` does it right away. Stopping the task ends the wait.
-- After the last try, the task is "Agent stopped", with the real reason.
-- A reply starts the count again.
-- An agent whose program exited with the error is started again in the same conversation, and told the same.
+- 行仍在 `working` 下，写着 `Agent's connection dropped, trying again in 2m`。
+- **你可以跳过等待。** 回复、`Ctrl+R` 或 `Ctrl+L` 立即继续。停任务结束等待。
+- 最后一次之后，任务是“Agent stopped”，带真实原因。
+- 一次回复让计数重新开始。
+- 程序因错误退出的代理，在同一会话里重启，被告知同样的事。
 
-## Errors that waiting cannot fix
+## 等待修不好的错误
 
-Never retried, and sent to you at once: a login, a model that does not exist or is not offered, a usage limit, a request
-the provider refuses, and any error the board does not recognise. A reviewer that hits one fails the review with "the
-reviewer stopped:" and the error; that, too, is not on the list of reviews.
+绝不重试，立刻交给你：登录、模型不存在或不提供、用量上限、服务商拒绝的请求，以及看板不认识的错误。评审者撞上一个，评审以“the reviewer stopped:”加错误失败；这也不进评审列表。
 
-## With a fallback agent
+## 配合备用代理
 
-With `worker.fallback` or `reviewer.fallback` set, another agent takes over where the board would otherwise give up or go
-to you: after the last try, for an error that passes; at once, for one that waiting cannot fix. So the order is: **the
-tries first, then the fallback, then you** ([the fallback agent](fallback.md)).
+设了 `worker.fallback` 或 `reviewer.fallback` 时，看板要放弃或交给你之前由另一个代理接手：会过去的错误在最后一次重试后；等待修不好的立刻。顺序是：**先重试，再备用代理，然后你**（[备用代理](fallback.md)）。
 
-## Details
+## 细节
 
-The waits are fixed. What was seen in real conversation files is in [checked on Herdr](checked-on-herdr.md).
+等待是固定的。真实会话记录里看到的东西在 [Herdr 上的实测](checked-on-herdr.md)。
 
-- `provider_error` in `crates/core/src/agents/provider_error.rs`: which errors pass;
-- `crates/core/src/store/retries.rs`: the wait;
-- `crates/flow/src/finish/turn_ended.rs` and `crates/flow/src/finish/review.rs`: the retries;
-- tests: `tests/retry.rs`, `tests/retry_agent.rs` and `tests/endings.rs`, on recorded endings in `tests/fixtures/endings`.
+- `crates/core/src/agents/provider_error.rs` 里的 `provider_error`：哪些错误会过去；
+- `crates/core/src/store/retries.rs`：等待；
+- `crates/flow/src/finish/turn_ended.rs` 和 `crates/flow/src/finish/review.rs`：重试；
+- 测试：`tests/retry.rs`、`tests/retry_agent.rs`、`tests/endings.rs`，录制的结局在 `tests/fixtures/endings`。

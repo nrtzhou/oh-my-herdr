@@ -1,7 +1,6 @@
-# Agent programs
+# 代理程序
 
-**Every role can use any program Herdr can start and has its own integration for.** Claude Code, Codex, pi and omp do
-everything the board does. The others work too, with a few limits (below).
+**每个角色都能用任何 Herdr 能启动、且有对应集成的程序。** Claude Code、Codex、pi、omp 能做看板的一切。其他程序也能用，只有几处限制（见下）。
 
 ```
 omh set reviewer.agent agy/gemini-3-pro
@@ -9,112 +8,71 @@ omh set worker.fallback "codex, copilot/gpt-5.5"
 omh delegate 12 --worker.agent qwen --reviewer.agent cursor
 ```
 
-A model goes after a slash ([models and effort](models.md)). The settings that pick a program are `worker.agent`,
-`reviewer.agent`, `coordinator.agent`, `watcher.agent`, `plan.agent`, `worker.fallback`, `reviewer.fallback` and
-`attempts.by`.
+模型写在斜杠后面（[模型与思考力度](models.md)）。挑选程序的设置是 `worker.agent`、`reviewer.agent`、`coordinator.agent`、`watcher.agent`、`plan.agent`、`worker.fallback`、`reviewer.fallback` 和 `attempts.by`。
 
-The programs: Claude Code (`claude`), Codex (`codex`), pi (`pi`), Antigravity CLI (`agy`), GitHub Copilot CLI
-(`copilot`), Cursor Agent (`cursor`), Devin (`devin`), Factory's Droid (`droid`), Grok (`grok`), Hermes (`hermes`),
-Kilo Code (`kilo`), Kimi Code (`kimi`), Letta Code (`letta`), MastraCode (`mastracode`), oh-my-pi (`omp`), OpenCode
-(`opencode`), Qoder (`qodercli`) and Qwen Code (`qwen`). Herdr's integration name and the program's own name work too
-(`antigravity-cli` is `agy`, `cursor-agent` is `cursor`).
+程序有：Claude Code（`claude`）、Codex（`codex`）、pi（`pi`）、Antigravity CLI（`agy`）、GitHub Copilot CLI（`copilot`）、Cursor Agent（`cursor`）、Devin（`devin`）、Factory 的 Droid（`droid`）、Grok（`grok`）、Hermes（`hermes`）、Kilo Code（`kilo`）、Kimi Code（`kimi`）、Letta Code（`letta`）、MastraCode（`mastracode`）、oh-my-pi（`omp`）、OpenCode（`opencode`）、Qoder（`qodercli`）和 Qwen Code（`qwen`）。Herdr 的集成名和程序自己的名字也能用（`antigravity-cli` 就是 `agy`，`cursor-agent` 就是 `cursor`）。
 
-## Before a program's first task
+## 程序首次接任务前
 
-**Start it once yourself**, in a terminal, in a folder of a repo: log in, finish its first setup, and trust the folder
-if it asks.
+**自己先启动一次**，在终端里，进某个仓库的文件夹：登录，完成首次设置，问是否信任文件夹就信任。
 
-Why: Herdr reads a login page as a program at rest, so the board types the task into a logged-out program as if it were
-ready. Cursor, Devin, Grok, agy and Letta all came up at a login or setup page when tried here.
+原因：Herdr 把登录页当作停着的程序，看板会把任务打进登出的程序，像它已就绪一样。这里试过 Cursor、Devin、Grok、agy 和 Letta，全都停在登录或设置页。
 
-A folder-trust dialog in a new worktree is a dialog like any other: the task waits for you (`needs you`). Claude Code,
-Codex and pi are told beforehand to trust it ([how work gets done](how-work-gets-done.md)). For Codex the board adds a
-`[projects."<repo>"]` table to `~/.codex/config.toml`, only when the file reads and has no entry for the repo in any
-form (any quotes, a dotted key); an entry that says `untrusted` is left as it is. pi trusts a folder and the folders
-in it, and asks only where the folder has pi settings of its own (`.pi/settings.json`, `.pi/extensions`, …): the board
-adds the folder pi starts in (the task's worktree) to `~/.pi/agent/trust.json`, unless pi has a decision for it or a
-folder above it, the file does not read, or pi is writing it.
+新工作树里的文件夹信任对话框和其他对话框没两样：任务会「需要你」（`needs you`）。Claude Code、Codex 和 pi 会被提前告知信任该文件夹（[工作如何完成](how-work-gets-done.md)）。Codex 那边，看板往 `~/.codex/config.toml` 加一张 `[projects."<repo>"]` 表，只在文件可读、且该仓库以任何形式（任意引号、点号键）都没有条目时才加；写着 `untrusted` 的条目原样不动。pi 信任一个文件夹及其里面的文件夹，只在该文件夹有自己的 pi 设置（`.pi/settings.json`、`.pi/extensions` 等）时才问：看板把 pi 启动所在的文件夹（任务的工作树）加进 `~/.pi/agent/trust.json`，除非 pi 对它或其上层已有决定、文件读不出、或 pi 正在写它。
 
-If a start still fails, the task says why: [when an agent could not start](could-not-start.md).
+启动仍然失败的话，任务会写明原因：[代理无法启动时](could-not-start.md)。
 
-## How a program is started
+## 程序如何启动
 
-As Herdr starts it (`herdr agent start --kind <name>`), with the board's own arguments after it. Herdr finds it in its
-pane and says whether it works or waits.
+按 Herdr 的方式启动（`herdr agent start --kind <name>`），后面跟看板自己的参数。Herdr 在面板里找到它，并说它是在干活还是在等。
 
-The table at the end says, for each program, how it is started and what it can do. It is made from the code
-(`crates/core/src/agents/kinds/`), so it always matches what the board does. Adding a program is one more entry there.
+文末的表格说明每个程序怎么启动、能做什么。它从代码生成（`crates/core/src/agents/kinds/`），所以永远和看板的行为一致。加一个程序就是在那里加一行。
 
-## Helpers (subagents)
+## 辅助代理（子代理）
 
-An agent on a task uses its program's own helpers (Claude Code's subagents, Codex's spawned agents, opencode's tasks,
-and skills that use them) as it would outside the board. The board's arguments limit no tool, and its rules say only
-that the work is not handed on to another task or agent on the board: helpers are named as allowed, also when the task
-or a skill asks for them. Told only "never hand it to anyone else", Claude and Codex took that as no helpers and
-refused them even when the task asked (HP-53). A test holds both: `tests/agent_helpers.rs`.
+任务里的代理会像在看板外一样，用程序自带的辅助代理（Claude Code 的 subagents、Codex 的 spawned agents、opencode 的 tasks，以及用到它们的技能）。看板的参数不限制任何工具，规则只说工作不能交给看板上的另一个任务或代理：辅助代理是点名允许的，任务或技能要求时也一样。只被告知“绝不交给别人”时，Claude 和 Codex 理解成不要辅助代理，即使任务要求也拒绝（HP-53）。测试同时盯住两者：`tests/agent_helpers.rs`。
 
-## What the board knows about each program
+## 看板知道每个程序的什么
 
-The board reads the conversations Claude Code, Codex, pi and omp save. So it knows what they said, what went wrong with the
-provider, and how many tokens they used ([how work gets done](how-work-gets-done.md)).
+看板读取 Claude Code、Codex、pi、omp 保存的会话记录。所以它知道它们说了什么、服务商出了什么错、用了多少 token（[工作如何完成](how-work-gets-done.md)）。
 
-It reads no other program's conversation. For those, each of these comes from somewhere else:
+其他程序的会话它不读。对它们，下面每条信息另有来源：
 
-- **A turn's end** comes from Herdr: the program was at work and is at rest again (its `completion_seq`).
-- **What the agent said** is its **closing note**, the file the board tells every agent to write when it stops. One
-  that stops without it waits as `Stopped without a summary`, with the last words on its screen.
-- **A review** ends with the reviewer's verdict file, as for every program. A reviewer that stops without one ends its
-  round as soon as Herdr sees it stop (15 seconds later), not after the review's whole time.
-- **The chat** with the agent shows the words on its screen, not its conversation ([the board](board.md)).
-- **Started again** (after you stopped it, or after a plan's yes), it reopens its conversation where it can: by the id
-  Herdr's integration reports (install it: `herdr integration install <name>`), or by an id the board gave it at start
-  (copilot, grok, qodercli and qwen take one). Without either it starts a new conversation with the task and what it
-  said last.
-- **The standing rules** go in its first prompt, except for a program that takes a rules file at start (droid, omp).
+- **回合结束**来自 Herdr：程序从干活变成停着（它的 `completion_seq`）。
+- **代理说了什么**是它的**收尾小结**：看板让每个代理停下时写下的文件。没写就停下的，以 `Stopped without a summary` 等待，附屏幕上最后的话。
+- **评审**以评审者的结论文件结束，和所有程序一样。评审者没有结论文件就停下的，Herdr 一看见它停下（15 秒后）就结束这一轮，不等评审的全部时长。
+- **和代理的聊天**显示它屏幕上的话，不是它的会话记录（[看板](board.md)）。
+- **重新启动**后（你停了它，或计划获得同意后），它会尽其所能重开自己的会话：按 Herdr 集成报告的 id（安装：`herdr integration install <name>`），或按看板启动时给它的 id（copilot、grok、qodercli、qwen 接受一个）。两样都没有，就用任务和它上次说的话开新会话。
+- **常驻规则**写进它的第一条提示词，启动时读规则文件的程序除外（droid、omp）。
 
-What these programs do **not** get:
+这些程序**得不到**的东西：
 
-- Tokens are not counted (`limit.tokens` says `does nothing` for them).
-- A provider's passing error is not told from a lasting one. So the board does not wait and try again, and the
-  fallback does not take over for it. A logged-out screen still hands over.
-- Helpers the agent starts are not followed.
+- 不计 token（`limit.tokens` 对它们写着 `does nothing`）。
+- 分不清服务商的暂时错误和永久错误。所以看板不等也不重试，备用代理也不替它接手。登出画面仍然会交接。
+- 不追踪代理启动的辅助代理。
 
-## What is refused, and why
+## 什么会被拒绝，为什么
 
-A program that cannot do a role well is refused when you set it, with the reason and the programs that can:
+干不好某个角色的程序，在你设置时就被拒绝，附原因和能用的程序：
 
-- **MastraCode works on no task** (`worker`, `reviewer`, `coordinator`, `plan`, the fallbacks and attempts). It can be
-  told neither its model nor to work without asking when it starts (only through environment variables, which Herdr's
-  start cannot set). And it reopens its folder's last conversation, so a reviewer would join the worker's. It can be
-  the Watcher.
-- **The Watcher** needs a headless one-shot: a command that answers once and ends. Every program here has one; a
-  program without one would be refused.
-- **A model** for a program that takes none when started for work: Droid. Choose its model in Droid's own settings. Its
-  one-shot does take one, so `watcher.agent droid/<model>` works.
-- **A model name** the program does not take, with the names it does. They are read from the program's own list where
-  it has one (`codex debug models`, `pi --list-models`, `omp models`, `cursor-agent models`, `opencode models`), else from the names
-  written in the table (Claude Code). `omh models` lists them ([models and effort](models.md)).
-- **An effort** the program does not have: a level not on the list the program gives (Codex's catalog, for the model;
-  the others' `--help`; the table's where it cannot be read), or any level where it takes none at start (most of
-  Herdr's others). Cursor takes its effort in the model's name: `cursor/claude-opus-4-8[effort=high]`.
-- **`access ask`** for a program that never asks before it acts (pi).
-- **`access auto`** for a program with no auto mode of its own (all but Claude Code, Codex, Cursor, Qwen Code and
-  Qoder), and at the start, for a version older than its first ([auto mode](auto-mode.md)).
+- **MastraCode 接不了任何任务**（`worker`、`reviewer`、`coordinator`、`plan`、备用代理和并行尝试）。启动时既不能告诉它用哪个模型，也不能让它不问就干（只有环境变量做得到，Herdr 的启动设不了）。而且它会重开文件夹里最后一个会话，评审者会接进工作代理的会话。它可以当观察者。
+- **观察者**需要无头一次性调用（one-shot）：答一次就结束的命令。这里的每个程序都有；没有的会被拒绝。
+- **模型**：给启动干活时不接受模型的程序设模型：Droid。在 Droid 自己的设置里选模型。它的一次性调用接受模型，所以 `watcher.agent droid/<model>` 可用。
+- **程序不接受的模型名**，并附它接受的名字。从程序自己的列表读（`codex debug models`、`pi --list-models`、`omp models`、`cursor-agent models`、`opencode models`），没有列表的从表格里写的名字读（Claude Code）。`omh models` 列出它们（[模型与思考力度](models.md)）。
+- **程序没有的思考力度**：不在程序给出的列表上的级别（Codex 的目录，按模型；其他程序的 `--help`；读不到就用表格里的），或启动时不接受力度的程序的任何级别（Herdr 的其他大多数）。Cursor 的力度写在模型名里：`cursor/claude-opus-4-8[effort=high]`。
+- **`access ask`**：给从不先问再动手的程序（pi）。
+- **`access auto`**：给没有自己的 auto 模式（auto mode）的程序（除 Claude Code、Codex、Cursor、Qwen Code、Qoder 之外的全部），以及启动时版本比它首个支持版本旧的（[auto 模式](auto-mode.md)）。
 
-Two more are said when the program starts, not when it is set:
+还有两条在程序启动时说，不是设置时：
 
-- **omp and MastraCode need Herdr's own integration**, or Herdr cannot tell whether they work. The board does not
-  install it into your agent's settings. It tells you to: `omp needs herdr's own integration, or herdr cannot see when it works: run herdr integration install omp, then try again.`
-- **A program Herdr cannot see.** Kilo Code and Qoder installed with npm run behind a small node launcher that starts
-  the real program as its child, and Herdr 0.9.3 does not find them in the pane. The start fails with `herdr did not see kilo come up in its pane …`. Install the program's standalone build instead (tried: Kilo's own binary is found at
-  once).
+- **omp 和 MastraCode 需要 Herdr 自己的集成**，否则 Herdr 看不出它们是否在干活。看板不会替你装进代理的设置。它让你去装：`omp needs herdr's own integration, or herdr cannot see when it works: run herdr integration install omp, then try again.`
+- **Herdr 看不见的程序。** 用 npm 装的 Kilo Code 和 Qoder 藏在一个小 node 启动器后面，真正的程序是它的子进程，Herdr 0.9.3 在面板里找不到它们。启动失败：`herdr did not see kilo come up in its pane …`。改用程序的独立安装包（试过：Kilo 自己的二进制一次就能找到）。
 
-## Not supported
+## 不支持
 
-Herdr also starts Gemini CLI, Cline, Kiro, Amp, Maki and Muse, but has no integration for them (it calls them less
-tested). The board does not take them. Each would be one more entry in the table.
+Herdr 也能启动 Gemini CLI、Cline、Kiro、Amp、Maki 和 Muse，但没有它们的集成（称它们测试较少）。看板不收它们。每个都只是表格里再加一行。
 
-## The programs
+## 程序一览
 
 <!-- made:agents Made by `omh docs` from crates/core/src/agents/kinds/. Do not edit between these two lines. -->
 | Program | Started for work as | Model | Effort | Asking first | Auto mode | Standing rules | Reopened by | Watcher's one-shot | Turn's end read from | herdr's integration | Can do | Checked |

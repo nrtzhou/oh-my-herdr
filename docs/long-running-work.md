@@ -1,44 +1,34 @@
-# Long-running work in one repo
+# 一个仓库里的长期工作
 
-**There is no "initiative" or "project" object on the board, and you don't need one.** Big work (a migration, a
-rewrite, a feature in many steps) is a chain of ordinary tasks, a place that says where it stands, and a coordinator
-that keeps the thread.
+**看板上没有「计划」或「项目」对象，你也不需要。**大工程（迁移、重写、多步骤的功能）就是一串普通任务、一个说明进度的地方、一个把握主线的协调者。
 
-| You want | Use |
+| 你想 | 用 |
 |---|---|
-| one conversation that keeps the whole picture | the repo's **project coordinator** |
-| one place that says the goal and what is left | a **tracking doc or pull request**, named in every task's description |
-| steps that go in order | **batches as tasks**, chained with `--after` |
-| the next step | usually a **fresh task and agent**; sometimes a word to the same task's agent |
+| 一场掌握全局的对话 | 该仓库的**项目协调者** |
+| 一个说明目标和剩余工作的地方 | **跟踪文档或 PR**，在每个任务的描述里点名 |
+| 按顺序推进的步骤 | **批次任务**，用 `--after` 串起来 |
+| 下一步 | 通常是**新任务配新代理**；有时给同一任务的代理带句话 |
 
-## A project coordinator per repo
+## 每个仓库一个项目协调者
 
-Group by repo (`Alt+S`) and press `Space` on the repo's row: you talk to that repo's own coordinator. It is a
-long-lived chat about that one repo, kept across restarts, beside the Coordinator and never mixed with it
-([machine and project coordinators](machine-and-project-coordinators.md)).
+按仓库分组（`Alt+S`），在仓库行上按 `Space`：你就在和该仓库自己的协调者对话。它是关于这一个仓库的长期对话，跨重启保留，与协调者并列、绝不混在一起（[机器与项目协调者](machine-and-project-coordinators.md)）。
 
-Use it as the place where the big work is planned: "here is the migration, split it into batches and add them as
-tasks, each after the last". It reads the repo, adds the tasks, and remembers what it said about them next week.
+把它当作规划大工程的地方：「这是迁移，拆成批次加成任务，一个接一个」。它读仓库、加任务，下周还记得自己说过什么。
 
-One repo has one project coordinator. Two big pieces of work in the same repo share it: say which one you mean.
+一个仓库只有一个项目协调者。同一个仓库里的两件大事共用它：说清你指哪件。
 
-## A tracking doc or pull request
+## 跟踪文档或 PR
 
-An agent knows only its own task. So each task's description names the place that has the whole picture:
+代理只了解自己的任务。所以每个任务的描述都点名掌握全局的地方：
 
-- **a doc in the repo** (`docs/migration.md`): the goal, the batches, what is done and what is left. Each batch's task
-  says "read `docs/migration.md` first, and tick off your batch in it". It lands with the work, so the next agent reads
-  it as it now is;
-- **or a pull request or issue on GitHub** that holds the plan, named by its link.
+- **仓库里的文档**（`docs/migration.md`）：目标、批次、已完成和剩余。每个批次的任务写着「先读 `docs/migration.md`，在其中勾掉你的批次」。它随工作落地，下一个代理读到的就是最新状态；
+- **或者 GitHub 上的 PR 或 issue**，放计划，用链接点名。
 
-`omh describe <id> <text>` writes a description; the coordinator writes one on every task it adds. For words
-every task of the repo should get ("this repo is mid-migration: read `docs/migration.md`"), use
-`omh set worker.instructions "…" --repo <repo>` ([settings](settings.md)).
+`omh describe <id> <text>` 写描述；协调者给它加的每个任务都写描述。要让仓库每个任务都带上的话（「这个仓库在迁移中：先读 `docs/migration.md`」），用 `omh set worker.instructions "…" --repo <repo>`（[设置](settings.md)）。
 
-## Batches as tasks, chained with `--after`
+## 批次任务，用 `--after` 串起来
 
-Each batch is its own task, with its own check, review and merge. A small batch is reviewed well; a whole migration in
-one pull request is not.
+每个批次是独立任务，有自己的检查、评审和合并。小批次评得好；整个迁移塞进一个 PR 评不好。
 
 ```sh
 omh add "Migration batch 1: the models" --repo my-app --desc "Read docs/migration.md first."  # my-app/41
@@ -46,22 +36,15 @@ omh add "Migration batch 2: the API" --repo my-app --after my-app/41 --delegate 
 omh add "Migration batch 3: the screens" --repo my-app --after my-app/42 --delegate
 ```
 
-Start the first with `Ctrl+S` (or `omh delegate my-app/41`). Each of the others starts by itself once the one
-before it is done, and its agent's first prompt says what came before: that task's closing note and the pull request it
-merged in ([one task after another](after.md)). Or tell the coordinator "then", "once that is merged".
+用 `Ctrl+S`（或 `omh delegate my-app/41`）启动第一个。其余的在前一个完成后自动启动，代理的第一条提示词会说明之前发生了什么：那个任务的收尾小结和它合并的 PR（[一个接一个](after.md)）。或者告诉协调者「然后」「等那个合并了」。
 
-## The next batch: a fresh agent, or the same one?
+## 下一个批次：新代理还是同一个？
 
-**A fresh task, with a fresh agent, is the default.** It starts from the merged work, with a clean context, and its own
-review. The tracking doc and the handed-on closing note tell it what came before.
+**默认是新任务配新代理。**它从已合并的工作出发，上下文干净，有自己的一次评审。跟踪文档和交接的收尾小结告诉它之前的来龙去脉。
 
-**Telling the same task's agent** (`Space` on the task, or `omh tell <id> <text>`) is for little things that
-belong to that task:
+**给同一任务的代理带话**（任务上按 `Space`，或 `omh tell <id> <text>`）用于属于该任务的小事：
 
-- **While the task is open** (working, in review, waiting for your yes), your words go into its conversation and its
-  change grows: the same branch, the same pull request, reviewed again.
-- **Once it is done and cleaned up**, a message starts a new round: a fresh worktree from main, a new pull request, and a
-  new conversation. The agent does not remember the last round, so a new task says it just as well, and keeps each
-  batch's history apart.
+- **任务还开着时**（进行中、评审中、等你批准），你的话进入它的对话，改动继续长大：同一分支、同一个 PR、再评一次。
+- **任务已完成并清理后**，一条消息开启新一轮：从 main 拉新工作树、开新 PR、开新对话。代理不记得上一轮，所以用新任务也一样好，还能让各批次的历史互不串。
 
-Don't keep one agent going for a whole migration: its context fills up, and one huge pull request is hard to review.
+别让一个代理扛下整个迁移：上下文会撑爆，一个巨型 PR 也难评审。

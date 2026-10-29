@@ -1,11 +1,8 @@
-# The task panel
+# 任务面板
 
-**The task panel shows everything about the selected task.** `Alt+P` opens and closes it beside the list (in a window of
-90 columns or more), and your choice is remembered. `Alt+T` shows the whole task full screen; `Esc` or `Alt+T` leaves it.
-`Ctrl+E` opens the task's settings.
+**任务面板显示选中任务的一切。** `Alt+P` 在列表旁打开和关闭它（90 列以上的窗口里），你的选择会被记住。`Alt+T` 全屏显示整个任务；`Esc` 或 `Alt+T` 离开。`Ctrl+E` 打开任务的设置。
 
-Closed, each row has the whole width for what it says. Opening or folding the panel never changes who you talk to or
-whether the chat's message shows, and `Space` never opens or folds it, at any width.
+关闭时，每行都有整个宽度来显示内容。打开或折叠面板绝不改变你在和谁说话、聊天消息是否显示，`Space` 在任何宽度下都不打开或折叠它。
 
 ```
  HSW-84 Max length for task titles
@@ -43,99 +40,72 @@ whether the chat's message shows, and `Space` never opens or folds it, at any wi
  * this task only
 ```
 
-## One form for every part
+## 每个部分一种形式
 
-The panel and the full screen have the same parts, in the same order:
+面板和全屏是同样的部分，同样的顺序：
 
-- **A headline** in bold, on a thin rule that runs to the edge. One that needs you is in its state's colour.
-- **Facts are a label and its value**: the label greyed on the left, the value on the right. Every value starts in the
-  same column, so the eye runs down one line. A long value wraps under itself, between its facts where it has them
-  (`12m ago` is never split).
-- **A text** (the description, what the agent said) is plain lines under its headline.
-- **An empty line between two parts**, and between two reviews on the full screen. Nowhere else.
-- **Nothing is boxed, nothing sits behind a bar, and no fact is cut with `…`.** Where the panel is too short, whole lines
-  and facts give way ([below](#a-short-window)), and the last line says where the rest is.
+- **标题行**，粗体，压在一条延伸到边缘的细横线上。需要你的用它状态的颜色。
+- **事实是标签加值**：标签灰色在左，值在右。每个值从同一列开始，让视线竖着走。长值在自己下面折行，在它的事实之间折（`12m ago` 绝不拆开）。
+- **一段文字**（描述、代理说的话）是标题行下的朴素行。
+- **两个部分之间一个空行**，全屏上两场评审之间也是。别处没有。
+- **没有东西装在框里，没有东西压在横条后面，没有事实被 `…` 截断。** 面板太矮时，整行和整个事实让路（[下文](#矮窗口)），最后一行说明其余内容在哪。
 
-## The parts, top to bottom
+## 各部分，从上到下
 
-- **The title**, on top, by itself. The task is named as its row names it (`HSW-84`), in the title and in the heading of
-  the whole-task page (`Task details  HSW-84 "Max length for task titles"`). Its id, as a command takes it, stands once,
-  on the whole task, with the session and its repo's key (`Task id  omh/84 · HSW`).
-- **Status**: where it stands, one fact a row, always in this order:
+- **标题**，在最上面，单独一行。任务按它行上的方式命名（`HSW-84`），标题里和整个任务页的标题里都是（`Task details  HSW-84 "Max length for task titles"`）。它的 id，按命令接受的形式，只出现一次，在「整个任务」上，带会话和仓库的 key（`Task id  omh/84 · HSW`）。
+- **Status**：干到哪了，一行一个事实，总是这个顺序：
 
-  | Row | Says |
+  | 行 | 说明 |
   |---|---|
-  | `State` | its mark and word, which review it is on, since when |
-  | `Progress` | the bar, its percent and the minutes left |
-  | `Now` | what the agent or reviewer is doing right now, wrapped whole |
-  | `On it` | who |
-  | `Took over` | each hand-over to [a fallback agent](fallback.md), in plain words |
-  | `Made by` | the [automation](automations.md) that made it, if one did |
-  | `Change` | the pull request, in the colour of its checks, and the size of the change. The number is a link; full screen, the address is printed too |
-  | `Next` | for a task nobody is on: what puts an agent on it |
+  | `State` | 它的标记和词、第几轮评审、从什么时候 |
+  | `Progress` | 进度条、百分比和剩余分钟 |
+  | `Now` | 代理或评审者此刻在做什么，整句折行 |
+  | `On it` | 谁在干 |
+  | `Took over` | 每次移交给[备用代理](fallback.md)，用朴素的话 |
+  | `Made by` | 制造它的[自动化](automations.md)（如果有的话） |
+  | `Change` | PR，用它的检查对应的颜色，以及改动的大小。编号是链接；全屏时地址也印出来 |
+  | `Next` | 没人干的任务：什么会让一个代理接手 |
 
-- **What it needs from you**: a part of its own right under Status, its headline in red: `Asks you`,
-  `Asks for your OK`, `Needs a login`, `Review failed` (what the review found, and what the two keys do: send it back,
-  or merge anyway), or `Went wrong` with what failed, who can fix it, the `Next step` and the `Details`. A headline is
-  never repeated as the first line under it. `Behind main` and `Cut off` (the board tries again by itself) are the same
-  part in their own colour, and an archived task says so there.
-- **The description**: whole on the full screen, cut after about 400 characters beside the list. If the panel is too
-  short for it and the settings, it is cut further, then becomes one line (`Description · alt+t shows it`), then goes:
-  all of that before a single setting does.
-- **Attempts**, for a task done several times at once: the reviewer's comparison, then each attempt
-  ([several attempts](attempts.md)). While the task waits for your pick, it is headed `Pick one of 3`, in red, and is
-  what it needs from you.
-- **The reviews**, as a history ([below](#the-reviews)).
-- **What the agent said**: the newest words of its conversation, never its program's screen (while you talk to its
-  agent, that is in the chat instead). During a review it is the reviewer's, and the headline says `The reviewer says`.
-  When the review ends it is the agent's again. A dialog that is only on a program's screen is mentioned in a line, with
-  the way to it. What the chat shows, and from where: [the board](board.md).
-- **Settings**: every setting the task runs with ([below](#the-settings-part)).
-- **Session**, full screen only: the agent's context, its tokens, and where it runs in Herdr.
+- **它需要你什么**：Status 正下方的独立部分，标题行是红的：`Asks you`、`Asks for your OK`、`Needs a login`、`Review failed`（评审发现了什么，两个键各做什么：退回，或照样合并），或 `Went wrong` 加失败内容、谁能修、`Next step` 和 `Details`。标题行绝不在下面第一行重复。`Behind main` 和 `Cut off`（看板自己重试）是同一部分，用各自的颜色，归档的任务在那里说明。
+- **描述**：全屏上完整，列表旁约 400 字符后截断。面板太矮、放不下它和设置时，它再被截，然后变成一行（`Description · alt+t shows it`），然后消失：这一切都发生在任何单个设置之前。
+- **并行尝试**（attempts），一次做几遍的任务：评审者的比较，然后是每个尝试（[并行尝试](attempts.md)）。任务等你挑选时，它的标题行是 `Pick one of 3`，红色，属于「需要你什么」。
+- **评审们**，作为历史（[下文](#评审们)）。
+- **代理说的话**：它对话里最新的词，绝不是它程序的屏幕（你和它的代理聊天时，那些在聊天里）。评审期间是评审者的，标题行写 `The reviewer says`。评审结束后又变回代理的。只出现在程序屏幕上的对话框会用一行提到，附去那里的方法。聊天显示什么、从哪显示：[看板](board.md)。
+- **设置**：任务运行用的每个设置（[下文](#设置部分)）。
+- **Session**，仅全屏：代理的上下文、它的 tokens、它在 Herdr 里跑在哪。
 
-Full screen, the text keeps to 100 columns. Beside the list, when anything is shorter than on the full screen, the last
-line says `alt+t shows the whole task`.
+全屏时文字控制在 100 列内。列表旁，任何内容比全屏短时，最后一行写 `alt+t shows the whole task`。
 
-## The settings part
+## 设置部分
 
-Every setting the task runs with, and its value, a few to a row, in plain words. Never a line that says they are the
-usual ones.
+任务运行用的每个设置和它的值，一行几个，用朴素的话。绝不写一行说这些是默认值。
 
-| Row | Says | Settings |
+| 行 | 说明 | 设置 |
 |---|---|---|
-| `Agent` | who works: the program (and its version), its model, its effort; `fast`, `asks before acting` and `words of your own` where they are so | `worker.*` |
-| `Takes over` | who takes over when the agent, or the reviewer, cannot go on, under that one's row. Once one of the two has a list both have the row, and the one without says `nobody` | `worker.fallback`, `reviewer.fallback` |
-| `Plan first` | `off`, or who approves the plan and who writes it (a planner somebody chose is shown while it is off too) | `plan.approve`, `plan.agent` |
-| `Attempts` | how many and by whom, and who picks; only for more than one | `attempts.by`, `attempts.pick` |
-| `Reviewer` | who reviews, as `Agent`; `off` where nothing is reviewed, with what somebody chose for it all the same | `reviewer.*` |
-| `Review when` | `in a repo`, `always` or `never`, and whether the reviewer brings evidence | `review.when`, `review.evidence` |
-| `Send back` | how bad a finding sends the work back, and how many rounds go by themselves | `review.mustFix`, `review.rounds` |
-| `Check` | the check's command and how long it may run | `check.command`, `check.timeout` |
-| `Merge` | after your yes or by itself, how it lands, and whether a pull request is opened. A research-only task has `Research` here instead: it merges nothing. A [chat-only](chat.md) one has `Chat` (`no change to the repo · ends when you say`), and no `Reviewer`, `Review when`, `Send back` or `Check` rows: none of them runs | `merge.by`, `merge.method`, `merge.pr`, `research.only`, `chat.only` |
-| `Limits` | the longest run and the most tokens, both of them (`2h a run · no token limit`); only where one is set, or somebody said `none` | `limit.time`, `limit.tokens` |
-| `Workspace` | what the worktree starts from, what sets it up, is copied in and tears it down, and whether it is removed when done | `workspace.*` |
-| `Also` | in a word each, what has no row of its own while it is nothing: `one attempt`, `not research only`, `no limits`, `no fallback` | |
+| `Agent` | 谁干活：程序（和版本）、模型、effort；`fast`、`asks before acting`、`words of your own` 在成立时显示 | `worker.*` |
+| `Takes over` | 代理或评审者干不下去时谁接手，排在那一位的行下面。两者中一旦一个有列表，两行都有，没列的那个写 `nobody` | `worker.fallback`、`reviewer.fallback` |
+| `Plan first` | `off`，或谁批准计划、谁来写（就算关着，有人选过的 planner 也显示） | `plan.approve`、`plan.agent` |
+| `Attempts` | 几个、由谁做，谁来挑；只在多于一个时显示 | `attempts.by`、`attempts.pick` |
+| `Reviewer` | 谁评审，格式同 `Agent`；不评审的地方写 `off`，附有人为它选过的东西 | `reviewer.*` |
+| `Review when` | `in a repo`、`always` 或 `never`，以及评审者是否带证据 | `review.when`、`review.evidence` |
+| `Send back` | 多严重的发现才把工作退回，几轮之内自己重来 | `review.mustFix`、`review.rounds` |
+| `Check` | 检查的命令和最长运行时间 | `check.command`、`check.timeout` |
+| `Merge` | 你点头后还是自己来，怎么落地，是否开 PR。只研究（research-only）的任务这里是 `Research`：它什么都不合并。[只聊天](chat.md)的是 `Chat`（`no change to the repo · ends when you say`），且没有 `Reviewer`、`Review when`、`Send back`、`Check` 行：它们都不运行 | `merge.by`、`merge.method`、`merge.pr`、`research.only`、`chat.only` |
+| `Limits` | 最长运行时间和最多 tokens，两者都写（`2h a run · no token limit`）；只在设了其中之一、或有人说了 `none` 时显示 | `limit.time`、`limit.tokens` |
+| `Workspace` | 工作树从什么开始、什么配置它、拷入什么、拆掉什么，完成后是否移除 | `workspace.*` |
+| `Also` | 各用一个词，写那些没有自己行、又什么都没做的：`one attempt`、`not research only`、`no limits`、`no fallback` | |
 
-- **Only a value set for this task alone is marked**: a `*` after it, in the accent colour, and one dim line under the
-  rows, `* this task only` (the first line to go where room is short). Every other value looks the same, whether it is
-  your settings, the repo's or built in. The panel never says where a value comes from: `omh show <id>` does
-  ([settings](settings.md)).
-- Every setting somebody chose is shown, also one that says `none`, or one that does nothing now.
-- A task in no repo has no `Check` and no `Workspace` row.
-- The whole task adds where the task is (`Project`, `Worktree` with its folder, `Branch`). Beside the list, only a project
-  that is not this board's, and another machine's name (`Machine`), have a row.
-- A `Note` row says what the board could not use: a program that is not installed, something the repo's own file was
-  refused, a mistake in your settings file.
-- A task on another machine has the same rows, from the settings that machine sent.
-- The web Board's task panel has them too, right under `Status` and what the task needs from you, above the description,
-  the reviews and what the agent said: its page scrolls, so what is on top is what has the room
-  ([the board in the web UI](web-ui.md)).
+- **只为这个任务设的值才被标记**：后面一个 `*`，用强调色，行下面一行暗淡的 `* this task only`（空间不够时最先消失的一行）。其他每个值看起来都一样，无论来自你的设置、仓库的还是内置。面板绝不说明值从哪来：`omh show <id>` 会（[设置](settings.md)）。
+- 有人选过的每个设置都显示，包括写着 `none` 的，或现在不起作用的。
+- 不在仓库里的任务没有 `Check` 和 `Workspace` 行。
+- 「整个任务」多出任务在哪（`Project`、带文件夹的 `Worktree`、`Branch`）。列表旁，只有不属于本看板的项目、以及另一台机器的名字（`Machine`）才有行。
+- `Note` 行说明看板用不了的东西：没装的程序、仓库自己的文件被拒绝、你设置文件里的笔误。
+- 另一台机器上的任务有同样的行，来自那台机器发来的设置。
+- web 看板的任务面板也有这些，就在 `Status` 和「需要你什么」下面，在描述、评审和代理说的话上面：它的页面滚动，所以有空间的排在上面（[web UI 里的看板](web-ui.md)）。
 
-## The settings page
+## 设置页
 
-`Ctrl+E` on a task opens its settings full screen: every work [setting](settings.md) by its plain label, its value, and
-its name as a command takes it, with `*` on the ones set for this task only. Where any other value comes from is not said
-here either: `omh show <id>` says it.
+任务上按 `Ctrl+E` 全屏打开它的设置：每个工作[设置](settings.md)按朴素标签排列，值，以及命令接受的名字，只为本任务设的带 `*`。其他值从哪来这里同样不说：`omh show <id>` 说。
 
 ```
  Settings  HSW-12 "Tidy the first-run questions"
@@ -153,121 +123,83 @@ here either: `omh show <id>` says it.
  * this task only
 ```
 
-| Key | Does |
+| 按键 | 作用 |
 |---|---|
-| `↑` `↓` | move to a row (here they do not move between tasks) |
-| `Enter` | change the row, for this task only (below) |
-| `Ctrl+U` | put the selected row back to what it would be without this task's own answer |
-| `Esc`, or `Ctrl+E` again | back to the task |
+| `↑` `↓` | 移到某行（这里不在任务间移动） |
+| `Enter` | 改这一行，只对这个任务（下文） |
+| `Ctrl+U` | 把选中的行放回没有这个任务自己答案时的样子 |
+| `Esc`，或再按 `Ctrl+E` | 回到任务 |
 
-- **`Enter`**: a switch or a choice goes to its next value and is saved at once. Anything else is typed in the box at the
-  bottom (it starts empty; the page shows the current value) and saved with `Enter` (`Esc` leaves it as it was). A
-  refused value says why, with the nearest right one, and changes nothing.
-- **The line on top** is the selected row's: what it may be. A choice lists its words with the current one marked; a
-  switch reads `on · [off]`; anything typed says what to type (`a time, such as 90s or 15m`).
-- `*` marks the rows set for this task only. Every other row is plain, wherever its value comes from. A row that does
-  nothing for this task, or counts only from its next start, says so before its name.
-- **A setting that cannot apply is not offered**: fast mode, for a program that has none (only Codex has one); a repo's
-  setting, for a task in no repo. One that is this task's own all the same still shows, so it can be put back.
-- Only this page's keys act while it is open, and the hint line is its own ([keys](keys.md)).
-- Board settings are yours only and are not on this page: they are on yours (below). A task on another machine is
-  changed there. An archived task's settings can be read, not changed.
+- **`Enter`**：开关或选项走到下一个值并立刻保存。其他内容在底部输入框里打（开始是空的；页面显示当前值），用 `Enter` 保存（`Esc` 保持原样）。被拒绝的值说明原因，附最接近的合法值，且什么都不改。
+- **顶上的那行**是选中行的：它可以是什么。选项列出它的词、当前的标出；开关读作 `on · [off]`；要打字的说明打什么（`a time, such as 90s or 15m`）。
+- `*` 标记只为本任务设的行。其他行都是朴素的，无论值从哪来。对本任务不起作用、或从下次启动才算数的行，在名字前说明。
+- **用不上的设置不提供**：fast 模式，对没有它的程序（只有 Codex 有）；仓库设置，对不在仓库里的任务。就算如此仍属于本任务自己的设置会显示，好让它能被放回去。
+- 页面打开时只有它的按键起作用，提示行也是它自己的（[按键](keys.md)）。
+- 看板设置只属于你，不在这一页：在你的那页（下文）。另一台机器上的任务在那里改。归档任务的设置可读不可改。
 
-### Your own settings
+### 你自己的设置
 
-`Ctrl+E` on this machine's heading (or a status group's), or `your own settings` in the `?` menu, opens the same page
-for your settings: what every task starts from, board settings too (`Settings  yours: what every task starts from`).
-On a repo's heading it is your entry for that repo. The keys are the page's; `Enter` saves as `omh set` does
-and `Ctrl+U` as `unset`. `*` marks what you set, and every other row says where its value comes from (`built in`, or on
-a repo's entry `you`). `Esc` goes back to the list. On another machine's heading the board says to change them there
-([settings](settings.md)).
+在本机的标题（或状态组的）上按 `Ctrl+E`，或 `?` 菜单里的 `your own settings`，为你的设置打开同样的页面：每个任务从什么开始，看板设置也在（`Settings  yours: what every task starts from`）。在仓库的标题上是你对该仓库的条目。按键就是本页的；`Enter` 像 `omh set` 一样保存，`Ctrl+U` 像 `unset`。`*` 标记你设的，其他行说明值从哪来（`built in`，仓库条目上是 `you`）。`Esc` 回列表。在另一台机器的标题上，看板说去那边改（[设置](settings.md)）。
 
-## A coordinator in the panel
+## 面板里的协调者
 
-On a coordinator's row (a machine's or a project's row) the panel shows that
-coordinator, in the same form:
+在协调者的行上（机器的或项目的行），面板显示那个协调者，形式相同：
 
-- **Status**: `State` (its chat's, `idle` or `working`; on [autopilot](autopilot.md), autopilot's word), `Last`, its
-  latest message as the chat shows it, and while on, `Goal` and `Today` (`2 of 5 added · 1 of 2 under way`).
-- **Settings**: `Agent` (its program, model and effort), and while on, `Wakes`, `Limits`, `May set`, `May touch` and the
-  rest, in plain words. `*` marks this time's values, with `* this time only` under them.
-- While autopilot is off, nothing of it shows.
-- A `coordinator.*` value changed while its chat runs says `from its next fresh chat`, here and on its settings page.
-- `Alt+T` shows it whole, and while on its last 20 wakes: when, why, and whether it answered.
+- **Status**：`State`（它的聊天，`idle` 或 `working`；[自动驾驶](autopilot.md)开着时是自动驾驶的词）、`Last`，它最新的消息按聊天的显示方式，开着时还有 `Goal` 和 `Today`（`2 of 5 added · 1 of 2 under way`）。
+- **设置**：`Agent`（它的程序、模型和 effort），开着时还有 `Wakes`、`Limits`、`May set`、`May touch` 等，用朴素的话。`*` 标记这一次的值，下面一行 `* this time only`。
+- 自动驾驶关闭时，它的一概不显示。
+- 它的聊天运行中改动的 `coordinator.*` 值显示 `from its next fresh chat`，这里和它的设置页上都是。
+- `Alt+T` 显示完整的它，开着时还有最近 20 次唤醒：何时、为何、是否应答了。
 
-`Ctrl+E` there opens its settings page, in this page's form and keys: its own rows first, under `This coordinator`,
-then on this machine's row your own settings, on a project's row your entry for that repo. While autopilot is on,
-`Enter` on an autopilot row other than the goal saves it for this time only, and a line under the rows says so. Another
-machine's coordinator's page is shown whole, to read; it is changed on that machine.
+那里的 `Ctrl+E` 打开它的设置页，用本页的形式和按键：先是它自己的行，在 `This coordinator` 下，然后在本机的行上是你自己的设置，在项目的行上是你对该仓库的条目。自动驾驶开着时，在目标以外的自动驾驶行上按 `Enter` 只保存这一次，行下面一行说明。另一台机器协调者的页面完整显示，只读；改要到那台机器上。
 
-## The reviews
+## 评审们
 
-**Every review is kept, and they read as a history.**
+**每场评审都保留，读起来是历史。**
 
-- `History` says how each went, oldest first (`fail → no verdict → pass`).
-- A review is a row under its own name: a mark and its result (`✓ Pass · 2 minor`, `✗ Fail · 1 critical`,
-  `– No verdict`; the colour only repeats the mark), when, and under them its summary.
-- **Beside the list**, the latest one shows, with the first piece of `Evidence` (its name, wrapped whole). Whenever the
-  full screen has more of a review (a longer summary, findings, what it checked, more evidence, or its address), the last
-  line says so.
-- **Full screen** has all of them, newest first, each with its commit and, as facts of their own:
-  - its `Findings` (how bad each is, in a column of its own: `critical`, `major`, `minor`; one that did not hold the work
-    back is marked `not required` or `pre-existing`);
-  - what it `Checked`, and what it left `Unverified`;
-  - each piece of **evidence** under its own `Evidence` headline: its name, what it is, and its address printed in full,
-    each wrapped under itself and never cut.
-- A review that gave no verdict has its row too, with why.
-- A review from before the gate keeps its score and advice as they were (`4/5, says merge`), and its `Problems`.
-- A review that still stood after main was merged in says so under its result.
+- `History` 说明每场怎么样，从最旧开始（`fail → no verdict → pass`）。
+- 一场评审是它名字下的行：标记和结果（`✓ Pass · 2 minor`、`✗ Fail · 1 critical`、`– No verdict`；颜色只是重复标记），时间，下面它的总结。
+- **列表旁**显示最近一场，带第一份 `Evidence`（它的名字，整句折行）。全屏有更多内容时（更长的总结、发现、它检查了什么、更多证据、或地址），最后一行说明。
+- **全屏**有全部，从最新开始，各带它的提交，以及作为独立事实的：
+  - 它的 `Findings`（每条多严重，单独一列：`critical`、`major`、`minor`；没有拦住工作的标 `not required` 或 `pre-existing`）；
+  - 它 `Checked` 了什么，留下什么 `Unverified`；
+  - 每份**证据**在自己的 `Evidence` 标题下：名字、是什么、完整印出的地址，各自在下面折行，绝不截断。
+- 没给结论的评审也有行，附原因。
+- 评审门（gate）出现之前的评审保留它的评分和建议原样（`4/5, says merge`），以及它的 `Problems`。
+- 合入 main 后仍然作数的评审，在结果下面说明。
 
-`omh details <id>` prints the same list as `reviews`.
+`omh details <id>` 打印同样的列表，名为 `reviews`。
 
-## A narrow panel
+## 窄面板
 
-In a panel too narrow for a value beside its label (under about 30 columns), the label is a line of its own and its value
-is under it, indented. Nothing is cut there either.
+面板太窄、值放不下标签旁边时（约 30 列以下），标签单独一行，值在它下面缩进。那里同样什么都不截断。
 
-## A short window
+## 矮窗口
 
-Whole lines give way, the least needed first. The state and the `Now` text stay whole, and **the settings outlast every
-text**: they are shown in full whenever they can be.
+整行让路，最不需要的先走。状态和 `Now` 文字保持完整，**设置比任何文字都持久**：只要能显示就完整显示。
 
-1. The empty line on top. Then what the agent said and the review give up lines (the review its summary, then `History`
-   and `Evidence`), each down to a few lines. A text that lost lines ends in ` …`.
-2. What the agent said, the attempts, the plan and the report go. The review keeps its one row
-   (`Review 3  ✓ Pass · 2 minor`).
-3. The description gives up lines, down to one that says where to read it (`Description · alt+t shows it`). What the task
-   needs from you is down to its first two lines. Then that one line of the description goes.
-4. Only now the settings. First the rows that are not settings (`Project`, `Machine`, `Note`). Then one row at a time,
-   each whole. The ones that stay longest: a row with a value somebody chose (one that names its place), then `Agent`,
-   `Reviewer`, `Review when`, `Send back` and `Merge`, then the rest. The last line under them says how many settings
-   have no room and the key that shows them (`13 more settings · ctrl+e shows them`).
-5. With no room for a single setting, their headline goes too, and the other parts get their lines back: they give way as
-   in 1 and 2, the description last of the texts.
-6. The facts said elsewhere (`Task`, `On it`, `Made by`), the review down to its one row, the empty lines between the
-   parts, the `Status` headline, the title's second line; then `Change`, the review's row and the title.
+1. 顶上的空行。然后代理说的话和评审让出行数（评审先让总结，再让 `History` 和 `Evidence`），各让到几行。丢了行的文字以 ` …` 结尾。
+2. 代理说的话、并行尝试、计划、报告消失。评审保留它的那一行（`Review 3  ✓ Pass · 2 minor`）。
+3. 描述让出行数，直到一行说明去哪读（`Description · alt+t shows it`）。「需要你什么」剩头两行。然后描述那一行也走。
+4. 现在才轮到设置。先走不是设置的行（`Project`、`Machine`、`Note`）。然后一次一行，每行整行走。留得最久的：带有人选过的值的行（点明它的位置），然后 `Agent`、`Reviewer`、`Review when`、`Send back`、`Merge`，然后其余。它们下面最后一行说明多少个设置没地方、按什么键看（`13 more settings · ctrl+e shows them`）。
+5. 一个设置都放不下时，它们的标题行也走，其他部分拿回自己的行数：像 1 和 2 那样让路，文字里描述最后走。
+6. 别处说过的事（`Task`、`On it`、`Made by`）、评审让到只剩一行、部分之间的空行、`Status` 标题行、标题的第二行；然后是 `Change`、评审的行、标题。
 
-What is left then is the state, the progress and the `Now` text. With no room for those and the last line
-(`alt+t shows the whole task`), that line goes, then the progress, then the state: the text itself is the last to stay.
-Only a text longer than the whole panel is cut, and its last line ends in `…`.
+剩下的就是状态、进度和 `Now` 文字。连这些和最后一行（`alt+t shows the whole task`）都放不下时，那行走，然后进度，然后状态：文字本身是最后留下的。只有比整个面板还长的文字才被截断，最后一行以 ` …` 结尾。
 
-## A part that fails to draw takes only itself
+## 一个画不出来的部分只影响它自己
 
-Its headline stays, with one red line under it (`✗ This part could not be shown: …` and the error). Every other part of
-the panel is there, and every key works. The same holds for each section of the screen: the list, the panel, the task
-details, the menu, the chat, the text box, the hints. One that fails is that red line in its place, and the others stay.
-Only a failure outside all of these replaces the board with `view error`.
+它的标题行留下，下面一行红字（`✗ This part could not be shown: …` 加错误）。面板的其他部分都在，所有按键都工作。屏幕的每个区块同理：列表、面板、任务详情、菜单、聊天、输入框、提示。画不出来的就是在它位置上的那行红字，其他的留下。只有这些之外的失败才会用 `view error` 替换整个看板。
 
-## Why it looks like this
+## 为什么长这样
 
-The panel shows one issue and the history that comes in under it, which is what an issue or pull request page shows. The
-form was taken from what already works for that, and fitted to a terminal's text cells:
+面板显示一个议题和它下面的历史，正是议题或 PR 页面显示的东西。形式取自对那件事已经行得通的做法，适配到终端的文本格：
 
-| From | Taken | Left out, and why |
+| 来源 | 取了什么 | 没取什么，为什么 |
 |---|---|---|
-| GitHub's pull request page | A status first, then the checks and reviews summed up as rows of mark, name and result; what blocks the merge named right under the status; the timeline newest-relevant first. | Avatars, badges as coloured pills, a column on the side: no room and no pixels. |
-| `gh pr view`, `gh pr status`, `gh pr checks` | Label-and-value rows for the facts; one line per run with its mark, result and age; a result said in words with the colour only repeating it. | Its dot-separated one-liner (`Checks passing - Approved`): that is what the old top of the panel was. |
-| lazygit, gh-dash | One accent per state, quiet labels, the selected thing's detail beside the list and whole on its own screen. | Boxes around every pane and tabs inside the detail: a box costs two columns and two lines of a 38-column panel. |
-| CodeRabbit, Greptile, Cursor Bugbot | Findings by severity in a column of their own; a verdict line before the detail; what changed since the last round as a history line. | Emoji badges, a score out of five for new reviews (the gate's pass or fail says more), collapsed sections. |
-| The `/ui` skill's guidelines | Labels quieter than values in a list of facts; the lightest separation that works (space, then a rule, never a card by default); numbers that line up. | Everything about pixels, radii and shadows. |
-| `tui-design` skills on skills.sh | Stable places for the same fact in every state; a mark or a word beside every colour; narrow, ordinary and wide widths each tried; give way by priority instead of cutting. | Borders for emphasis, and their palettes: the board keeps Herdr's. |
+| GitHub 的 PR 页面 | 先状态，再把检查和评审总结成标记、名字、结果的行；挡住合并的就在状态下面点名；时间线按最相关最新排。 | 头像、彩色药丸徽章、侧边一列：没地方也没像素。 |
+| `gh pr view`、`gh pr status`、`gh pr checks` | 事实用标签加值的行；每次运行一行，带标记、结果和时间；结果用词说出来，颜色只是重复。 | 它用点连起来的一行（`Checks passing - Approved`）：那就是面板旧的顶部。 |
+| lazygit、gh-dash | 每种状态一个强调色、安静的标签、选中项的详情在列表旁、全屏时独占一屏。 | 每个面板都套框、详情里再放标签页：一个框要花掉 38 列面板的两列两行。 |
+| CodeRabbit、Greptile、Cursor Bugbot | 发现按严重程度单独一列；详情前一行结论；相对上一轮的改动作为历史行。 | Emoji 徽章、新评审的五分制评分（评审门的过与不过说得更多）、折叠区块。 |
+| `/ui` 技能的准则 | 事实列表里标签比值更轻；最轻的有效分隔（空格，然后横线，默认绝不用卡片）；数字对齐。 | 一切关于像素、圆角和阴影的东西。 |
+| skills.sh 上的 `tui-design` 技能 | 同一个事实在每种状态里位置稳定；每个颜色旁配标记或词；窄、常、宽三种宽度都试过；按优先级让路而不是截断。 | 用来强调的边框，以及它们的配色：看板沿用 Herdr 的。 |

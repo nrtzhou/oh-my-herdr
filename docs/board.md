@@ -1,8 +1,6 @@
-# The board: the list and the chat
+# 看板：列表和聊天
 
-**The board is one list of tasks and one chat.** The header on top says whose tasks show, and the filter row under it
-how many stand in each status. The list sorts the tasks by what they need from you. The chat at the bottom talks to the Coordinator, or to the selected task's
-agent.
+**看板是一个任务列表加一个聊天。** 顶上的顶栏说明显示谁的任务，下面的过滤行说明每种状态各有几个。列表按任务需要你什么排序。底部的聊天与协调者（Coordinator）对话，或与选中任务的代理对话。
 
 ```
  omh  proj · PRJ
@@ -27,212 +25,136 @@ agent.
   alt+c hide the latest message · ? all keys
 ```
 
-- `↑` `↓` select a task. `Alt+O` goes into its agent. `Space` talks to its agent instead of the Coordinator.
-- `Tab` shows the next filter: only the tasks that need you, those at work, and so on ([below](#the-filter-row)).
-- Type and press `Enter` to send. The Coordinator decides what to start: ask it to in your words. `Ctrl+S` puts an agent
-  on the selected task.
-- `Alt+P` shows the [task panel](task-panel.md) beside the list. `?` lists every key ([keys](keys.md)).
+- `↑` `↓` 选中任务。`Alt+O` 进入它的代理。`Space` 与它的代理对话，而不是协调者。
+- `Tab` 显示下一个过滤：只需要你的、在干活的，等等（[下文](#过滤行)）。
+- 打字按 `Enter` 发送。协调者决定启动什么：用你自己的话吩咐它。`Ctrl+S` 给选中的任务派一个代理。
+- `Alt+P` 在列表旁显示[任务面板](task-panel.md)。`?` 列出所有按键（[按键](keys.md)）。
 
-## The header
+## 顶栏
 
-One line: the board's name and the repo new tasks go to (`omh  proj · PRJ`), with no folder path. Whose
-board shows and how many tasks stand in each group are on the filter row under it.
+一行：看板的名字和新任务去往的仓库（`omh  proj · PRJ`），不带文件夹路径。显示谁的看板、每组各有几个任务，在它下面的过滤行上。
 
-- In the archive it says how many tasks are archived (`archive · 7 archived`), and there is no filter row.
-- A find (`Ctrl+F`) has a line of its own under the filter row, in the accent colour, saying what it is, how many tasks
-  match, and the key that clears it: `filter "import" · 1 of 33 · esc clears`. With nothing found, the list says
-  `Nothing matches "zzz".`
+- 归档里说明有多少任务被归档（`archive · 7 archived`），且没有过滤行。
+- 查找（`Ctrl+F`）在过滤行下有自己的一行，用强调色，说明它是什么、多少任务匹配、按什么键清除：`filter "import" · 1 of 33 · esc clears`。什么都没找到时，列表显示 `Nothing matches "zzz".`
 
-## The filter row
+## 过滤行
 
-**`vm-str │ All 420   Coordinators 12   Needs you 0   Working 1   Ready 0   To do 4   Done 415   Automations 2   Pinned 3`**,
-each filter with its count, as in an agents command center, with plain room between them. The one shown is lit in its own colour, the one its rows and marks have: `Needs you` red,
-`Working` amber, `Ready` green, `Coordinators` the accent, `Automations` the automations' colour, the others plain, with
-a cell of the highlight on each side; every filter keeps that room, so the row does not move when another is lit. The
-others are greyed, a count of tasks that need you in red.
+**`vm-str │ All 420   Coordinators 12   Needs you 0   Working 1   Ready 0   To do 4   Done 415   Automations 2   Pinned 3`**，每个过滤带它的计数，像代理指挥中心，之间留素净的空隙。当前显示的那个用自己的颜色点亮，就是它的行和标记用的颜色：`Needs you` 红、`Working` 琥珀、`Ready` 绿、`Coordinators` 强调色、`Automations` 自动化的颜色，其余素净，两侧各一格高亮；每个过滤都保留那个空隙，所以切换点亮的过滤时这一行不动。其他的变灰，需要你的任务计数是红的。
 
-**Whose board comes first**, wherever there is another machine: `All machines` (plain), or the one machine shown (lit, as the filter shown is), in the base colour with no caret (in yellow
-while it does not answer). `Alt+M` goes round: all machines, then each machine by itself in the order of Herdr's
-sidebar ([other machines](other-machines.md)); a click on it does the same. Every count is the machine's shown.
+**「谁的看板」排最前**，凡是有别的机器的地方：`All machines`（素净），或显示的那一台机器（点亮，和显示的过滤一样），基础色，没有箭头（不应答时黄色）。`Alt+M` 轮换：所有机器，然后按 Herdr 侧栏的顺序逐台（[其他机器](other-machines.md)）；点它也一样。每个计数都是所显示机器的。
 
-| Filter | The list shows |
+| 过滤 | 列表显示 |
 |---|---|
-| `All` | every task in its group and the automations, as always |
-| `Coordinators` | only the coordinators that run (started and not stopped: working, idle, needs you; on autopilot; or failed, so you can fix it): each such machine's row and project's row ([machine and project coordinators](machine-and-project-coordinators.md)). A stopped or never started one is not there, nor in the count; its row stays in the other filters, with no mark. The main Coordinator has no row |
-| `Needs you`, `Working`, `Ready`, `To do` | only the tasks of that group (`Ready` is ready to approve) |
-| `Done` | every done task, which the other filters hide |
-| `Automations` | only the automations' rows, in their places |
-| `Pinned` | only what you pinned, in its places: a pinned task, a pinned project with its tasks, a pinned machine with its projects and tasks ([pins](pinned.md)). Its count is each pin once: the pinned machines, projects and tasks, not the other rows under them |
+| `All` | 每个任务在它的组里，自动化也在，和平时一样 |
+| `Coordinators` | 只显示运行中的协调者（已启动未停止：working、idle、needs you；自动驾驶开着；或失败的，好让你修）：这样的每台机器的行和项目的行（[机器和项目协调者](machine-and-project-coordinators.md)）。停止或从未启动的不在其中，也不计入计数；它的行留在其他过滤里，无标记。主协调者没有行 |
+| `Needs you`、`Working`、`Ready`、`To do` | 只显示那一组的任务（`Ready` 是待批准） |
+| `Done` | 所有完成的任务，其他过滤把它们藏起来 |
+| `Automations` | 只显示自动化的行，在它们的位置上 |
+| `Pinned` | 只显示你固定的东西，在它们的位置上：固定的任务、固定项目及其任务、固定机器及其项目和任务（[固定](pinned.md)）。计数是每个固定物一次：固定的机器、项目和任务，不是它们下面的其他行 |
 
-- **`Tab` shows the next filter, `Shift+Tab` the one before**, round and round. A click on one shows it. The filter
-  shown is kept with the board's view. Each filter keeps the grouping (`Alt+S`) and the headings of what it shows; a
-  machine or a repo with nothing that matches has none.
-- **A machine's row and a project's row are their coordinator's**, read as a task's row: the same marks (`○` idle,
-  `◐` working, `?` asks you, `✗` could not start), the time on the right, what it does or asks under
-  it; on autopilot, `[autopilot]` after its name and what autopilot does under it. The top row is `All machines` or the one machine shown. The list reads all machines → machine → project → task
-  by how far in each row stands. `Space` talks to it, `Alt+O` goes into it, `Enter` (or `←` `→`) folds and unfolds it, `Ctrl+S` /
-  `Ctrl+X` start and stop it, `Ctrl+O` is its autopilot ([machine and project coordinators](machine-and-project-coordinators.md)).
-- **Where the window is narrow** the names are shorter (`Coords`, `Needs`, `Autos`), then shortest (`Co`, `Need`,
-  `Work`), then the filters with nothing in them go; narrower still, only the one shown stands, with `tab next`.
+- **`Tab` 显示下一个过滤，`Shift+Tab` 上一个**，循环。点某个显示它。显示的过滤随看板视图记忆。每个过滤保留分组（`Alt+S`）和它显示内容的标题；没有匹配项的机器或仓库没有标题。
+- **机器的行和项目的行是它们协调者的**，按任务的行来读：同样的标记（`○` 空闲、`◐` 干活、`?` 问你、`✗` 启动失败），时间在右边，它做什么或问什么在下面；自动驾驶开着时，名字后 `[autopilot]`，下面是自动驾驶在做什么。顶行是 `All machines` 或显示的那一台机器。列表按每行缩进多少读出 全部机器 → 机器 → 项目 → 任务。`Space` 与它对话，`Alt+O` 进入它，`Enter`（或 `←` `→`）折叠和展开它，`Ctrl+S` / `Ctrl+X` 启动和停止它，`Ctrl+O` 是它的自动驾驶（[机器和项目协调者](machine-and-project-coordinators.md)）。
+- **窗口窄时**名字变短（`Coords`、`Needs`、`Autos`），然后最短（`Co`、`Need`、`Work`），然后空的过滤消失；更窄时只剩显示的那个，带 `tab next`。
 
-## Grouping: by status, by repo, by machine
+## 分组：按状态、按仓库、按机器
 
-`Alt+S` groups the list one way after the other: **by status** (the five groups below), **by repo** (each repo under its
-row, its project coordinator's), **by machine** (each machine under its row, its machine coordinator's, its tasks under
-it by how much they need you, with no status headings), and by status again.
+`Alt+S` 轮流换分组方式：**按状态**（下面五个组），**按仓库**（每个仓库在它的行下，其项目协调者的行），**按机器**（每台机器在它的行下，其机器协调者的行，任务按需要你多少排在下面，没有状态标题），然后又回到按状态。
 
-## The list: five groups
+## 列表：五个组
 
-Tasks stand in five groups, in the order they need you:
+任务排在五个组里，按需要你的程度：
 
-| Group | Holds |
+| 组 | 装什么 |
 |---|---|
-| `needs you` | a question, something that went wrong, a merge that failed, finished work whose review failed |
-| `ready to approve` | finished work that passed its review (or had none) and waits for your yes |
-| `working` | an agent or the reviewer is on it |
-| `to do` | nobody has started it |
-| `done` | finished, newest first |
+| `needs you` | 一个问题、出了错、合并失败、完成的工作评审失败 |
+| `ready to approve` | 完成并通过评审（或没评审）的工作，等你点头 |
+| `working` | 代理或评审者在干 |
+| `to do` | 还没人开始 |
+| `done` | 完成，最新的在前 |
 
-- **First what waits for you**, then what is being worked on (the agent, the reviewer, the board's check), then to do,
-  then done. Done is history, so it is last: however long it grows, it never pushes the to-dos down.
-- **A pinned task** (or project, or machine) stays where it is, with a yellow pin mark `★` after its name; the `Pinned`
-  filter shows only what is pinned ([pins](pinned.md)).
-- **Grouped by repo or by machine** (`Alt+S`), each repo's or machine's rows follow the same order, so a repo's done rows are below its to-dos.
-- **No done task shows**, a pinned or a selected one neither. One line where they would stand counts them
-  (`↓ 73 done (alt+d shows them)`), and `Alt+D` shows them all. With none done, there is no such line. A project whose
-  tasks are all done shows its heading and that line. The selection on a done task that goes out of view (`Alt+D`
-  again) goes to the heading it stood under; while you talk to its agent or read it whole, it stays.
-- **Moving:** `↑` and `↓` follow the order shown; `PgUp` and `PgDn` go ten tasks at a time. Changing the grouping keeps
-  the selected task selected.
-- **Headings:** the arrows stop on them too, and `Enter` on one folds it to one line, and unfolds it. With every machine
-  shown, each machine has a heading of its own: [list headings](list-headings.md).
-- **The archive** (`Alt+A`) is a list of its own, newest first, outside this order. `Ctrl+A` archives the selected
-  task, and restores it there. Archiving closes the task's own space (its agent ends) and frees its temporary files;
-  its worktree, branch and history stay. Restoring starts nothing.
-  - **A whole project:** [archiving a project](#archiving-a-project), below.
-  - **A repo's done tasks in one go**, from the shell: when a round of work is over, its done tasks are clutter.
-    `omh archive --done --repo mstars` (`Archived 50 done tasks of mstars. Left out: 1 done but pinned, 2
-    working.`) archives every done task of that repo; without `--repo`, every repo's. A task that works, waits, is to
-    do or is pinned stays. Each goes as one archive does: its space closes, its worktree stays. Nothing archives them
-    by itself.
-- **Automations** are a group of their own after the task groups, inside their machine's part of the list (by repo:
-  under their repo) ([below](#automations-in-the-list)).
+- **先是你等的**，然后在干的（代理、评审者、看板的检查），然后待办，然后完成。完成是历史，所以排最后：无论长多长，绝不把待办挤下去。
+- **固定的任务**（或项目、机器）留在原地，名字后一个黄色固定标记 `★`；`Pinned` 过滤只显示固定的东西（[固定](pinned.md)）。
+- **按仓库或按机器分组**（`Alt+S`）时，每个仓库或机器的行遵循同样顺序，所以仓库的完成行在它的待办下面。
+- **不显示完成的任务**，固定或选中的也不显示。它们本该在的位置用一行数出它们（`↓ 73 done (alt+d shows them)`），`Alt+D` 全部显示。没有完成的就没有这一行。任务全部完成的项目显示它的标题和这一行。选中在完成任务上、它移出视野时（再按 `Alt+D`），选中跳到它所在的标题；你和它的代理对话或读它的全貌时，它留下。
+- **移动：** `↑` `↓` 按显示的顺序走；`PgUp` `PgDn` 一次十个任务。换分组保持选中的任务。
+- **标题：** 方向键也在标题上停，标题上按 `Enter` 折成一行，也展开。显示所有机器时，每台机器有自己的标题：[列表标题](list-headings.md)。
+- **归档**（`Alt+A`）是它自己的列表，最新在前，不在此顺序内。`Ctrl+A` 归档选中的任务，在那里也负责恢复。归档关闭任务自己的空间（代理结束）并释放临时文件；工作树、分支和历史留下。恢复不启动任何东西。
+  - **整个项目：** [归档一个项目](#归档一个项目)，下文。
+  - **一次归档一个仓库的完成任务**，从 shell：一轮工作结束后，它的完成任务就是杂物。`omh archive --done --repo mstars`（`Archived 50 done tasks of mstars. Left out: 1 done but pinned, 2 working.`）归档那个仓库的每个完成任务；不带 `--repo` 则是所有仓库的。在干活、在等待、待办或被固定的任务留下。每个都按单个归档那样处理：空间关闭，工作树留下。没有东西自动归档它们。
+- **自动化**是任务组之后自己的组，在列表里它所在机器的部分（按仓库时：在它们的仓库下）（[下文](#列表里的自动化)）。
 
-### Archiving a project
+### 归档一个项目
 
-A project you are done with for now leaves the board whole, and comes back as it was.
+暂时告一段落的项目整个离开看板，回来时还是原样。
 
-- **`Ctrl+A` on a project's row** (a repo's heading, grouped by repo, `Alt+S`) archives the project with every task
-  of it. When one of them works, waits or is to do, it asks first and says what happens to them:
-  `Archive mstars and its 6 tasks?` `1 working, 1 waiting and 4 done: all 6 go to the archive with it, as they are,
-  and come back with it; an agent on one stops.` With only done tasks (or none), it goes at once. A merge under way holds it up: the
-  key says which task merges.
-- **What goes:** its row and its tasks leave the board (each archived as one task is: its space closes, its worktree
-  stays), an agent at work or waiting for you is stopped first, its project coordinator stops (its autopilot goes
-  off), and its automations are turned off. An empty repo used lately no longer keeps a row for it. A new task in it
-  is refused (`mstars is archived. omh restore --repo mstars brings it back, with its tasks.`), and so is
-  a message to its coordinator.
-- **Nothing is deleted:** not its folder, its worktrees, its branches, its pull requests, its settings or its tasks.
-- **In the archive** (`Alt+A`) it has its own heading, with the tasks archived with it under it, whatever the
-  grouping; the header counts it (`archive · 1 project, 8 archived`). `Ctrl+A` on that heading restores it at once:
-  every task archived with it comes back as it was (to do is to do again, done is done; one that was stopped stays
-  stopped until you start it), and its automations are on again. Its coordinator starts with your next message to it,
-  as a stopped one does. A task you had archived on its own before stays in the archive.
-- **Another machine's project** goes the same way, from the board on every machine (`Alt+M`): `Ctrl+A` on its row
-  asks that machine to archive it, and that machine does it itself, so its coordinator stops and its automations go
-  off there. The question is the same (`Archive autopilot-tictactoe and its 3 tasks on vm-str?`), worked out from
-  that machine's tasks as the board last read them; that machine reads them again before it acts, and refuses one that
-  changed in a way that would have changed the question (a task of it works now where the board asked nothing, or it
-  holds more tasks than the board counted): `… changed on vm-str since your board read it: … Nothing was archived:
-  look again, then archive it.` In the archive its heading stands under its machine, and `Ctrl+A` there restores it.
-  A machine that cannot be reached changes nothing, and the board says so (`vm-str did not answer: …`); one on an older
-  version says to update it there first.
-- **From the shell:** `omh archive --repo mstars` (`Archived mstars and its 6 tasks. Stopped first:
-  MST-4.`) and `omh restore --repo mstars` (`Restored mstars and its 6 tasks.`). They do not ask.
-  `--on vm-str` does it on another machine (`vm-str: Archived autopilot-tictactoe and its 3 tasks.`), as `add --on`
-  adds a task there.
-- The web board does the same: select the project's row, then **Archive** among its coordinator's buttons (Open) or in
-  More…; in the archive its row, selected, has **Restore this project** under it. Another machine's projects too.
+- **项目行上按 `Ctrl+A`**（按仓库分组时是仓库的标题，`Alt+S`）连同它的每个任务一起归档。其中有人在干活、在等待或待办时，先问你并说明它们会怎样：`Archive mstars and its 6 tasks?` `1 working, 1 waiting and 4 done: all 6 go to the archive with it, as they are, and come back with it; an agent on one stops.` 只有完成任务（或没有）时，立刻归档。进行中的合并会拖住它：按键说明哪个任务在合并。
+- **走什么：** 它的行和它的任务离开看板（各自按单个任务归档那样：空间关闭，工作树留下），在干活或等你的代理先停止，它的项目协调者停止（自动驾驶关闭），它的自动化关闭。最近用过的空仓库不再为它保留行。在里面新建任务会被拒绝（`mstars is archived. omh restore --repo mstars brings it back, with its tasks.`），给它协调者发消息也是。
+- **什么都不删：** 不删它的文件夹、工作树、分支、PR、设置或任务。
+- **归档里**（`Alt+A`）它有自己的标题，随它归档的任务在下面，无论什么分组；顶栏把它数进去（`archive · 1 project, 8 archived`）。在那个标题上按 `Ctrl+A` 立即恢复：随它归档的每个任务按原样回来（待办还是待办，完成还是完成；被停下的保持停下，直到你启动它），它的自动化重新打开。它的协调者在你下一条消息时启动，和被停下的协调者一样。你之前单独归档的任务留在归档里。
+- **另一台机器的项目**同样处理，从每台机器的看板（`Alt+M`）：它的行上按 `Ctrl+A` 请那台机器归档，那台机器自己动手，所以它的协调者在那里停止、自动化在那里关闭。问题一样（`Archive autopilot-tictactoe and its 3 tasks on vm-str?`），根据看板最后读到的那台机器的任务算出；那台机器在动手前重新读一遍，拒绝那些变了、且变化会改变问题的（其中一个任务现在在干活而看板没问，或它比看板数的多了任务）：`… changed on vm-str since your board read it: … Nothing was archived: look again, then archive it.` 归档里它的标题在它的机器下，那里的 `Ctrl+A` 恢复它。连不上的机器什么都不改，看板会说明（`vm-str did not answer: …`）；旧版本的机器会说先在那边更新。
+- **从 shell：** `omh archive --repo mstars`（`Archived mstars and its 6 tasks. Stopped first: MST-4.`）和 `omh restore --repo mstars`（`Restored mstars and its 6 tasks.`）。它们不问。`--on vm-str` 在另一台机器上做（`vm-str: Archived autopilot-tictactoe and its 3 tasks.`），就像 `add --on` 在那边加任务。
+- web 看板一样：选中项目的行，然后在它的协调者按钮（Open）里的 **Archive** 或 More… 里；归档里它的行选中后下面有 **Restore this project**。另一台机器的项目也一样。
 
-### The list says what it hides
+### 列表说明它藏了什么
 
-A list longer than its room keeps its last line to say how many tasks are not on screen, folded ones included:
-`↓ 11 more`, and `↑ 4 more` once you have scrolled. Automations that do not show are counted apart, by name:
-`↓ 3 more, 2 automations`, `↓ 7 automations`, `↑ 4 more, 1 automation`. A heading never stands alone at the bottom of
-the screen with nothing under it. (A list of fewer than eight lines keeps every line for tasks.)
+放不下的列表用最后一行说明多少任务不在屏幕上，折叠的也算：`↓ 11 more`，滚动过之后是 `↑ 4 more`。不显示的自动化单独按名字计数：`↓ 3 more, 2 automations`、`↓ 7 automations`、`↑ 4 more, 1 automation`。标题绝不孤零零地停在屏幕底部、下面什么都没有。（少于八行的列表把每一行都留给任务。）
 
-### A list taller than the window
+### 比窗口还高的列表
 
-1. **The done rows take no room**: the list shows none of them, only the line that counts them (see above).
-2. **The to-dos give way**, from the last one up, down to the first, with a line under them that counts the rest
-   (`… 4 more to do`).
+1. **完成的行不占地方**：列表不显示它们，只显示数出它们的那一行（见上）。
+2. **待办让路**，从最后一个往上，直到第一个，下面一行数出剩下的（`… 4 more to do`）。
 
-So the live tasks, the ones that need your eye, stay on screen, also on a phone where each takes three to five lines.
+所以活的任务——需要你看的——留在屏幕上，手机上每个占三到五行也是。
 
-- Nothing is folded away while you search or have asked for all done; the selected to-do never gives way.
-- A to-do that gave way is still one `↓` away: the arrows go through every to-do, and the ones that show are then those
-  that end at the selected task.
-- To-dos give way only on a list that has live tasks. With none, the list just scrolls, with no line spent on a count.
-- Only when the list is still too tall does it scroll, and then by whole rows: a row of more than one line is never shown
-  in part. Its lines come into view together; where only some would fit at the bottom, those lines are left empty. (In a
-  list squeezed to a single line, the selected task shows its name.)
+- 搜索时、或你要求显示全部完成时，什么都不折叠；选中的待办绝不让路。
+- 让了路的待办仍只差一下 `↓`：方向键走遍每个待办，显示的那些就是以选中任务结尾的那些。
+- 待办只在有活任务的列表里让路。没有活任务时，列表只是滚动，不花一行计数。
+- 列表还是太高时才滚动，而且按整行滚动：多于一行的绝不只显示一部分。它的行一起进入视野；底部只放得下一部分时，那些行留空。（挤到一行的列表里，选中的任务显示它的名字。）
 
-## Marks: where a task stands
+## 标记：任务干到哪
 
-Each state has a mark of its own, so no two are told apart by colour alone:
+每种状态有自己的标记，所以没有哪两个只靠颜色区分：
 
-| Mark | Means |
+| 标记 | 含义 |
 |---|---|
-| `◐` | the agent is working |
-| `◑` | the reviewer is working |
-| `◇` | the board's own step |
-| `◷` | queued (a clock, in magenta): it waits for a free slot, or for the tasks it is tabbed to start after ([one task after another](after.md)) |
-| `✗` | went wrong |
-| `◆` | ready to approve |
-| `✓` | done |
-| `○` | to do |
+| `◐` | 代理在干活 |
+| `◑` | 评审者在干活 |
+| `◇` | 看板自己的步骤 |
+| `◷` | 排队（一个时钟，品红）：等空位，或等排在它前面的任务开始（[一个接一个](after.md)） |
+| `✗` | 出错了 |
+| `◆` | 待批准 |
+| `✓` | 完成 |
+| `○` | 待办 |
 
-The `?` menu has the list too.
+`?` 菜单里也有这份列表。
 
-- **A machine's row and a project's row** (and `All machines`) carry their coordinator's state with these same marks:
-  `○` idle (also never ran, or stopped), `◐` it works, `?` it asks you (`!` it wants your OK), `✗` it could not start.
-  On [autopilot](autopilot.md) it keeps that mark, with `[autopilot]` after its name. The others (`◑ ◆ ✓ ◷ ◇`) are never a coordinator's
-  ([machine and project coordinators](machine-and-project-coordinators.md)).
+- **机器的行和项目的行**（以及 `All machines`）用这些同样的标记承载协调者的状态：`○` 空闲（也包括从未运行或已停止），`◐` 在干活，`?` 问你（`!` 要你点头），`✗` 启动失败。[自动驾驶](autopilot.md)开着时保留那个标记，名字后 `[autopilot]`。其他（`◑ ◆ ✓ ◷ ◇`）绝不属于协调者（[机器和项目协调者](machine-and-project-coordinators.md)）。
 
-- **Only a moon says someone works**: `◐` and `◑`, an agent or its reviewer.
-- Every mark is one column wide, and a character every monospace font has. The web board draws the same ones.
-- Herdr's `status_indicators = "dots"` brings its dots back for working (the agent's and the reviewer's) and done. The
-  board's `◇`, the `◷` of a wait for a slot, and what a waiting task needs keep their marks with dots too, since no dot
-  means those.
+- **只有月亮才表示有人在干活**：`◐` 和 `◑`，代理或它的评审者。
+- 每个标记一列宽，是每个等宽字体都有的字符。web 看板画同样的。
+- Herdr 的 `status_indicators = "dots"` 让它的圆点回来，用于干活（代理和评审者的）和完成。看板的 `◇`、等空位的 `◷`、以及等待中任务需要什么，用圆点时也保留自己的标记，因为没有圆点表示这些。
 
-### A task that needs you
+### 需要你的任务
 
-A task that waits for you has not failed, so its mark is never a cross. It says what the task needs: the `kind` of the
-terminal program-status spec ([OSC 7501](https://mitchellh.com/writing/program-status-osc7501)).
+等你的任务没有失败，所以它的标记绝不是叉。它说明任务需要什么：终端程序状态规范（[OSC 7501](https://mitchellh.com/writing/program-status-osc7501)）的 `kind`。
 
-| Mark | It needs | Its State line |
+| 标记 | 它需要 | 它的 State 行 |
 |---|---|---|
-| `?` | an answer: the agent asks something and waits | `asks you` |
-| `!` | a yes or no: a permission dialog, a merge that did not go through | `asks for your OK` |
-| `!` | your call on finished work whose last review failed: send the review back, or merge it anyway | `review failed` |
-| `@` | a sign-in: the agent's program is logged out | `needs a login` |
-| `!` | you, and the board cannot tell for what (the kind is not known) | `needs you` |
-| `✗` | nothing of these: it went wrong | `needs you` |
+| `?` | 一个回答：代理问了什么，在等 | `asks you` |
+| `!` | yes 或 no：权限对话框、没走通的合并 | `asks for your OK` |
+| `!` | 你来定完成工作上最后一场评审失败的处置：把评审退回，或照样合并 | `review failed` |
+| `@` | 登录：代理的程序已登出 | `needs a login` |
+| `!` | 你，看板说不出为了什么（kind 未知） | `needs you` |
+| `✗` | 都不是：它出错了 | `needs you` |
 
-- All of them are under `needs you`, in its colour, red. With colour off (`NO_COLOR`), the mark alone tells a task that
-  waits from one that went wrong.
-- Finished work that passed and waits for your yes is none of these: its mark is `◆`, in green, under `ready to approve`
-  (an exclamation mark there would read as "something is wrong", and nothing is).
-- The words for where a task stands are one list (`crates/core/src/status_words.rs`), which the rows, the State line,
-  Herdr's sidebar and the web page all read.
-- The records the board writes to the terminal carry no mark: they name the state and the kind
-  (`state=blocked:kind=question`), and the terminal draws its own.
+- 全部在 `needs you` 下，用它的颜色，红色。颜色关闭（`NO_COLOR`）时，仅凭标记就能区分等待的和出错的。
+- 通过并等你点头的完成工作不属于这些：它的标记是 `◆`，绿色，在 `ready to approve` 下（那里放感叹号会被读成「出问题了」，而并没有）。
+- 任务干到哪的词来自同一份列表（`crates/core/src/status_words.rs`），行、State 行、Herdr 侧栏和网页都读它。
+- 看板写进终端的记录不带标记：它们写状态和 kind（`state=blocked:kind=question`），终端画自己的标记。
 
-## A row
+## 一行
 
-A row reads: the mark, the task's tag, greyed (`HSW-134`: its repo's short key and its number,
-[task numbers and repo keys](task-numbers.md)), the name, then on the right two groups with a wider gap between them:
-the progress (the bar, the percent, the minutes left), and then the review, the pull request and the time.
+一行的读法：标记、任务的编号标签、灰色（`HSW-134`：仓库的短 key 加编号，[任务编号和仓库 key](task-numbers.md)），名字，然后右边两组、中间空隙更宽：进度（进度条、百分比、剩余分钟），然后是评审、PR 和时间。
 
 ```
  needs you
@@ -248,109 +170,65 @@ the progress (the bar, the percent, the minutes left), and then the review, the 
  ✓ #76  Blue while the reviewer works                                 R#1 PR#76  1h ago
 ```
 
-- **`R#2`** is the review the task is on, or the last one it had. **`PR#18`** is the pull request.
-- **The minutes left** say what they are (`25h left`). The time after them is how long the task has worked; `ago` is how
-  long since it stopped.
-- **A row never repeats what its heading says.**
+- **`R#2`** 是任务正在进行的评审，或它有过的最后一场。**`PR#18`** 是 PR。
+- **剩余分钟**自己说明是什么（`25h left`）。它们后面的时间是任务干了多久；`ago` 是它停下多久了。
+- **行绝不重复标题说的话。**
 
-### Spacing
+### 间距
 
-**One cell between two things, and one wider gap of two cells, right of the progress.** So the wider gap says where the
-progress ends, and no other gap competes with it.
+**两样东西之间一格，进度右边一个两格的更宽空隙。** 这样更宽的空隙说明进度在哪结束，没有别的空隙和它争。
 
-- Each thing is a column down the whole list, as wide as its widest value in view and no wider. The percent is at least
-  three cells (`45%`), so it does not move when `9%` turns `10%`.
-- The numbers end under each other, so the only other blank cells are before a shorter one: `5m` under `12m`, `R#1`
-  under `R#12`.
-- A pull request starts under the others, and a column a row has nothing for is left blank.
-- The last line of a row on a narrow screen ([below](#narrow-screens)) follows the same rule.
+- 每样东西在整份列表里成一列，宽到它在视野里最宽的值为止，不再宽。百分比至少三格（`45%`），这样 `9%` 变 `10%` 时它不动。
+- 数字结尾对齐，所以其他空白只在短的前面：`5m` 在 `12m` 下面，`R#1` 在 `R#12` 下面。
+- PR 从其他列下方开始，一行没有内容的列留空。
+- 窄屏上一行的最后一行（[下文](#窄屏)）遵循同样规则。
 
-### Live rows have two lines
+### 活的行有两行
 
-Live is every task under `needs you`, `ready to approve` and `working`: an agent, the reviewer or the board's own check
-is on it, or it waits for you.
+活的是 `needs you`、`ready to approve`、`working` 下的每个任务：代理、评审者或看板自己的检查在干，或它等你。
 
-- **Line 1**: the mark, the name and the columns.
-- **Line 2**: what the task says, greyed, starting where the name starts. That is what it is doing now; or how its review
-  came out, with a short tally (`Pass · 2 minor`, `Review failed · 1 critical, 1 major`, the result in its own colour); or
-  what it waits for. While the reviewer works, it says only what the reviewer is doing.
-- Line 2 is in the brighter of the board's two greys, Herdr's `subtext0`, because it must be read (the fainter one,
-  `overlay0`, is for what may be missed: times, counts, tags). What a task asks of you (its question, the OK it wants,
-  the login it needs: a `?`, `!` or `@` row) is in its mark's needs-you colour, Herdr's `red`, so it stands out as the
-  mark does; on the selected row too, and on the web board in its needs-you colour.
-- In the all-machines view the machine is the heading above its tasks, never in a row
-  ([list headings](list-headings.md)), so line 2 starts under the task's name as everywhere.
-- Line 2 has the row's whole width, so it is rarely cut. One longer than the window is cut at its end with `…`, never
-  wrapped (on a narrow screen it wraps: below).
-- **Line 2 is there from the start**, so a row does not grow, and nothing under it moves, when its words arrive. It is
-  never empty and never a bare `…`: a task with no words of its own says something true and quiet (`Just started`,
-  `Yours: no agent on it` for a task you marked as your own, `Not reviewed` for finished work nobody reviewed, or the
-  plain word for where it stands).
+- **第 1 行**：标记、名字和各列。
+- **第 2 行**：任务说的话，灰色，从名字开始处起。那是它现在在做什么；或它的评审结果如何，带个简短计数（`Pass · 2 minor`、`Review failed · 1 critical, 1 major`，结果用自己的颜色）；或它在等什么。评审者干活时，只说评审者在做什么。
+- 第 2 行用看板两种灰里较亮的，Herdr 的 `subtext0`，因为它是必须读的（较暗的 `overlay0` 用于可以漏看的：时间、计数、标签）。任务要你什么（它的问题、它要的点头、它要的登录：`?`、`!` 或 `@` 的行）用它标记的需要你颜色，Herdr 的 `red`，这样它像标记一样突出；选中的行上也是，web 看板上用它的需要你颜色。
+- 全机器视图里，机器是任务上方的标题，绝不在行里（[列表标题](list-headings.md)），所以第 2 行像别处一样从任务名字下方开始。
+- 第 2 行有整行宽度，所以很少被截。比窗口长的在尾部用 `…` 截断，绝不折行（窄屏上它折行：见下）。
+- **第 2 行从一开始就存在**，所以它的话到达时行不会长高，下面的东西不动。它绝不空、绝不光一个 `…`：没有自己话说的任务说点真实而安静的（`Just started`、你标为自己任务的写 `Yours: no agent on it`、没人评审的完成工作写 `Not reviewed`，或它干到哪的素净词）。
 
-**Done and to-do tasks keep one line**, so that many of them show at once. (A to-do with a note says it after its name,
-on that one line.)
+**完成和待办的任务保持一行**，好让它们多显示几个。（带备注的待办把备注写在名字后，就在那一行。）
 
-The highlight of the selected task covers all its lines. `↑` and `↓` go task by task, never onto a second line.
+选中任务的高亮覆盖它的所有行。`↑` `↓` 按任务走，绝不到第二行。
 
-## Colours on a row
+## 行上的颜色
 
-**Each colour has one meaning.** Amber: the agent is working. Blue: the reviewer is working. Green: it passed and is
-ready for you. Red: it failed, or it needs you. Grey: the board's own step, queued, or to do. Which colours are
-Herdr's and which the board's, and how the board follows Herdr's theme: [colours](colours.md).
+**每种颜色一个含义。** 琥珀：代理在干活。蓝：评审者在干活。绿：通过了，等你。红：失败了，或需要你。灰：看板自己的步骤、排队、或待办。哪些颜色是 Herdr 的、哪些是看板的，看板怎么跟随 Herdr 的主题：[颜色](colours.md)。
 
-- **While the reviewer works**, the row's mark, bar, percent, minutes left and `R#` tag are blue, and so are the same
-  things in the task panel, on the details screen and on the chat line. The mark says it without colour too: the half
-  moon faces the other way, `◑`, and is the agent's `◐` again once the task goes back to its agent.
-- **The board's own steps** are no moon but a `◇`: starting, setting up, running the check, pushing and merging, and the
-  waits on the way: for the check's turn, for its turn to merge, and for GitHub's checks on its pull request
-  (`Waiting for GitHub checks · 2 of 3 passed`).
-- **A task waiting for a free slot** has a clock, `◷`, in a magenta no other state has ([below](#a-task-that-waits-for-a-free-slot)).
-- **An agent or reviewer whose turn was cut off**, waiting to try again, keeps its moon: it is still the one on the task.
-- So: a blue `◑` with a bar is a running review, an amber `◐` the agent at work, a `◇` the board on it, a magenta `◷` waiting
-  for its turn, and a green `◆` ready for your yes.
-- **A group's heading keeps its group's colour**: a task under review is filed under `working`.
-- **To do** (its heading and its `○`) is a dim grey of its own, never the plain text colour, and always readable: every
-  grey on the board is held to a floor of contrast with the background.
+- **评审者干活时**，行的标记、进度条、百分比、剩余分钟和 `R#` 标签是蓝的，任务面板、详情屏和聊天行上的同样东西也是。标记不靠颜色也说得清：半月朝向另一边，`◑`，任务回到代理后又是代理的 `◐`。
+- **看板自己的步骤**不是月亮而是 `◇`：启动、配置、跑检查、推送和合并，以及路上的等待：等检查、等它合并、等 GitHub 对它 PR 的检查（`Waiting for GitHub checks · 2 of 3 passed`）。
+- **等空位的任务**有个时钟，`◷`，别的状态都没有的品红（[下文](#等空位的任务)）。
+- **回合被掐断、等着重试的代理或评审者**保留它的月亮：干任务的还是它。
+- 所以：带进度条的蓝 `◑` 是进行中的评审，琥珀 `◐` 是在干活的代理，`◇` 是看板在动，品红 `◷` 在等轮次，绿 `◆` 待你点头。
+- **组的标题保留它组的颜色**：评审中的任务归在 `working` 下。
+- **待办**（它的标题和 `○`）是自己的暗灰，绝不和正文色一样，且始终可读：看板上的每个灰都被托在与背景的对比度底线之上。
 
-**The blue** is the theme's own `blue` where that is told apart from everything it sits beside: the theme's green, red,
-amber, the light blue of Herdr's own dot for done and idle (its `teal`), muted text, plain text and the background. In
-many themes it is not (Dracula's blue is its teal, Rosé Pine's its green, Catppuccin's a pale one near its muted text):
-there the board uses a blue of its own, `#3b82f6`, which reads on dark and light backgrounds alike. Colours you set
-yourself (`[theme.custom]`) are held to the same rule: a `blue` that is your red, or no blue at all (a green, a purple, a
-grey), is not used, and where the board's blue is too near one of your colours it takes another blue that is not. With
-the terminal's own colours it is the terminal's blue.
+**蓝色**是主题自己的 `blue`，前提是它能和身边的一切区分开：主题的绿、红、琥珀，Herdr 自己完成和空闲圆点的浅蓝（它的 `teal`），暗淡文本、正文和背景。很多主题里分不开（Dracula 的蓝就是它的 teal，Rosé Pine 的是它的绿，Catppuccin 的是靠近暗淡文本的淡蓝）：那里看板用自己的蓝，`#3b82f6`，深浅背景上都读得出。你自己设的颜色（`[theme.custom]`）遵守同样规则：是你红色的 `blue`、或根本没有蓝（绿、紫、灰），就不用；看板的蓝太靠近你某个颜色时，它换一个不靠近的蓝。用终端自己的颜色时就是终端的蓝。
 
-### The review tag, the pull request and the time
+### 评审标签、PR 和时间
 
-**`R#2`** belongs to the pull request, not to the progress: it sits one cell left of the `PR#`, and the tags end under
-each other down the list. Its colour says how that review went, with no mark beside it:
+**`R#2`** 属于 PR，不属于进度：它贴在 `PR#` 左边一格，标签在整份列表里结尾对齐。它的颜色说明那场评审怎么样，旁边没有标记：
 
-- green: it passed;
-- red: it failed, and it stays so while the agent fixes what the review found;
-- blue: the reviewer is on it right now, whatever the review before it said.
+- 绿：通过了；
+- 红：失败了，代理修评审发现的东西期间一直是红的；
+- 蓝：评审者此刻正在评审，无论上一场说什么。
 
-The three are told apart in light and dark themes alike. A review from before the gate goes by its advice. Once the task
-is merged (through its pull request, or here with none), the tag goes quiet, the same grey as its merged `PR#` tag:
-nearly every done task passed its review, and a column of green says nothing. One stays red: a task merged although its
-last review failed (you approved it anyway), the only one worth noticing later. The task panel, the details page and the
-archive do the same. A task never reviewed has no tag. Every row that has had a review keeps it: under review, back with
-the agent, waiting for your yes, done.
+浅色和深色主题里三者都分得开。评审门（gate）之前的评审按它的建议走。任务合并后（通过它的 PR，或这里没有 PR），标签安静下来，和它已合并的 `PR#` 标签一样的灰：几乎每个完成任务都通过了评审，一列绿什么都说不了。有一个保持红：最后一场评审失败仍被合并的任务（你照样批了），是唯一值得以后注意的。任务面板、详情页和归档同样处理。从未评审的任务没有标签。有过评审的行都保留它：评审中、退回代理、等你点头、完成。
 
-**`PR#18`**'s colour says how its checks went, by the same rule and with no mark: green, they pass; red, they fail;
-plain, no result yet (running, or none). A merged pull request goes quiet, grey like the time beside it, so a list of
-done tasks is not a wall of green. The greens and reds are the theme's own, the ones the `R#` tag uses. The task panel and
-the details page colour it the same way.
+**`PR#18`** 的颜色说明它的检查怎么样，同样规则、同样没有标记：绿，通过；红，失败；素净，还没有结果（运行中，或没有）。已合并的 PR 安静下来，和旁边的时间一样灰，好让完成任务的列表不是一堵绿墙。绿和红是主题自己的，就是 `R#` 标签用的那些。任务面板和详情页同样着色。
 
-**The time** of a finished task is quiet like its merged tags, in the very same grey: a done task has nothing live about
-it, so its whole right-hand side (review tag, pull request, time) is quiet, and a bright colour on the board means "this
-is happening now". That grey is the theme's own for greyed-out words, made readable where the theme's is too near the
-background ([colours](colours.md)). The time of a task that is not done is drawn as it always was.
+**时间**在完成任务上像它已合并的标签一样安静，同样的灰：完成的任务没有任何活气，所以它的整个右侧（评审标签、PR、时间）都是安静的，看板上的亮色意味着「正在发生」。那个灰是主题给灰色词的自己的灰，在主题的灰太靠近背景时调得可读（[颜色](colours.md)）。未完成任务的时间照旧绘制。
 
-## A task that waits for a free slot
+## 等空位的任务
 
-At most `board.agents` agents work at once. A task started while every slot is taken waits its turn: its row has the
-mark `◷` (a clock) in magenta, says `Waiting for a free slot` on its second line, and shows its place in the queue where a working
-task has its percent: `Q#1` gets the next free slot, `Q#2` the one after.
+同时最多 `board.agents` 个代理干活。所有名额占满时启动的任务等轮次：它的行有标记 `◷`（一个时钟）品红，第二行写 `Waiting for a free slot`，在干活任务显示百分比的位置显示它在队列里的位置：`Q#1` 拿下一个空位，`Q#2` 再下一个。
 
 ```
  working
@@ -362,23 +240,14 @@ task has its percent: `Q#1` gets the next free slot, `Q#2` the one after.
         Waiting for a free slot
 ```
 
-- **The order is the order the board starts them in**: first to wait, first to start. When a slot frees, `Q#1` starts and
-  the others move up. A task's attempts each wait for a slot of their own and are counted the same way.
-- **They stand last under `working`, in that order**, not under a heading of their own. You started them and they start
-  by themselves, so `working` is where they belong. A heading of their own would hold one or two rows for a minute and
-  move them under another heading each time a slot frees. Their mark, colour and `Q#` tell them from the tasks at work,
-  and the order says which is next. (Grouped by repo there is no status heading: they stand among their repo's tasks.)
-- **The same place is said everywhere**: the task panel's State line (`◷ waiting for a free slot, Q#2`), `list`
-  (`· waiting for a free slot, Q#2`; `--json` has `queue: 2`), `details` (`queue: { place, words }`), the message when you
-  start it, Herdr's sidebar ([sidebar](sidebar.md)) and the web Board.
-- **A narrow board** keeps it too: there `Q#2` stands with the time at the end of the row's second line, so a waiting
-  task's row is two lines, not three.
+- **顺序就是看板启动它们的顺序**：先等的先启动。空位一空，`Q#1` 启动，其他上移。任务的并行尝试各等各的名额，同样计数。
+- **它们排在 `working` 最后，按这个顺序**，不在自己的标题下。你启动了它们，它们也会自己启动，所以 `working` 就是它们的归宿。自己的标题只会为一两行占一分钟，每有空位就把它们挪到别的标题下。它们的标记、颜色和 `Q#` 把它们和在干活的任务分开，顺序说明谁下一个。（按仓库分组时没有状态标题：它们排在自己仓库的任务中间。）
+- **同样的位置处处说明**：任务面板的 State 行（`◷ waiting for a free slot, Q#2`）、`list`（`· waiting for a free slot, Q#2`；`--json` 里有 `queue: 2`）、`details`（`queue: { place, words }`）、你启动它时的消息、Herdr 的侧栏（[侧栏](sidebar.md)）和 web 看板。
+- **窄看板**也保留它：那里 `Q#2` 和时间一起放在行第二行的结尾，所以等待任务的行是两行，不是三行。
 
-## While the board runs the check
+## 看板跑检查时
 
-At the finish line, and again after a catch-up with main, the row shows real progress, not the Watcher's guess: the bar
-and percent are the count the check reports, and the minutes left come from how long its last full runs took on this
-machine. How a check reports, and what a repo's own check can do: [the check's progress](check-progress.md).
+在收尾流水线（finish line）上，以及追上 main 之后，行显示真实进度，不是观察者（Watcher）的猜测：进度条和百分比是检查报告的计数，剩余分钟来自它上几次完整运行在这台机器上花了多久。检查怎么报告、仓库自己的检查能做什么：[检查的进度](check-progress.md)。
 
 ```
  ◇ Add a greeting                                    █████░░░  65%  3m       9m
@@ -387,65 +256,39 @@ machine. How a check reports, and what a repo's own check can do: [the check's p
    waiting for its turn · 2 ahead
 ```
 
-- **Waiting its turn** (one test run at a time on a machine): the row says how many are ahead and shows the minutes, with
-  no bar, since nothing of its own moves yet.
-- **Code that passed already** is answered at once: `the check already passed for this exact code`, no bar, and on it
-  goes.
-- **A check that reports no count** shows the time it has run against last time (`running the check · 2m of about 5m`),
-  and never a percent.
-- **When nothing moves** for far longer than a run takes, the row says so: `the check stands still · nothing finished for 13m · tests 31 of 47`, `waiting for its turn unusually long · …`, `the check runs far longer than usual · …`.
-- **Its colour is its own**: the mark, bar, percent and minutes left are a plain light grey (the theme's `subtext0`) while
-  the board checks, so the agent's amber, the reviewer's blue and the board's grey read apart.
+- **等它的轮次**（一台机器一次跑一个测试）：行说前面还有几个，显示分钟，没有进度条，因为它自己的东西还没动。
+- **已经通过的代码**立刻应答：`the check already passed for this exact code`，没有进度条，继续往下走。
+- **不报告计数的检查**显示它跑了多久对照上次（`running the check · 2m of about 5m`），绝不显示百分比。
+- **什么都不动**、远超一次运行所需时，行会说明：`the check stands still · nothing finished for 13m · tests 31 of 47`、`waiting for its turn unusually long · …`、`the check runs far longer than usual · …`。
+- **它的颜色是自己的**：看板检查时，标记、进度条、百分比和剩余分钟是素净的浅灰（主题的 `subtext0`），这样代理的琥珀、评审者的蓝、看板的灰读得分开。
 
-The same line, bar, percent and minutes show in the task panel, on the details page, on the chat line and in Herdr's
-sidebar, and the rows of a section still give the same things up together.
+同样的行、进度条、百分比和分钟显示在任务面板、详情页、聊天行和 Herdr 的侧栏里，一个区块的行仍然一起让出同样的东西。
 
-On the chat line, for the task whose agent you talk to, the bar, percent and minutes left stand right after the words, in
-the row's colour, while the board runs its check. They are never cut: when the line is short, the words are cut first
-(down to twenty cells), then the bar goes, then the numbers.
+聊天行上，对你正在与之交谈的代理的任务，看板跑检查时进度条、百分比和剩余分钟紧跟在词后面，用行的颜色。它们绝不被截：行短时先截词（到二十格），然后进度条，然后数字。
 
-## When the window is narrow
+## 窗口窄的时候
 
-**Rows hide the same things together.** What is shown is decided for one group at a time (the rows under one heading:
-`working`, `done`, …), never row by row: each thing is on every row of the group that has it, or on none. So if one name
-under `working` leaves no room for a bar, no row under `working` has a bar. A long name under `done` costs `working`
-nothing, and the columns still start at the same place down the whole list. (On a screen under 80 columns a live row's
-columns are on its last line, [below](#narrow-screens): what follows is then about the one-line rows, which have no time
-there.)
+**行一起隐藏同样的东西。** 显示什么是一组一组决定的（一个标题下的行：`working`、`done`、…），绝不逐行决定：每样东西在有它的组的每一行上，或一行都没有。所以 `working` 下某个名字放不下进度条，`working` 下就没有一行有进度条。`done` 下一个长名字不花 `working` 任何东西，各列在整份列表里仍然从同一个地方开始。（80 列以下的屏幕上活的行的列在它最后一行，[下文](#窄屏)：下面说的就没有时间了，说的是单行的那些。）
 
-Things give way in this order, first to last. The name wins over all of them:
+东西按这个顺序让路，从前到后。名字压过所有：
 
-1. what one-line rows say after their name (a to-do's note): each is cut to its own room, and when one of them has not
-   even 20 cells (or its whole length, when that is less), none of the group's rows says anything. A live task's words
-   are on its second line and take no part in this;
-2. the bar;
-3. the word `ago`, on the whole list at once, since it sits right of every column: it goes when that keeps a column other
-   than a bar, or cuts a name less, somewhere on the list;
-4. the end of a name longer than 40 cells: cut with `…`, down to 40, before its group loses a column;
-5. the percent and the minutes left, together;
-6. the `R#` tag and the pull request, together: a review is never shown without its pull request, nor the other way
-   round;
-7. the time;
-8. the task's number, on the whole list at once, so the names stay in one column: it goes when it would leave a row's
-   name fewer than 16 cells with nothing else beside it;
-9. the rest of the name.
+1. 单行行在名字后说的话（待办的备注）：各自截到自己的空间，当其中一个连 20 格都没有（或更短的整长）时，这个组的行就什么话都不说。活任务的话在它的第二行，不参与这个；
+2. 进度条；
+3. `ago` 这个词，整份列表一次性，因为它贴着每列右边：当这能保住别的列、或少截一点名字时（在列表某处），它就走；
+4. 超过 40 格的名字尾部：用 `…` 截断，截到 40，在它组丢一列之前；
+5. 百分比和剩余分钟，一起；
+6. `R#` 标签和 PR，一起：评审绝不没有 PR 单独显示，反之亦然；
+7. 时间；
+8. 任务的编号，整份列表一次性，好让名字留在一列里：当它会让一行的名字旁边剩不到 16 格、旁边什么都没有时，它走；
+9. 名字剩下的部分。
 
-- **Step 4 is why one long title does not cost a whole group its columns.** A title is at most 60 characters
-  ([titles](titles.md)), so it loses a third at the very most, and a name of 40 cells or fewer is never cut while a
-  column shows. A name is never cut for a bar.
-- **With a live task's words on a line of their own, its name is alone beside the columns**, so they fit far more often.
-  From 110 columns on, every live row has all of them, the bar too, whatever its name. (Before, a bar needed a short name
-  or a much wider window, and what the row said was nearly always cut.) The order above was looked at again with that in
-  mind and is unchanged: the bar is still what a row can best do without, since the percent beside it says the same.
-- **Nothing jumps as the numbers tick.** The minutes left are counted at their widest, four cells, when this is decided,
-  so `9m` turning into `10m` hides nothing. They are never wider: from a thousand minutes on, a row shows hours (`17h`).
-  A name is drawn in the room counted that way too, so it is not cut at another place from one minute to the next.
+- **第 4 步就是一个长标题不会让整组丢列的原因。** 标题最多 60 字符（[标题](titles.md)），所以最多丢三分之一，40 格以内的名字绝不因为有列显示而被截。名字绝不为了进度条被截。
+- **活任务的话单独占一行后，名字独自挨着各列**，所以放得下得多了。从 110 列起，每个活行都有全部列，进度条也是，无论名字多长。（以前，进度条需要短名字或宽得多的窗口，而行说的话几乎总是被截。）上面的顺序据此重新看过，没有变：进度条仍是一行最能舍弃的，因为旁边的百分比说了同样的事。
+- **数字跳动时什么都不跳。** 剩余分钟在决定时按最宽的四格算，所以 `9m` 变 `10m` 不藏任何东西。它们绝不更宽：上千分钟起，行显示小时（`17h`）。名字也按这样算出的空间绘制，所以它不会这一分钟和下一分钟在不同的地方被截。
 
-### Narrow screens
+### 窄屏
 
-**Under 80 columns, a live task's row is three lines.** On a phone (about 50 columns) the name leaves no room beside it,
-so the bar, percent, minutes left, review tag and pull request used to be hidden. Now they have a line of their own, the
-last of the row:
+**80 列以下，活任务的行是三行。** 手机上（约 50 列）名字旁边放不下东西，所以进度条、百分比、剩余分钟、评审标签和 PR 曾被藏起来。现在它们有自己的行，行的最后一行：
 
 ```
  working
@@ -459,20 +302,13 @@ last of the row:
    Just started                              20s
 ```
 
-- **Line 1**: the mark and the name, with the whole width.
-- **Line 2**: what the task says, as on a wide screen.
-- **The last line**: the bar, the percent, the minutes left, the `R#` tag, the pull request and the time, in that order
-  and in their usual colours. It starts where the title starts (right of the mark and the tasks' numbers, so a row has
-  one left edge) and ends at the right edge. Each is as wide as the widest of its kind on the list, so they start under
-  each other on every live row, and the bar takes all the room left: every bar is the same length, and the line fills
-  the width. The time ends at the edge, with or without `ago`.
-- A task with nothing for that line but a time (no progress, no review, no pull request) has no such line: its time stands
-  at the end of what it says, and the row is two lines. So a screen of rows that need you is not half made of lines that
-  hold one time.
-- Done and to-do rows stay one line.
+- **第 1 行**：标记和名字，用整个宽度。
+- **第 2 行**：任务说的话，和宽屏一样。
+- **最后一行**：进度条、百分比、剩余分钟、`R#` 标签、PR 和时间，按这个顺序，用它们平常的颜色。它从标题开始处起（标记和任务编号右边，这样一行只有一个左边缘），到右边缘结束。每样东西和列表里同类最宽的一样宽，所以它们在每个活行上开头对齐，进度条占掉剩下的所有空间：每条进度条一样长，这行填满宽度。时间贴边结束，有无 `ago` 都是。
+- 那一行除了时间什么都没有的任务（没进度、没评审、没 PR）没有这一行：它的时间放在它说的话末尾，行是两行。所以满屏都是需要你的任务时，不会一半是只装一个时间的行。
+- 完成和待办的行保持一行。
 
-**Long rows wrap instead of being cut.** A phone has about 45 cells for a name, and a name cut there with `…` often does
-not say which task it is. So under 80 columns:
+**长行折行而不截断。** 手机上名字约有 45 格，在那里用 `…` 截断的名字常常说不清是哪个任务。所以 80 列以下：
 
 ```
  working
@@ -489,62 +325,39 @@ not say which task it is. So under 80 columns:
    and remembers what it was told before
 ```
 
-- **A live task's name takes up to two lines, and so does what it says.** Each is cut with `…` only after its second
-  line. What fits one line takes one: a row is three lines at least and five at most, with the line of the bar and the
-  time always last.
-- **The selected task shows its whole name**, on as many lines as it needs, whichever group it is in (the third to-do
-  above). It gives up the tags beside its name for that. Move on, and it is one line again.
-- **Done and to-do rows stay one line, without their time** (`5h`): the name has that room, and the tags (`R#`, `PR#`)
-  still show where there is room beside it. A task's time is in its panel.
-- **Wrapped lines start under the name**, never under the mark, so the marks stay a column of their own. In the
-  all-machines view a name that wraps has the line to itself, without the machine's name before it; and what a task says
-  starts under the machine's name when a long one would leave it fewer than 20 cells a line.
-- No limit on how long a name or a sentence may be has changed: this is only how they are drawn.
-- The highlight covers every line of the selected row, the arrows still go task by task, and the list counts each row at
-  the height it has: what gives way in a list taller than the window, and the scroll, work as above.
+- **活任务的名字最多占两行，它说的话也是。** 各自在第二行之后才用 `…` 截断。放得下一行的就占一行：一行至少三行、最多五行，进度条和时间那行永远最后。
+- **选中的任务显示它的全名**，要几行占几行，无论在哪个组（上面第三个待办）。它为此让掉名字旁的标签。移走后，它又是一行。
+- **完成和待办的行保持一行，不带时间**（`5h`）：名字占那个空间，标签（`R#`、`PR#`）在旁边有空间时仍显示。任务的时间在它的面板里。
+- **折行从名字下方开始**，绝不在标记下方，好让标记保持自己的一列。全机器视图里折行的名字独占那行，前面没有机器名；名字太长、每行给机器名留不下 20 格时，任务说的话从机器名下方开始。
+- 名字或句子多长的限制没有任何改变：这只是它们的画法。
+- 高亮覆盖选中行的每一行，方向键仍按任务走，列表按每行实际高度计数：比窗口高的列表里让路的东西和滚动，都如上工作。
 
-From 80 columns on, nothing wraps and every row is as it was.
+从 80 列起，什么都不折行，每行和原来一样。
 
-**Why 80 columns.** At 80, a name of 40 cells (what a name keeps before a column goes) sits beside every column at its
-widest: the mark (3), the name (40), the bar (8), the percent (4, `100%`), the minutes left (4), `R#12` (4), `PR#123` (6),
-the time (3) and the gaps between them (8). Narrower than that, line 1 always goes without something, so the columns
-move down. It is the screen's width that is counted, never the names or numbers on it: all live rows switch together, and
-no row gets or loses that line when a task is renamed or gets a pull request. And it is the whole screen, not the list: a
-list made narrow by the task panel beside it, on a wide screen, keeps two-line rows (the panel shows the rest).
+**为什么是 80 列。** 80 时，40 格的名字（一列消失前名字保住的）挨着每个最宽的列：标记（3）、名字（40）、进度条（8）、百分比（4，`100%`）、剩余分钟（4）、`R#12`（4）、`PR#123`（6）、时间（3），以及它们之间的空隙（8）。比这窄，第 1 行总会缺点什么，于是各列下移。算的是屏幕宽度，绝不看上面的名字或数字：所有活行一起切换，任务改名或拿到 PR 时没有哪一行会得到或失去那一行。而且是整个屏幕，不是列表：宽屏上被旁边的任务面板挤窄的列表保持两行的行（面板显示其余内容）。
 
-**Very narrow** (under 38 columns, with every column there): the word `ago` goes first, then the bar, the `R#` tag with
-the pull request, and the percent with the minutes left. The time stays.
+**极窄**（38 列以下，所有列都在）：`ago` 这个词先走，然后进度条、`R#` 标签带 PR，然后百分比带剩余分钟。时间留下。
 
-## The selected row
+## 选中的行
 
-**It has a mark.** Every line of it starts with a bar in the gutter (`▌`), in every list (tasks and automations, the
-archive, the settings page, the `?` menu), on the theme's own tint. Where no background can be painted (`NO_COLOR`, or a
-theme with none for it), the row is in inverse video instead, so which task the keys act on never depends on colour. A
-click on a row selects it ([the mouse](mouse.md)).
+**它有标记。** 它的每一行开头是栏里的一个条（`▌`），在每个列表里（任务和自动化、归档、设置页、`?` 菜单），用主题自己的底色。画不了背景的地方（`NO_COLOR`，或主题没有背景色），行改用反白显示，这样按键作用于哪个任务绝不取决于颜色。点一行选中它（[鼠标](mouse.md)）。
 
-**The selection stays where you were working.** When an action (put an agent on it, say yes, send it back, stop, pin,
-archive) moves the selected task to another group, elsewhere in the list or out of it, the selection does not follow:
+**选中留在你干活的地方。** 一个动作（派代理、说 yes、退回、停止、固定、归档）把选中的任务移到别的组、列表别处或移出列表时，选中不跟随：
 
-- it goes to the next task below in the same group, or the one above when the task was the last there;
-- when the group is left empty, to the next group's first task (its heading, when that group is folded), else to the
-  group above.
+- 它去同组下面一个任务，任务是组里最后一个时去上面那个；
+- 组被清空时，去下一组的第一个任务（那个组折叠时是它的标题），否则去上面的组。
 
-So you go through tasks one after another without arrowing back.
+这样一个接一个过任务，不用往回按方向键。
 
-- A folded group a task moves into stays folded.
-- Under a filter, it is the next task that matches. Grouped by repo, the same holds inside the repo.
-- When the task leaves the list (archived), the message says which task the selection is on now.
-- An action that does not move the task leaves the selection on it.
-- With the task open whole (the panel), while you talk to its agent, or while you are in its agent, the selection stays
-  on that task.
+- 任务移进的折叠组保持折叠。
+- 过滤下，是下一个匹配的任务。按仓库分组时，仓库内同理。
+- 任务离开列表（归档）时，消息说明选中现在在哪个任务上。
+- 不移动任务的动作把选中留在它上面。
+- 任务全貌打开（面板）、你和它的代理对话、或你在它的代理里时，选中留在那个任务上。
 
-## Automations in the list
+## 列表里的自动化
 
-**The automations are a group of their own**, under the heading `automations`, after the task groups: each machine's in
-its own part of the list, as its tasks are, and they fold as any group does. Grouped by repo, each stands under its
-repo's heading, after that repo's tasks ([automations](automations.md)). With none, there is no heading. The heading and each row's mark are in a colour of their own, a purple
-no status has ([colours](colours.md)). One row per automation, **in the list's own columns**, drawn by the code that draws
-a task's row:
+**自动化是自己的组**，在标题 `automations` 下，任务组之后：每台机器的在列表里自己的部分，像它的任务一样，像任何组一样折叠。按仓库分组时，每个在它的仓库标题下，在那个仓库的任务之后（[自动化](automations.md)）。没有自动化就没有标题。标题和每行的标记用自己的颜色，没有状态用的紫（[颜色](colours.md)）。每个自动化一行，**用列表自己的列**，由画任务行的代码画出：
 
 ```
  ▾ to do
@@ -558,60 +371,44 @@ a task's row:
          it fired 30 times in an hour
 ```
 
-| Where a task's row has | An automation's row has |
+| 任务行有 | 自动化的行有 |
 |---|---|
-| its mark | `⟳` (U+27F3), in the automations' colour while it is on and the same one dimmed while it is off: an arrow going round, where every task's mark is round, a diamond or a sign |
-| its tag (`HSW-12`) | the word `on` or `off`, in the same grey. It fills the numbers' column, so every name starts where the titles start |
-| its title | its name, plain as a to-do's title; greyed while it is off |
-| what it says, after the title | its trigger in plain words (`every 2h`, `when a task is merged, in every repo`), in the same grey; then its repo when that is not the one the board shows (and not the heading it stands under). Never its machine: the heading above names that |
-| its review tag and pull request | the task its last firing made, by that task's own mark and number (`✓ HSW-4`: done; `◐ HSW-7`: an agent is on it), and the word that goes with the time (`next in`, `fired`, `skipped`) |
-| its time | how long until it fires (`4m`), or how long ago it last did (`2h ago`), in the list's time column, under the tasks' times. `never fired` stands there for one that never did |
-| a second line, for a live task | a second line only when it has something to say: why the board turned it off. Where the trigger has no room beside the names it stands there too, on every row of the group at once |
+| 它的标记 | `⟳`（U+27F3），开启时用自动化的颜色、关闭时同色变暗：一个转圈的箭头，而任务的标记都是圆、菱形或符号 |
+| 它的编号标签（`HSW-12`） | 词 `on` 或 `off`，同样的灰。它填满数字的列，好让每个名字都从标题开始处起 |
+| 它的标题 | 它的名字，像待办标题一样素净；关闭时变灰 |
+| 标题后它说的话 | 它的触发条件用朴素的话（`every 2h`、`when a task is merged, in every repo`），同样的灰；然后是它的仓库（当它不是看板显示的那个、也不是它所在标题的那个）。绝不写它的机器：上面的标题点名它 |
+| 它的评审标签和 PR | 它上次触发制造的任务，用那个任务自己的标记和编号（`✓ HSW-4`：完成；`◐ HSW-7`：有代理在干），以及随时间的词（`next in`、`fired`、`skipped`） |
+| 它的时间 | 还有多久触发（`4m`），或上次触发是多久前（`2h ago`），在列表的时间列，在任务时间下面。从没触发过的在那里写 `never fired` |
+| 活任务的第二行 | 只在有话要说时才有第二行：看板为什么把它关了。触发条件在名字旁放不下时也放在那里，组的每一行同时放 |
 
-**What gives way when room is short** works as on a task's row, by the same code (the order is under
-[when the window is narrow](#when-the-window-is-narrow)): what the row says (to the line under the name, never cut: half a
-trigger is no trigger), then the part of a long name past 40 cells, the last task, the firing, the numbers' column, then
-the rest of the name.
+**空间不够时让路**和任务行一样，同一份代码（顺序在[窗口窄的时候](#窗口窄的时候)下）：行说的话（挪到名字下的行，绝不截断：半句触发条件不是触发条件），然后是长名字超过 40 格的部分、最后那个任务、触发、数字的列，然后是名字剩下的部分。
 
-- Where the numbers' column goes, the word `on` or `off` goes with it, so every name still starts where the titles start.
-  It then becomes the first word of what the row says (`on · every 2h`): on or off is a word at every width, never colour
-  alone.
-- Under 80 columns a row is its name, with the trigger under it and the firing at the end of that line, as a live task's
-  row has its time there. A long name wraps on the selected row and is cut with `…` on the others.
-- The selected row has the same bar and tint, a click selects it, and `↓ 3 automations` says how many do not fit.
+- 数字的列消失时，`on` 或 `off` 这个词随它消失，好让每个名字仍从标题开始处起。它随后成为行说的话的第一个词（`on · every 2h`）：开或关在任何宽度都是一个词，绝不只靠颜色。
+- 80 列以下一行是它的名字，触发条件在下面，触发在那行结尾，像活任务的行把时间放在那里。长名字在选中的行上折行，在其他行上用 `…` 截断。
+- 选中的行有同样的条和底色，点它选中，`↓ 3 automations` 说明多少个放不下。
 
-**Not on the row**, so it stays as calm as a task's: the prompt, the settings, the folder, the list of firings and why
-one was skipped, the hour a schedule is next due, and how many times it fired (only the last 200 firings are kept, and 20
-are sent from another machine, so a count would not be true). All of that is in the automation, whole (`Enter`).
+**不在行上**，好让行像任务的行一样安静：提示词、设置、文件夹、触发记录和某次跳过的原因、计划下次到点的时刻、以及触发了多少次（只保留最近 200 次触发，另从别的机器发来 20 次，所以计数不会真实）。这些全在自动化里，完整（`Enter`）。
 
-- `↑` and `↓` go from the last task on to their heading, then to them. On such a row no task is selected, so the keys that act on a task do
-  nothing, and the row has keys of its own (open it, turn it on or off, fire it now, remove it, its settings), which the
-  hint line shows: [automations](automations.md).
-- One that is off is drawn as quietly as a done task: its mark dimmed, its words greyed.
-- Find (`Ctrl+F`) matches them too, by name, trigger or repo. The archive has none.
-- No task gives way for them: where the list is longer than its room, the tasks fold as they always do, and the
-  automations scroll with the rest.
+- `↑` `↓` 从最后一个任务走到它们的标题，再到它们。这样的行上没有选中任务，所以作用于任务的按键什么都不做，行有自己的按键（打开、开或关、现在触发、移除、它的设置），提示行显示它们：[自动化](automations.md)。
+- 关掉的画得像完成任务一样安静：标记变暗，词变灰。
+- 查找（`Ctrl+F`）也匹配它们，按名字、触发条件或仓库。归档里没有。
+- 没有任务为它们让路：列表放不下时，任务照常折叠，自动化随其余内容滚动。
 
-## The chat
+## 聊天
 
-**One chat, at the bottom.** It is the same chat whoever you talk to. It always talks to someone, and always says who.
+**一个聊天，在底部。** 无论你和谁说话，都是同一个聊天。它总在和某人说话，且总说是谁。
 
-- **The Coordinator**, until `Space` (on an empty text box) flips it to the selected task's agent. `Space` again flips it
-  back. Ask it something, tell it to do something, or just say what needs doing.
-- **The arrows only move the selection**; they never change who you talk to. While you talk to a task's agent, the chat
-  follows the selection: move to another task and you talk to that task's agent, with its latest message shown.
-- **A task with no agent to talk to** is still named, with where your message goes instead: it starts an agent on a task
-  that is to do; it goes to the top row's coordinator about that task otherwise (`no agent on it: your message goes to vm-str's coordinator, about this task`). An archived task is read-only.
-- **With no task selected** (words on their way to another machine, an empty list), the chat names the Coordinator until
-  a task is selected again.
-- **If the task you talk to goes away** (removed), you are back with the top row's coordinator, never on a neighbour's agent.
-- **On a machine's or a project's row**, `Space` talks to that machine's or that project's own coordinator
-  ([machine and project coordinators](machine-and-project-coordinators.md)).
-- **Type `/`** to pick one of their skills or commands from a list over the box ([skills in the chat](skills.md)).
+- **协调者**，直到 `Space`（在空输入框上）把它翻到选中任务的代理。再按 `Space` 翻回来。问它问题、吩咐它做事，或只是说需要做什么。
+- **方向键只移动选中**；绝不改变你在和谁说话。你和任务的代理说话时，聊天跟随选中：移到另一个任务，你就和那个任务的代理说话，显示它最新的消息。
+- **没有代理可谈的任务**仍被点名，附你的消息改去哪：待办的任务会启动一个代理；否则消息给顶行的协调者、关于这个任务（`no agent on it: your message goes to vm-str's coordinator, about this task`）。归档的任务只读。
+- **没有选中任务时**（消息正在去另一台机器、空列表），聊天点名协调者，直到再次选中任务。
+- **你谈的任务不见了**（被移除），你回到顶行的协调者，绝不落到邻居的代理。
+- **机器或项目的行上**，`Space` 与那台机器或那个项目自己的协调者说话（[机器和项目协调者](machine-and-project-coordinators.md)）。
+- **输入 `/`** 从框上的列表里挑它的一个技能或命令（[聊天里的技能](skills.md)）。
 
-### What the chat is made of
+### 聊天由什么组成
 
-It looks the same for a coordinator and for a task's agent, at every window width:
+对协调者和任务的代理看起来一样，任何窗口宽度：
 
 ```
 ╭─ All machines ›  vm-str  ─────────────────────────────────────────────── alt+k more ↑ ─╮
@@ -622,88 +419,41 @@ It looks the same for a coordinator and for a task's agent, at every window widt
   alt+c hide the latest message · ? all keys
 ```
 
-1. **Its top edge names who you talk to**: a ladder from the top row down (`All machines › vm-str › gtm › GTM-14`),
-   the current step lit, and after it, dimmed, the kind of agent (`· Agent`, `· Reviewer`, `· Project coordinator`,
-   `· Machine coordinator`), and the edge in the status colour of whoever it talks to ([colours](colours.md#the-box-says-who-you-type-to))
-   ([machine and project coordinators](machine-and-project-coordinators.md#the-chat-box-names-who-it-talks-to)). One
-   that never ran invites a first message.
-   - One thing gets a greyed line of its own above the box: a default that changed while a coordinator runs, with the
-     command that starts a new one on it.
-2. **One rounded box**, with room to breathe: an empty line under its top edge and over its bottom one, and two cells
-   left and right of the text (one in a narrow box; no empty lines where the window is short). In it the newest thing
-   said in that conversation. No label on either side: what you wrote is in the
-   bright colour you type in, what the one the box talks to said in grey (its edge names it). Only someone else is
-   named: a reviewer under `Reviewer:`, a wake under `Autopilot:`, the board under `Board:`. Then an empty line; then the line you type on (the prompt is only
-   `❯`).
-   - A picture you paste stands on it as `[Image 1]`, not as its path; what is sent has the path
-     ([pictures pasted](image-paste.md)).
-   - While that line is empty, it says in grey who gets your message, by the name of their tab:
-     `Send message to Coordinator`, or `Send message to Agent`. Nothing else is in it.
-   - The box's frame and its `❯` say it by colour too: the plain text colour for the Coordinator, the task's status
-     colour for its agent ([colours](colours.md)).
-   - **It grows with a long message**, up to two thirds of the window, and shrinks back for a short one. The list above
-     gives up those rows and keeps the selected task in view. (Under the whole task, `Alt+T`, and the `?` menu, which are
-     there to be read themselves, the message keeps to a third of the window.)
-   - `Alt+C` hides the message and shows it again. With nothing else to step back from (a draft, find, the whole task,
-     the filter, the archive), `Esc` hides it too, before it does anything about closing the board. On the web board
-     `Esc` does the same, while nothing is typed and find is closed.
-3. **One greyed hint line under the box**, with only the keys that do something right now. While you type, it says what
-   the keys do with your words (`enter send to the Coordinator · shift+enter new line · esc put away`). What each hint says, and what gives way in a narrow window:
-   [the hint line](keys.md#the-hint-line).
+1. **它的顶边点名你在和谁说话**：从顶行往下的阶梯（`All machines › vm-str › gtm › GTM-14`），当前一级点亮，其后变暗的是代理的种类（`· Agent`、`· Reviewer`、`· Project coordinator`、`· Machine coordinator`），边框用说话对象的状态色（[颜色](colours.md#输入框告诉你在跟谁说话)）（[机器和项目协调者](machine-and-project-coordinators.md#聊天框标明你在和谁说话)）。从没运行过的邀请你发第一条消息。
+   - 有一样东西在框上方独占一行灰字：协调者运行期间改动的默认值，附在它上面开新一个的命令。
+2. **一个圆角框**，留有呼吸空间：顶边下、底边上各一个空行，文字左右各两格（窄框里一格；窗口矮时空行省去）。里面是那场对话里最新说的东西。两边没有标签：你写的用你打字的亮色，框的说话对象说的用灰（边框点名它）。只有别人会被点名：评审者在 `Reviewer:` 下，唤醒在 `Autopilot:` 下，看板在 `Board:` 下。然后一个空行；然后你打字的那行（提示符只有 `❯`）。
+   - 你粘贴的图片显示为 `[Image 1]`，不是它的路径；发出去的带路径（[粘贴图片](image-paste.md)）。
+   - 那行空着时，灰字说明谁收你的消息，用他们标签页的名字：`Send message to Coordinator`，或 `Send message to Agent`。里面没有别的。
+   - 框的边框和它的 `❯` 也用颜色说明：协调者用正文色，它的代理用任务的状态色（[颜色](colours.md)）。
+   - **它随长消息长高**，最多到窗口的三分之二，短消息缩回来。上面的列表让出那些行并保持选中任务在视野里。（在本来就是给你读的「整个任务」、`Alt+T` 和 `?` 菜单下，消息控制在窗口三分之一。）
+   - `Alt+C` 隐藏消息，再按显示。没有别的可退（草稿、查找、整个任务、过滤、归档）时，`Esc` 也隐藏它，在它做任何关闭看板的事之前。web 看板上 `Esc` 同样，在没打字且查找关闭时。
+3. **框下一行灰色提示行**，只有此刻真有作用的按键。你打字时，它说按键怎么处理你的话（`enter send to the Coordinator · shift+enter new line · esc put away`）。每个提示说什么、窄窗口里谁让路：[提示行](keys.md#提示行)。
 
-### Only the words of the conversation
+### 只有对话的词
 
-The box holds what the Coordinator, the agent or the reviewer said, and what was sent to it. Nothing of the program's own
-screen: no tool call or its output, no spinner, timing or token count, no tip, no input box, rule or footer, no start
-screen or logo.
+框里装协调者、代理或评审者说的话，以及发给它的东西。程序自己屏幕上的东西一概没有：工具调用或其输出、转圈、计时或 token 计数、提示、输入框、规则或页脚、启动画面或 logo。
 
-- The board reads the words from the conversation the program itself saves (Claude Code, Codex, pi and omp each keep one),
-  not from its screen. So a new program version that draws its screen differently changes nothing here.
-- **Herdr's other programs**, whose conversation the board does not read ([agents](agents.md)), show the words on their
-  screen instead, under `Agent, on its screen now:`, with what is drawn there (rules, boxes, a logo, a bar) left out by
-  its shape.
-- Markdown reads as text: a list item's next lines stand under its words, code keeps its lines, and the marks of a
-  headline, of bold and of a code block are left out.
-- **A command you typed to it** (`/clear`, `/compact`, `/model` …) shows as you typed it, and then in plain words what
-  it did: `Chat reset: a fresh session started.`, `Conversation compacted: …`, `Model switched to …`. A stop shows as
-  `Stopped: interrupted before it finished.` The program's own markup for these (`<command-name>`,
-  `<local-command-stdout>` …) never shows.
-- **While it works and has said nothing new**, its last words stay, and the line above the box says what it is doing now.
-  One that has said nothing yet says so: `The agent has just started: nothing to show yet.`
-- **A dialog that is only on its screen** (a permission prompt, a question with choices) is said in a line of its own,
-  with the way to it: `The agent shows a dialog on its screen that waits for your answer: enter opens it.` The
-  Coordinator's is in Herdr's `Coordinator` tab, a reviewer's in its `Reviewer #2` tab in the task's space.
-- **Going into the agent** (`Alt+O`) is its real terminal, untouched.
+- 看板从程序自己保存的对话读词（Claude Code、Codex、pi 和 omp 各存一份），不从它的屏幕读。所以新版本程序换种画法不影响这里。
+- **Herdr 的其他程序**，看板不读它们的对话（[代理](agents.md)），改为显示它们屏幕上的词，在 `Agent, on its screen now:` 下，按形状剔除画在那里的东西（规则、框、logo、横条）。
+- Markdown 按文本读：列表项的后续行排在它的话下面，代码保留行，标题、粗体和代码块的标记被剔除。
+- **你给它敲的命令**（`/clear`、`/compact`、`/model` …）按你敲的样子显示，然后用朴素的话说明它做了什么：`Chat reset: a fresh session started.`、`Conversation compacted: …`、`Model switched to …`。停止显示为 `Stopped: interrupted before it finished.` 程序给这些的标记（`<command-name>`、`<local-command-stdout>` …）绝不显示。
+- **它干活还没说新话时**，它最后的话留着，框上方的行说它此刻在做什么。还什么都没说的会说明：`The agent has just started: nothing to show yet.`
+- **只在它屏幕上的对话框**（权限提示、带选项的问题）单独一行说明，附去那里的方法：`The agent shows a dialog on its screen that waits for your answer: enter opens it.` 协调者的在 Herdr 的 `Coordinator` 标签页，评审者的在任务空间里它的 `Reviewer #2` 标签页。
+- **进入代理**（`Alt+O`）是它真实的终端，原样不动。
 
-### While a task is under review, the chat is its reviewer's
+### 任务评审期间，聊天属于评审者
 
-From the moment the review starts until it ends, the box shows what the reviewer says (`Reviewer:`), kept fresh as it
-goes, for every program a reviewer can be. Before it has said anything: `The reviewer has just started: nothing to show yet.`
+从评审开始到结束，框显示评审者说的话（`Reviewer:`），边走边刷新，无论评审者是什么程序。它还没说话时：`The reviewer has just started: nothing to show yet.`
 
-A reviewer takes no messages (it judges the work as it is), so what you type still goes to the task's agent. The review
-goes on while you chat, as it does when you type in the agent's own pane, and stops only when the agent changes the code
-([chatting with a finished task](how-work-gets-done.md#chatting-with-a-finished-task-re-reviews-only-what-changed)). The
-empty line says both: `Send message to Agent: the review goes on unless the code changes`. When the review ends, the chat
-is the agent's again, and the review's result is where it always is: on the row and in the task panel.
+评审者不收消息（它就事论事评判工作），所以你打的字仍发给任务的代理。你聊天时评审继续，就像你在代理自己面板里打字时一样，只在代理改了代码时停止（[与已完成的任务聊天](how-work-gets-done.md#与已完成的任务聊天只会重审改动的部分)）。空行两边都说明：`Send message to Agent: the review goes on unless the code changes`。评审结束，聊天又是代理的，评审结果在它一直在的地方：行上和任务面板里。
 
-### The box holds one message: the newest, whoever said it
+### 框里只有一条消息：最新的，谁说的都行
 
-What you just sent shows the moment you send it, with no label, in the bright text colour, where the agent's message
-was, over an empty line to type on. It stays until the answer comes; then the answer alone, with no label, in grey, for the Coordinator and a task's agent alike (also when it answers in the very same words as before). The old
-message is never shown under your words: it is above, with the rest of the conversation.
+你刚发的在发送那一刻显示，没有标签，亮文本色，在代理消息的位置，在打字的空行上方。它留到回答来；然后只有回答，没有标签，灰色，协调者和任务的代理都一样（哪怕它用和上次一字不差的话回答）。旧消息绝不在你的话下面显示：它在上面，和对话其余部分在一起。
 
-"The moment you send it" means before the words have reached anyone, whoever the chat talks to: the Coordinator, a
-task's agent here or on another machine, a machine's or a repo's coordinator, another machine's Coordinator. Until
-their own conversation has the words, the line over the box says so (`Sending…` for a task's agent, `sending…` for a
-coordinator), and nothing else of them stands over the chat: a send to another machine has no row "on its way" over the
-box, only one that failed, with why (nor do the ones you sent just before). Words that did not get there leave the box;
-on this machine they go back to the line you type on. An earlier turn the agent ends while your words are still on
-their way does not take them away. The web board's page draws them in its conversation as you send them, before the
-board has answered it.
+「发送那一刻」是指话还没到任何人手里，无论聊天在和谁说话：协调者、这里或另一台机器上的任务代理、机器或仓库的协调者、另一台机器的协调者。在它们自己的对话收到话之前，框上方的行说明（任务的代理是 `Sending…`，协调者是 `sending…`），它们的其他东西不立在聊天上方：发往另一台机器的没有「在路上」的行，只有失败的才有，附原因（你刚发的几条也没有）。没送到的话离开框；在这台机器上它们回到你打字的行。代理在你的话还在路上时结束的更早回合不会把它们带走。web 看板的页面在你发送时就把它们画进对话里，在看板应答之前。
 
-That holds also for words you send while the agent works: Claude Code queues them and they go in during its turn, and the
-board reads them there. For the Coordinator this holds when the board is closed and opened again; for a task's agent, for
-as long as the board stays open.
+代理干活时你发的话同样如此：Claude Code 把它们排进队，在它的回合里送进去，看板在那里读到。对协调者，这在看板关闭又打开后成立；对任务的代理，只要看板一直开着就成立。
 
 ```
 ╭────────────────────────────────────────────────────────────────────────────────────────────╮
@@ -714,21 +464,15 @@ as long as the board stays open.
 ╰────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
-### Scrolling back through the conversation
+### 往回翻对话
 
-The box opens on the newest thing said, and holds only that. What came before is above it:
+框开在最新说的东西上，只装它。之前的在它上面：
 
-- `Alt+K` opens the box to the conversation and scrolls up through it; `Alt+J` scrolls down, half a box at a time (K and
-  J, as up and down in vim). `Alt+J` once more from its end closes it to the newest message alone again, from its start.
-- That holds wherever the box was opened, whoever you talk to, and also after new messages came while it was open.
-- The last dozen things said are there, as in a coordinator's chat: your words (typed in the box, with `tell`, or in the
-  agent's own pane) bright and its answers grey, with no label; `Reviewer:` for what a reviewer said,
-  `Coordinator:` for what the Coordinator sent it, and `Board:` for what the board sent on its own (its brief, a review's
-  findings, the word to go on). A long text sent, such as a brief, shows only its beginning.
-- The mouse wheel does the same with the pointer over the chat ([the mouse](mouse.md)). Both work while you type, and
-  neither touches the draft.
-- The box says where there is more and names the key: `alt+k more ↑` on its top edge, `alt+j more ↓` at the right of the
-  line under the message (in a narrow window only `more ↓`, then only the arrow).
+- `Alt+K` 把框展开到对话并向上翻；`Alt+J` 向下翻，每次半框（K 和 J，像 vim 里的上下）。从底部再按一次 `Alt+J` 收回，只留最新消息，回到开头。
+- 无论框在哪打开、你在和谁说话都成立，展开期间来了新消息后也成立。
+- 最近十几条说的话在那里，和协调者的聊天一样：你的话（在框里打的、用 `tell`、或在代理自己面板里）亮，它的回答灰，无标签；评审者说的 `Reviewer:`，协调者发给它的 `Coordinator:`，看板自己发的 `Board:`（它的说明、评审的发现、继续的指令）。发的长文本，比如说明，只显示开头。
+- 鼠标滚轮在指针位于聊天上时做同样的事（[鼠标](mouse.md)）。两者在你打字时都工作，都不碰草稿。
+- 框说明哪里还有更多、按什么键：顶边 `alt+k more ↑`，消息下那行右边 `alt+j more ↓`（窄窗口里只有 `more ↓`，然后只有箭头）。
 
 ```
  ● Coordinator  idle
@@ -740,18 +484,11 @@ The box opens on the newest thing said, and holds only that. What came before is
 ╰────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
-- **A new message starts at its beginning**: an answer is read from its first line down, and one key goes on from there.
-  Only a screen (for a program whose conversation cannot be read) starts at its end, where a terminal has what is new.
-- **Opened to the conversation, the chat stays open until you close it.** Whatever happens meanwhile (the Coordinator at
-  work, a new message, the list read again, tasks changing), it stays on the lines you were reading, found again where
-  they moved as the oldest messages drop off (also in a reply said twice: the one you read). Scrolled to its end, it shows
-  each new message as it comes. `Alt+K` goes further up with each press. It goes back to the newest message only when you
-  take it there: `Alt+J` once more from its end, hiding the chat (`Alt+C`, or esc) and showing it again, or talking to
-  another (the task's agent, another task's, back to the top row's coordinator).
-- **A tall draft never takes the message away.** In a window too small for both, the draft gives rows back and scrolls
-  inside what it keeps, so three lines of the message stay, and they still scroll.
+- **新消息从开头开始**：回答从第一行往下读，一下按键从那里继续。只有屏幕（读不到对话的程序）从结尾开始，终端把新东西放在那里。
+- **展开到对话后，聊天一直开着，直到你关它。** 期间无论发生什么（协调者在干活、新消息、列表重读、任务变化），它停在你正在读的行上，在它们移位后重新找到（包括说了两遍的回复里的：你读的那条）。翻到底，新消息来了就显示。`Alt+K` 每按一下再往上。只有你带它回去它才回到最新消息：从底部再按 `Alt+J`、隐藏聊天（`Alt+C` 或 esc）再显示、或换个人说话（任务的代理、另一个任务的、回到顶行的协调者）。
+- **高草稿绝不挤走消息。** 两个都放不下的窗口里，草稿退还行数、在自己保留的部分里滚动，所以消息留下三行，而且还能滚。
 
-### Hiding the message
+### 隐藏消息
 
 ```
 ╭─  vm-str  ─────────────────────────────────────────────────────────────────────────────────╮
@@ -760,156 +497,93 @@ The box opens on the newest thing said, and holds only that. What came before is
   alt+c show the latest message · ? all keys
 ```
 
-- **One key shows and hides the message**: `Alt+C` (on an empty text box, like `Alt+P` for the side panel), the same both
-  ways and for the Coordinator and a task's agent alike. The hint line names it, and the board remembers your choice.
-- Hidden, there is only the box's edge that says who you talk to, and the line you type on: a message is
-  never sent blind.
-- Nothing else shows or hides it: `Esc` never does.
-- A Coordinator that could not be started says why even while the message is hidden. `Alt+C` puts that error away too,
-  until the next one.
-- The board with no coordinator (`coordinator.agent none`) gets the plain line between two rules, whether the chat is
-  hidden or not: what you type is added as a task.
-- The whole chat of a task's agent is its own pane: `Alt+O` goes into it.
-- The text box and its hints are never pushed off the window: the message gives way first. In a very narrow window the box
-  stays whole: the message wraps inside it, and a placeholder that does not fit is cut with `…`.
+- **一个键显示和隐藏消息**：`Alt+C`（在空输入框上，就像侧栏面板的 `Alt+P`），来回一样，协调者和任务的代理都一样。提示行点名它，看板记住你的选择。
+- 隐藏后，只有框的边说明你在和谁说话，和你打字的行：消息绝不盲发。
+- 别的都不显示或隐藏它：`Esc` 绝不。
+- 启动失败的协调者即使消息隐藏也说明原因。`Alt+C` 把那个错误也收起，直到下一个。
+- 没有协调者的看板（`coordinator.agent none`）在两条横线之间得到素净的一行，无论聊天藏没藏：你打的字被加为任务。
+- 任务代理的整个聊天是它自己的面板：`Alt+O` 进去。
+- 输入框和它的提示绝不会被挤出窗口：消息先让路。极窄的窗口里框保持完整：消息在框内折行，放不下的占位符用 `…` 截断。
 
-**The chat folds where its lines are needed elsewhere.** On a page that is read (the whole task, the settings page, the
-`?` menu), and in a window of fewer than 14 rows, the chat is its head line and the plain text box, as `Alt+C` folds it,
-and is back when you return: the page, or the list, gets those lines. The whole task says what its agent said itself. A
-start that failed still says why.
+**聊天在它的行数被别处需要时折叠。** 在要读的页面（整个任务、设置页、`?` 菜单），以及少于 14 行的窗口里，聊天是它的头行和素净输入框，像 `Alt+C` 折叠它，你回来时恢复：页面或列表拿回那些行。整个任务自己说它的代理说了什么。启动失败的仍说明原因。
 
-### Typed words keep who they are for
+### 打的字始终属于收件人
 
-While the box holds text, the hint line under it says who gets it (`enter send to HSW-34's agent`,
-`enter send to the Coordinator`, `enter add it as a task`), naming the task by its tag, also while the list is scrolled to
-other tasks. The box's edge names no one. That does not change until the words are sent or put away: the arrows are the
-draft's, the mouse wheel moves only the view of the list, and a click selects nothing. So an answer typed for one task's
-agent can never be sent to another's.
+框里有文本时，下面的提示行说明谁收它（`enter send to HSW-34's agent`、`enter send to the Coordinator`、`enter add it as a task`），按编号标签点名任务，哪怕列表滚到了别的任务。框的边不点名任何人。这在话发出或收起之前不变：方向键属于草稿，鼠标滚轮只动列表视图，点击不选中。所以为一个任务代理打的回答绝不会发到另一个那里。
 
-**While the text box holds text, it owns the keyboard**: only `Enter`, `Ctrl+S`, `Esc` and `Ctrl+C` act on the board, so no
-shortcut fires in the middle of a draft.
+**输入框里有文本时，它占有键盘**：只有 `Enter`、`Ctrl+S`、`Esc`、`Ctrl+C` 作用于看板，好让快捷键绝不在草稿打到一半时触发。
 
-- `Esc` puts a draft away. `Ctrl+Z` brings it back only to whoever it was for, so a reply stays a reply.
-- It never changes who you talk to. When the chat names somebody else, it says who the words were for (the Coordinator:
-  `Space` goes back to it; a task's agent: select that task, and `Space` if you talk to the Coordinator), and the words
-  stay put away until you are there.
+- `Esc` 收起草稿。`Ctrl+Z` 只把它还给原来的收件人，好让回复仍是回复。
+- 它绝不改变你在和谁说话。聊天点名别人时，它说明话是给谁的（协调者：`Space` 回去；任务的代理：选中那个任务，你在和协调者说话时还要按 `Space`），话保持收起，直到你到那里。
 
-## Going into an agent
+## 进入代理
 
-**Going into an agent never ends the board.** `Alt+O` on a task moves Herdr to that agent's real pane:
-from the row, with the chat hidden, or while the chat talks to that agent. The board keeps running.
+**进入代理绝不结束看板。** 任务上 `Alt+O` 把 Herdr 移到那个代理的真实面板：从行上、聊天隐藏时、或聊天正在和那个代理说话时。看板继续运行。
 
-- Come back to it, or press the board key, and it is as you left it: the same repo, the same task selected, the same
-  filter and draft.
-- While you are away, the selection stays on that task, also when its agent stops or finishes and the task moves to
-  another group or no longer matches your search (its row stays until you move on).
-- Outside a Herdr client (plain SSH), the terminal becomes the agent's until you detach, and then the board is back.
+- 回到它，或按看板键，它就是你离开时的样子：同一个仓库、同样选中的任务、同样的过滤和草稿。
+- 你离开期间，选中留在那个任务上，即使它的代理停止或完成、任务移到别的组或不再匹配你的搜索（它的行留着，直到你移走）。
+- Herdr 客户端之外（纯 SSH），终端变成代理的，直到你 detach，然后看板回来。
 
-## The board key and the board's tab
+## 看板按键和看板的标签页
 
-**The key opens the board in a Herdr tab of its own, named `board`**, in the space you are in. From then on it goes to
-that running board from anywhere, instead of opening a second one.
+**按键在名为 `board` 的 Herdr 自有标签页里打开看板**，在你所在的空间里。从此它从任何地方去到那个运行中的看板，而不是开第二个。
 
-- A board you started yourself in a pane (`omh` typed there) is found the same way. The key puts the keyboard
-  on it, also when an agent's pane is split beside it in the same tab.
-- **Pressed on the board itself, the key takes you back** to the pane you came from: a way there and a way back. When that
-  pane is closed, or you started the board by hand, the board says on its message line that it is the board already.
-- Closing the board (`Ctrl+C` twice) closes its tab. **The Coordinator keeps running**, and the line that asks for the
-  second `Ctrl+C` says so while it runs: it is not this board's but the machine's, the same one the popup, the web board
-  and `coordinator tell` talk to, and it may be at work on what you asked. `omh coordinator stop` ends it
-  ([the Coordinator](coordinator.md)).
+- 你自己在面板里启动的看板（在那里敲 `omh`）同样被找到。按键把键盘给它，哪怕代理的面板在同标签页里被劈在旁边。
+- **在看板上按它，按键带你回去**到你来的面板：有去有回。那个面板关掉、或你手动启动看板时，看板在消息行上说它已经是看板了。
+- 关闭看板（`Ctrl+C` 两次）关掉它的标签页。**协调者继续运行**，要第二次 `Ctrl+C` 的那行在它运行时说明：它不属于这个看板而属于这台机器，和弹窗、web 看板、`coordinator tell` 说话的是同一个，它可能正在干你吩咐的事。`omh coordinator stop` 结束它（[协调者](coordinator.md)）。
 
-**A board you start with `omh` names its tab `omh`**, for as long as the board is open, so you can
-tell it from your other tabs.
+**用 `omh` 启动的看板把它的标签页命名为 `omh`**，只要看板开着，好让你把它和其他标签页区分开。
 
-- Only that one tab is renamed. When the board closes (also when it closes to take you into an agent), the tab gets back
-  the name it had. A name you gave it yourself while the board was open is kept.
-- A board that was killed leaves the name; the next board that opens and closes in that tab puts the old one back.
-- Nothing is renamed by the popup (it has no tab of its own), in the tab the board key opens (that one is named `board`),
-  outside Herdr, in a tmux inside the pane, or by a command that opens no board (`add`, `list`, `show` and the rest).
-- The code is `name_board_tab` in `crates/board/src/board/run/place.rs`.
+- 只有那一个标签页被改名。看板关闭时（包括关闭以便带你进代理时），标签页拿回它原来的名字。看板开着时你自己给它的名字被保留。
+- 被杀掉的看板留下名字；下一个在那个标签页里开了又关的看板把旧名字放回去。
+- 弹窗（它没有自己的标签页）、看板键打开的那个标签页（那个叫 `board`）、Herdr 之外、面板里的 tmux、或不开看板的命令（`add`、`list`、`show` 等）都不改名。
+- 代码是 `crates/board/src/board/run/place.rs` 里的 `name_board_tab`。
 
-## The board as a popup
+## 作为弹窗的看板
 
-`omh set board.open popup` makes the same key open the board as a popup, and close it again
-([settings](settings.md)). `unset board.open` brings the tab back.
+`omh set board.open popup` 让同一个键把看板作为弹窗打开，再按关闭（[设置](settings.md)）。`unset board.open` 恢复标签页。
 
-It is Herdr's own popup: a framed window with the board's name, in the middle of Herdr's screen, nine tenths of its width
-and height. It is no pane and no tab: Herdr draws it over whatever is there and changes nothing under it, so the panes,
-their sizes and a zoomed pane are as they were when it closes. While it shows, it has the keyboard and the mouse, as
-Herdr's own menu does: nothing behind it takes a key or a click.
+它是 Herdr 自己的弹窗：带看板名字的有框窗口，在 Herdr 屏幕中央，宽高各九成。它不是面板也不是标签页：Herdr 把它画在原有内容之上，不改下面的任何东西，所以面板、它们的大小、放大的面板在它关闭时原样。它显示期间占有键盘和鼠标，像 Herdr 自己的菜单：它后面的东西不收按键或点击。
 
-- **The key again closes it**, and so does `Esc` once there is nothing left to step back from (a draft, the whole task,
-  the filter, the archive and a chat message that shows come first, as on every board), and `Ctrl+C` twice. What you
-  typed, the task you were on and the filter are there when it opens again.
-- **`Alt+O` on a task closes the popup and lands in that task's agent.** The first three times it says for a moment how to
-  get back.
-- **It is showing or closed, never left behind.** Nothing in Herdr's own window can switch tab or space under it. If
-  Herdr shows another tab all the same (a command moved it there, or a second window on the same session did), the popup
-  closes at that moment, with what you typed saved. The key opens it there.
-- **It opens on the task you were looking at.** Pressed in the pane of a task's agent or reviewer, that task is selected,
-  even if the filter left from last time would hide it. A view of one other machine gives way to this machine's tasks, so
-  the task shows and the chat talks to this machine. Anywhere else it opens where it was.
-- **Words left in its box stay with their repo.** The popup opens in the repo of the pane you are in, and what you type is
-  sent from there. With a draft waiting from last time, it opens in the repo the draft was typed for and says so, so
-  `Enter` never sends it from another one. Once it is sent or put away, the popup opens where you are again. Words put
-  away with `Esc` keep their repo too: `Ctrl+Z` in a popup that opened elsewhere takes the board to the repo they were
-  typed for, and says so. If that folder is gone, the board stays where it is and says which repo the words would be sent
-  from now.
-- **A board in a tab keeps running beside it.** Each has its own note of where it is, and its own selection, filter and
-  words (the popup's are in `view-popup.json`; the first popup starts from the tab's view, without its draft). There is
-  one keeper, one Watcher and one Coordinator, whichever board you look at. The approve action for the focused pane is
-  answered by the board that was shown for it.
-- **When Herdr will not open it**, the board opens in a tab and says why on its message line. Herdr has one popup for
-  everybody: while another plugin's popup, or a `type = "popup"` command of your own config, is open, the board's cannot
-  open.
+- **再按按键关闭它**，`Esc` 在没东西可退后也关（草稿、整个任务、过滤、归档和显示中的聊天消息先退，和任何看板一样），`Ctrl+C` 两次也关。你打的字、你所在任务和过滤在它再开时都在。
+- **任务上 `Alt+O` 关闭弹窗，落在那个任务的代理里。** 前三次它短暂说明怎么回来。
+- **它要么显示要么关闭，绝不滞留。** Herdr 自己窗口里没什么能在它下面切换标签页或空间。Herdr 照样切了（命令移过去的，或同一会话的第二个窗口干的），弹窗那一刻关闭，你打的字被保存。按键在那里打开它。
+- **它开在你正在看的任务上。** 在任务代理或评审者的面板里按下时，选中那个任务，哪怕上次留下的过滤会藏它。另一台机器的视图让位给本机的任务，好让任务显示、聊天和本机说话。别处开在它原来的位置。
+- **框里剩的字跟着它们的仓库。** 弹窗开在你所在面板的仓库里，你打的字从那里发出。上次留着草稿时，它开在草稿为它打的那个仓库并说明，好让 `Enter` 绝不从别的仓库发它。发出或收起后，弹窗又开在你所在处。用 `Esc` 收起的字也保留仓库：在别处打开的弹窗里按 `Ctrl+Z` 会把看板带到它们为它打的仓库，并说明。那个文件夹没了的话，看板留在原处并说明这些字现在会从哪个仓库发出。
+- **标签页里的看板在旁边继续运行。** 各自记着自己在哪，各有各的选中、过滤和字（弹窗的在 `view-popup.json`；第一个弹窗从标签页的视图起步，不带草稿）。无论你看哪个看板，只有一个看守（keeper）、一个观察者（Watcher）、一个协调者。焦点面板的批准动作由为它显示的那个看板应答。
+- **Herdr 不肯打开它时**，看板在标签页里打开并在消息行说明原因。Herdr 对所有人只有一个弹窗：别的插件的弹窗、或你自己配置里 `type = "popup"` 的命令开着时，看板的弹窗打不开。
 
-`popup` meant something else before: a pane in Herdr's overlay, which filled the tab it opened over and stayed with that
-tab. That is gone, and `popup` is this one; there is no third value. A setting that says `popup` already needs no change.
+`popup` 以前是别的意思：Herdr 覆盖层里的一个面板，填满它盖住的标签页并随那个标签页留下。那个没了，`popup` 就是这一个；没有第三个值。已经设了 `popup` 的设置无需改动。
 
-### What still differs from Herdr's own menu
+### 与 Herdr 自带菜单仍有的差别
 
-All of it is Herdr 0.9.3 (and its newest build, 2026-10-12), where a plugin has no other way to draw over the window
-([checked on Herdr](checked-on-herdr.md)):
+全部是因为 Herdr 0.9.3（及其最新构建 2026-10-12）里插件没有别的画在窗口上的办法（[checked on Herdr](checked-on-herdr.md)）：
 
-- **Herdr's own keys do not work while it shows.** Herdr hands its popup every key, the prefix and the board key
-  included, and starts no action. So the board reads its own key itself: it knows the key from Herdr's `config.toml` (the
-  prefix key, then the key) and closes on it. No other Herdr key does anything in the popup; close it first. A prefix key
-  pressed by itself does nothing, as in Herdr.
-- **The same in another popup**: while another plugin's popup shows, the board key is typed into that one. Herdr starts no
-  action, so no code of the board runs: it cannot open, and it cannot say why. Close that popup first.
-- **It covers the panes, not Herdr's sidebar and tab bar**: Herdr centres its popup on the panes' part of the window.
-  Those two take no click while it shows.
-- **Herdr ties it to the tab it opened over**, and hides it, still running, when another tab shows. The board closes it
-  at that moment instead, so that is never seen. That is why the popup closes, and does not follow, when a command moves
-  Herdr elsewhere.
-- **Nothing behind it is dimmed**, and its size is the board's choice, not Herdr's menu's.
+- **它显示期间 Herdr 自己的按键不工作。** Herdr 把每个键都交给它的弹窗，包括前缀键和看板键，且不启动任何动作。所以看板自己读自己的键：它从 Herdr 的 `config.toml` 知道那个键（前缀键，然后按键）并用它关闭。没有别的 Herdr 键在弹窗里做任何事；先关它。前缀键单独按下什么都不做，和 Herdr 里一样。
+- **别的弹窗里同样**：别的插件的弹窗显示时，看板键被敲进那个弹窗。Herdr 不启动动作，看板的代码就不跑：它打不开，也说不出为什么。先关那个弹窗。
+- **它盖住面板，不盖 Herdr 的侧栏和标签栏**：Herdr 把它的弹窗居中在窗口的面板部分。它显示期间那两处不收点击。
+- **Herdr 把它系在它盖住的标签页上**，别的标签页显示时把它藏起来，仍在运行。看板改为那一刻关闭它，所以那永远看不到。这就是命令把 Herdr 移到别处时弹窗关闭而不跟随的原因。
+- **它后面的东西不变暗**，它的大小是看板的选择，不是 Herdr 菜单的。
 
-What Herdr would need for the real thing is in [checked on Herdr](checked-on-herdr.md#missing-in-herdr).
+Herdr 要做到真正该有的样子需要什么，在 [checked on Herdr](checked-on-herdr.md#herdr-缺少什么)。
 
-## A board that looks cut off or half empty
+## 看起来被裁掉或半空的看板
 
-What changes the board's size at all, and why a size that lasts a moment is not drawn: [the board's size](board-size.md).
+什么会改变看板的大小、为什么只持续一瞬的大小不画：[看板的大小](board-size.md)。
 
-- **A view somebody is looking through** (the board open in the web UI's terminal view) keeps the terminal, and the
-  board's first line says so.
-- **From any other view, the board takes its pane's size back by itself within a few seconds**: the remote view
-  described here is disconnected. Until then the board draws inside what Herdr's window shows, so its text box and hints
-  are never cut off.
+- **有人在看的视图**（看板开在 web UI 的终端视图里）保留终端，看板的第一行会说明。
+- **从任何其他视图，看板在几秒内自己拿回它的面板大小**：这里说的远程视图已断开。在那之前看板画在 Herdr 窗口显示的内容里，所以它的输入框和提示绝不被裁掉。
 
-What follows is what you see until then, and when the board could not take the size back.
+下面是那之前你会看到的，以及看板拿不回大小时。
 
-A remote view of the board's pane (a `herdr terminal attach`, which Herdr's web UI starts for each pane it shows) sets
-that pane's size to its own, and holds it for as long as it runs, also after its browser tab is gone. Herdr's own window
-then shows a cut-out of a board drawn for another size. The board notices within ten seconds, and says so on its first
-line, top left, where a cut-out still shows it, with what frees the size first, so a narrow window keeps it:
+看板面板的远程视图（`herdr terminal attach`，Herdr 的 web UI 为它显示的每个面板启动一个）把那个面板设成自己的大小，并保持它运行多久就多久，哪怕浏览器标签页已关。Herdr 自己的窗口于是显示为另一个尺寸画的看板的一块裁剪。看板十秒内注意到，在第一行、左上角说明，裁剪仍显示它的地方，附先腾出大小的方法，好让窄窗口保留它：
 
 ```
  ! Shown cut off: a remote view holds this pane at 435×58 (herdr's own window: 184×78). ctrl+k ends that view
    (open 40m); closing it where it runs does the same.
 ```
 
-- It is a sentence, wrapped and never cut, and names no process to kill.
-- **`Ctrl+K` ends that view from the board.** That key is the board's only while such a view holds the pane.
-- Closing the view where it runs gives the pane its own size back at once too.
-- The line is not shown outside Herdr, in a tmux inside the pane, or in Herdr's popup (which has no pane of its own).
+- 它是一句话，折行不截断，不点名要杀的进程。
+- **`Ctrl+K` 从看板结束那个视图。** 那个视图占着面板期间，那个键只属于看板。
+- 在视图运行处关掉它也立刻把面板的大小还给它。
+- 这行不在 Herdr 之外、面板里的 tmux、或 Herdr 的弹窗（它没有自己的面板）里显示。

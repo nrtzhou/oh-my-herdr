@@ -1,133 +1,61 @@
-<p align="center"><img src="https://img.shields.io/badge/Oh%20My%20Herdr-Mission%20control%20for%20Herdr-2ea44f?style=flat-square&labelColor=24292f" alt="Oh My Herdr | Mission control for Herdr" /></p>
+# Oh My Herdr（omh）
 
-<h3 align="center">Run dozens of coding agents through one Coordinator without micromanaging each one or losing sight of what needs you</h3>
+herdr 插件：一张任务看板，把要做的事交给多个 coding agent 并行完成。你说需求，协调者（Coordinator）拆成任务；每个任务一个 agent、一棵独立工作树、一条独立分支，绝不碰你自己的 checkout。任务收尾自动提交、跑仓库检查、由第二个 agent 评审，最后等你点头才合并。需要你回答或批准的任务排在最前。
 
-<p align="center">Oh My Herdr is mission control for <a href="https://herdr.dev">Herdr</a>: one list of tasks, yours and the ones you delegate. You type what needs doing and the board's own agent, the Coordinator, turns it into tasks. Every delegated task runs as an ordinary Herdr agent in its own space and worktree, gets checked and reviewed by a second agent when it finishes, and waits for your yes before it merges. The board shows which tasks need you, which are ready to approve and which are still working.</p>
+<p align="center"><img src="assets/omh-launch.webp" width="720" alt="使用示意：说出需求，协调者拆成任务，看板按需要你、待批准、进行中分组" /></p>
 
-<p align="center"><a href="https://github.com/eliasstravik/omh/blob/main/assets/omh-launch.mp4"><img src="assets/omh-launch.webp" width="88%" alt="Animation: you tell the Coordinator what you want, it adds tasks that each get an agent on their own branch, and the board groups them as needs you, ready to approve, and working" /></a></p>
+## 安装
 
-<p align="center"><a href="https://github.com/eliasstravik/omh/blob/main/docs/get-started.md"><img src="assets/buttons/install-omh.svg" alt="Install omh" /></a></p>
+前置：Linux 或 macOS；[herdr](https://herdr.dev) 0.9.3+（**正在运行的 server 也要是 0.9.3+**）；`git` 与 `curl` 或 `wget`。可选：`gh`（开 PR）、`tailscale`（私有评审链接）。不需要 Node/npm。
 
-<p align="center"><sub>✓&nbsp;Free,&nbsp;MIT&nbsp;licensed &nbsp; ✓&nbsp;Runs&nbsp;on&nbsp;your&nbsp;machines,&nbsp;no&nbsp;hosted&nbsp;service &nbsp; ✓&nbsp;macOS&nbsp;and&nbsp;Linux,&nbsp;Herdr&nbsp;0.9.3+</sub></p>
-
-<br />
-
-## Keep one list going while the work happens in parallel
-
-The board is an overview and a remote control; Herdr is the engine. Each delegated task gets its own agent in its own Herdr space, on its own branch in a git worktree, or in a plain folder when there's no repository. Your checkout is never touched. You approve finished work and answer the tasks that need you instead of briefing every agent yourself.
-
-## Choose between briefing each agent by hand, one long agent session, a cloud projects product, or a work board in Herdr
-
-| | **Oh My Herdr** | Briefing agents by hand | One long agent session | Cloud projects products |
-|---|:---:|:---:|:---:|:---:|
-| **No extra software fee** | ✅ | ✅ | ✅ | ❌ |
-| **Parallel tasks on separate branches** | ✅ | ✅ | ❌ | ✅ |
-| **Same rules for every agent** | ✅ | ❌ | ✅ | ✅ |
-| **A second agent reviews every finished task** | ✅ | ❌ | ❌ | ❌ |
-| **Tasks grouped by what needs you** | ✅ | ❌ | ❌ | ✅ |
-| **Runs on your own machines** | ✅ | ✅ | ✅ | ❌ |
-| **Keeps every branch up to date with main** | ✅ | ❌ | ❌ | ❌ |
-| **Works with the agent CLI you already use** | ✅ | ✅ | ✅ | ❌ |
-| **Runs with no machine of yours switched on** | ❌ | ❌ | ❌ | ✅ |
-
-Keep your attention on decisions. Oh My Herdr starts, checks and tracks the tasks, your agents do the work, and you choose what to answer, approve, or merge.
-
-## Tell the Coordinator what you want. See which task needs you on the board.
-
-### 📈 See every task at a glance
-
-The board's list holds your tasks in five groups, in the order they need you: `needs you`, `ready to approve`, `working`, `to do` and `done`. Its header counts them (`3 need you · 1 ready · 2 working`), and each row says who is on it, where it stands, its review round and pull request, and a percent and time to go. Herdr's own sidebar carries a small copy of each live agent's row, so you see the same thing from any space. With the [Herdr web UI](docs/web-ui.md) the board is on your phone too, and `Alt+M` shows the tasks of your [other machines](docs/other-machines.md).
-
-### ⚡ Stop briefing every agent yourself
-
-Type what needs doing and press `Enter`: the Coordinator, one long-lived agent chat, makes it a task or several. Send it with `Tab` instead and every task it adds gets an agent at once. Each agent starts on Claude Code, Codex, pi or [another agent herdr supports](docs/agents.md), with the task and the board's rules, in a worktree of its own. Want more control? Ask for [a plan first](docs/plan.md), [several attempts and one kept](docs/attempts.md), [limits](docs/limits.md) on time and tokens, or [automations](docs/automations.md) that add tasks on a schedule.
-
-### 💬 Know when a task needs an answer
-
-An agent that asks you something, wants a permission or a sign-in says so to the board, so its task shows under `needs you` and stays there until you answer. An agent that finishes goes down the finish line: its work is committed, main is merged in, the repo's check runs, a draft pull request opens, and a second agent reviews it. A failed check or review goes straight back to the agent; work that passes waits for your `Ctrl+L`. With the board closed, a small keeper does the same.
-
-## Open the board in three steps
-
-<table>
-<tr>
-<td align="center" valign="top" width="33%"><h3>1️⃣</h3><b>Install the plugin</b><br /><sub>Run <code>herdr plugin install eliasstravik/omh</code>. It downloads the one program for your platform: no Node, no npm.</sub></td>
-<td align="center" valign="top" width="33%"><h3>2️⃣</h3><b>Open the board</b><br /><sub>Run the plugin's action "Open the work board", or <code>herdr plugin action invoke open --plugin omh</code> in a Herdr pane. Its first screen offers a key that opens it from anywhere in Herdr.</sub></td>
-<td align="center" valign="top" width="33%"><h3>3️⃣</h3><b>Type what needs doing</b><br /><sub>Press <code>Enter</code> and the Coordinator makes it a task, or <code>Tab</code> and each task gets an agent at once. <code>?</code> shows everything else you can do.</sub></td>
-</tr>
-</table>
-
-## Get everything included, free
-
-<table align="center">
-<tr>
-<td align="center" valign="top"><sub>For developers who run coding agents in Herdr on macOS or Linux</sub><br /><h2>Free</h2><div align="left">&nbsp;&nbsp;&nbsp;✓&nbsp; A Coordinator that turns what you type into tasks<br />&nbsp;&nbsp;&nbsp;✓&nbsp; Every task on its own worktree and branch, in its own Herdr space<br />&nbsp;&nbsp;&nbsp;✓&nbsp; A check and a second agent's review before anything merges<br />&nbsp;&nbsp;&nbsp;✓&nbsp; What needs you, on the board, in Herdr's sidebar and on your phone<br />&nbsp;&nbsp;&nbsp;✓&nbsp; Branches kept up to date with main, cleanup after a merge<br />&nbsp;&nbsp;&nbsp;✓&nbsp; Plans, attempts, limits, fallback agents and automations</div></td>
-</tr>
-<tr>
-<td align="center"><a href="https://github.com/eliasstravik/omh/blob/main/docs/get-started.md"><img src="assets/buttons/install-omh.svg" alt="Install omh" /></a></td>
-</tr>
-</table>
-
-## Updating
-
-```bash
-omh update           # put the newest release in place of the program
-omh update 1.2.0     # a given version
+```sh
+herdr plugin install nrtzhou/oh-my-herdr
 ```
 
-An open board and the keeper see the new program and load it by themselves, once nothing is half typed and no agent is held up. Pulling a newer plugin with `git pull` does the same at the next command Herdr runs. A program you built yourself is updated with `git pull` and `cargo build --release`, never by a download. [Installing](docs/install.md) has the details.
+首次打开看板时它会请求写入 herdr 配置（按键 `prefix+a`、侧栏行），同意即可。把 `~/.omh/data/bin` 加进 PATH 后可以直接敲 `omh`。
 
-## Get your questions answered
+- 从源码构建：`git clone https://github.com/nrtzhou/oh-my-herdr && cd oh-my-herdr && cargo build --profile quick`，产物在 `./target/quick/omh`。
+- 更新：`omh update`。固定版本：`herdr plugin install nrtzhou/oh-my-herdr --ref v1.2.27`。
+- 出问题先跑：`omh doctor`。
 
-### Do I need to know how to code?
+## 上手（三步）
 
-You need to be comfortable in a terminal. The plugin downloads one prebuilt program for your platform, and you never have to edit its files: everything changes by asking the Coordinator or from the board's settings page (`Ctrl+E`). You'll need macOS or Linux, Herdr 0.9.3 or newer, Git, `curl` or `wget`, and an agent CLI the board can start: Claude Code, Codex, pi or another agent herdr supports. `gh` (pull requests) and `tailscale` (private review links) are optional. Rust/Cargo is needed only when you build it yourself. [Installing](docs/install.md) covers the prerequisites.
+1. **打开看板**：herdr 里按 `prefix+a`（或任意面板敲 `omh`）。底部输入要做的事，回车——协调者把它变成任务；按 `Ctrl+S` 则立即派发一个 agent。
+2. **看分组**：看板按 需要你 / 待批准 / 进行中 / 待办 / 完成 排序，人的注意力永远在「需要你」上。按 `?` 看全部按键。
+3. **等结果**：任务完成走收尾流水线（提交 → 合并 main → 检查 → 评审），通过后进「待批准」，`Ctrl+L` 说 yes 才合并。中途有疑问它停在「需要你」等你答。
 
-### How do I check that Oh My Herdr is running?
+## 常用命令
 
-Run:
-
-```bash
-omh doctor
+```sh
+omh add "修复登录页" --delegate   # 加任务并立即开工
+omh list                         # 所有任务
+omh show 12                      # 任务 12 的详情与各设置取值来源
+omh approve 12                   # 批准合并
+omh set worker.agent omp         # 任务代理用 omp
+omh update && omh doctor         # 更新 + 体检
 ```
 
-It checks the program and its launcher, the plugin in Herdr, your agent programs (installed, signed in) and their model and effort settings, your other machines, free disk space, and leftover worktrees it could clean. Each problem comes with what to do, and it exits non-zero when there is one. [Troubleshooting](docs/troubleshooting.md#the-health-check) lists every check. [Installing](docs/install.md) walks through the first run, the blocks the board can add to Herdr's config, and taking the plugin out again.
+全部命令一页说明：[docs/roles-and-commands.md](docs/roles-and-commands.md)。
 
-### What permissions do the agents get?
+## 配置
 
-**Full access by default**, so a task never waits on a prompt nobody sees: `claude --dangerously-skip-permissions`, `codex --dangerously-bypass-approvals-and-sandbox`. They can run anything as you without asking; the rules and the review are guidance, not a sandbox. Set `worker.access ask` (and `reviewer.access`, `coordinator.access`) to start a program without those flags, so it asks before it acts. Nothing is written to your own agent settings, and your own hooks keep running. [How work gets done](docs/how-work-gets-done.md) has the details.
+一切皆设置，`omh set <键> <值>` 即可；取值就近生效：**任务 → 仓库条目 → 你 → 仓库文件 → 内置**（`omh show 12` 看每个值从哪来）。常用：
 
-### Does the plugin send my work to a hosted service?
+| 设置 | 说明 | 默认 |
+|---|---|---|
+| `worker.agent` | 任务代理程序（`omp`、`codex`、`claude`…18 种） | claude |
+| `reviewer.agent` | 评审代理 | codex |
+| `merge.by` | `you` 合并前等你点头；`itself` 自动合并 | you |
+| `board.agents` | 同时最多几个 agent，超出排队 | 4 |
+| `limit.time` / `limit.tokens` | 单任务预算，到限停下等你 | none |
 
-No. The board keeps its files in a folder on your machine, talks to your local Herdr session, and reaches your other machines over your own SSH. Reports and review evidence get a private link on your tailnet, or on `127.0.0.1`. Your agent CLI still uses its own service as usual.
+完整设置清单：[docs/settings.md](docs/settings.md)。各 agent 程序的能力差异（谁能读会话、谁能自动重试）：[docs/agents.md](docs/agents.md)。数据都在 `~/.omh`。
 
-### Will it touch my branches or worktrees on its own?
+## 文档
 
-Only the ones it made. Every task works in its own worktree, on its own branch `work/<n>-<title>`, never in your checkout. The board merges main into those branches so the reviewer sees the work as it will really land, and rolls a real conflict back at once and hands it to the task's agent. It merges only on your yes, at the commit that was reviewed, unless you set `merge.by itself`. When a task is done its worktree and branch are removed; a checkout with unsaved or unmerged work stays on disk with its branch. `workspace.cleanup false` keeps everything.
+- 入门：[快速上手](docs/get-started.md) · [安装详情](docs/install.md) · [工作是怎么完成的](docs/how-work-gets-done.md) · [故障排查](docs/troubleshooting.md)
+- 看板：[看板](docs/board.md) · [按键](docs/keys.md) · [任务面板](docs/task-panel.md)
+- 任务形态：[评审门](docs/gate.md) · [先计划](docs/plan.md) · [只研究](docs/research.md) · [并行尝试](docs/attempts.md) · [任务链](docs/after.md)
+- 自动化：[自动驾驶](docs/autopilot.md) · [自动化任务](docs/automations.md) · [多机](docs/other-machines.md) · [语音](docs/voice.md)
 
-### Where do my tasks live?
-
-In `~/.omh/` by default: `settings/config.json` for your settings, `data/tasks/<repo>/<n>/` for each task with its closing note and review evidence, `data/coordinator/` for the Coordinator's chat, `data/automations/` for your automations, and `reports/` for reports an agent made for you that belong in no repo. A repo can hold its own `.omh.json` with its setup, its check command and a few other facts, but never a setting that loosens a guard. [The home folder](docs/home-folder.md) lists every file.
-
-### Can I have several boards at once?
-
-You don't need to: one board per machine holds every repo, each task tagged with its repo, and `Alt+S` groups them. Each machine has its own board, and `Alt+M` shows the others' tasks from yours. Each herdr session gets its own Coordinator, but they share the one list. The board key never opens a second board: it goes to the one that runs. [Several boards](docs/several-boards.md) has the details.
-
-### Do I have to start every task through the Coordinator?
-
-No. Select a task on the board and press `Tab` to put an agent on it, or run `omh add "<title>" --delegate` and `omh delegate <id>` yourself. An [automation](docs/automations.md) adds tasks on a schedule or when something happens on the board, such as a merge.
-
-### What if the safety settings aren't enough?
-
-They are soft. By default nothing merges without your yes, work whose review failed is never merged by a plain yes, and a repo's own file can't switch on merging by itself, drop the review or change the rules its own branch is checked by. But agents run with full access and have a shell: one can do anything you can, a review is a second agent's judgement and not a proof, and an automation runs with nobody watching. Turn on `worker.access ask` for prompts, a [plan first](docs/plan.md) for a yes before any change, and [limits](docs/limits.md) for a cap on time and tokens.
-
-### What does it cost?
-
-Oh My Herdr is free and [MIT licensed](LICENSE). Your agent CLI's usual usage charges still apply: every task is a full agent session plus a review, the Coordinator spends tokens on each message, and the Watcher makes a small model call about once a minute per working agent.
-
-## Open the board in three steps
-
-<p align="center">Your board starts with an install, one key, and one sentence about what needs doing. Oh My Herdr starts the agents, checks their work and keeps it in view. You choose what to answer and what to merge.</p>
-
-<p align="center"><a href="https://github.com/eliasstravik/omh/blob/main/docs/get-started.md"><img src="assets/buttons/install-omh.svg" alt="Install omh" /></a></p>
-
-<p align="center"><sub>✓&nbsp;Free,&nbsp;MIT&nbsp;licensed &nbsp; ✓&nbsp;Runs&nbsp;on&nbsp;your&nbsp;machines,&nbsp;no&nbsp;hosted&nbsp;service &nbsp; ✓&nbsp;macOS&nbsp;and&nbsp;Linux,&nbsp;Herdr&nbsp;0.9.3+</sub></p>
+更多见 [docs/](docs/) 目录。

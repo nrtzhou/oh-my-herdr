@@ -1,156 +1,98 @@
-# Reports, and research-only tasks
+# 报告与只研究任务
 
-**A report never goes into the repo.** A report, a review or a research result is something an agent writes for you to
-read. It is not part of the product, so it is never committed, in no folder. It is kept with the task, and you get a
-private link to it.
+**报告永远不进仓库。**报告、评审或研究结果是代理写给你看的东西。它不是产品的一部分，从不提交，不进任何仓库文件夹。它随任务保存，你会拿到私密链接。
 
-**A research-only task changes nothing in the repo.** Its whole result is a report. Work that should follow from it is a
-short **Also noticed** list in that report: nothing adds a task for it.
+**只研究（research only）任务不改仓库里的任何东西。**它的全部结果就是一份报告。由此应做的后续工作写成报告里一份简短的 **Also noticed** 清单：不为此加任务。
 
 ```
 omh add "Why is the build slow?" --research
 ```
 
-## Where a report goes
+## 报告放在哪里
 
-Every agent the board starts is told the same, in every repo:
+看板启动的每个代理、在每个仓库里都会收到同样的交代：
 
-- **It writes the report into the task's own folder among the board's reports**:
-  `~/.omh/reports/<repo>/<number>/` ([the home folder](home-folder.md)), as `index.html` (one page that
-  stands by itself) or `report.md`. That folder is outside every repo, so the report cannot be committed by mistake, and
-  it stays when the task's worktree goes.
-- **The folder is in its environment too**, as `OMH_TASK_REPORTS`, beside the task's id as
-  `OMH_ID` (the name `workspace.setup` has it by): the agent, its reviewers and the picker of
-  [attempts](attempts.md) all have both.
-- **When the agent finishes, the board gives the report a link**, served the way a review's evidence is: privately on
-  your tailnet with `serve: tailscale`, on `127.0.0.1` with `serve: local` ([settings](settings.md)). The link opens
-  `index.html` when there is one, else `report.html`, `report.md`, `README.md`, else the folder's first file.
+- **它把报告写进看板报告区里该任务自己的文件夹**：`~/.omh/reports/<repo>/<number>/`（[主文件夹](home-folder.md)），文件名为 `index.html`（一页可独立打开）或 `report.md`。该文件夹在所有仓库之外，报告不会被误提交，任务的工作树没了它还在。
+- **文件夹也在它的环境变量里**，作为 `OMH_TASK_REPORTS`，旁边是任务 id `OMH_ID`（`workspace.setup` 用的名字）：代理、它的评审者和[并行尝试](attempts.md)的挑选者都有这两个变量。
+- **代理结束时，看板给报告生成链接**，服务方式与评审证据相同：`serve: tailscale` 时私密地走你的 tailnet，`serve: local` 时走 `127.0.0.1`（[设置](settings.md)）。链接优先打开 `index.html`，否则依次找 `report.html`、`report.md`、`README.md`，都没有就打开文件夹里第一个文件。
 
-The task panel shows the link under **Report**, beside the list and full screen (full screen also shows the file's name
-and the full link). `omh details <id>` has it as `report`. To open it:
+任务面板在 **Report** 部分显示该链接，列表旁和全屏都有（全屏还显示文件名和完整链接）。`omh details <id>` 里它是 `report`。打开方式：
 
-- **`Ctrl+D`** on the task opens its report in the browser of the machine the board runs on (`open` on macOS,
-  `xdg-open` on Linux with a display); on a task with no report it opens the pull request. A done task's hint line names
-  the key. Where nothing can open a link there (no opener, ssh without a display), the key copies the link to your
-  clipboard instead (OSC 52, as the board's copy does: [mouse](mouse.md)) and says so. The full list: [keys](keys.md).
-- **The terminal's own click on a link**: `Cmd`+click on a Mac, `Ctrl`+click in most other terminals. A plain click does
-  nothing, and some terminals do not pass the link through herdr at all. A report no page server serves (no
-  `serve` link) is a file's path, not a link: `Ctrl+D` opens that too.
-- **On the web board** the report is a plain link, and the task's "Open the link" button opens it in a new tab.
+- 任务上按 **`Ctrl+D`**，在看板所在机器的浏览器里打开报告（macOS 用 `open`，有显示环境的 Linux 用 `xdg-open`）；没有报告的任务会打开 PR。已完成任务的提示行会标出该键。那里打不开链接时（没有 opener、ssh 没有显示环境），该键改为把链接复制进剪贴板（OSC 52，与看板的复制相同：[mouse](mouse.md)）并说明。完整清单：[keys](keys.md)。
+- **终端自己点击链接**：Mac 上 `Cmd`+点击，多数其它终端 `Ctrl`+点击。单纯点击没用，有些终端根本不会把链接传过 herdr。没有页面服务的报告（没有 `serve` 链接）是文件路径而非链接：`Ctrl+D` 也能打开它。
+- **网页看板上**报告是普通链接，任务的“Open the link”按钮在新标签页打开它。
 
-This holds for any task. A task that changes code and also wrote a report has both: its change in the pull request, and
-its report on the task.
+这对任何任务都成立。既改代码又写了报告的任务两者都有：改动在 PR 里，报告挂在任务上。
 
-## Making a task research only
+## 让任务只做研究
 
-It is a [setting](settings.md) like every other: `research.only`, `true` or `false`, `false` built in. It is looked up as
-every setting is, nearest answer first: **the task → your entry for that repo → you → the repo's own file → built in.**
+它和其它一样是[设置](settings.md)：`research.only`，`true` 或 `false`，默认 `false`。查找方式与所有设置相同，就近优先：**任务 → 你在该仓库的条目 → 你 → 仓库自己的文件 → 默认。**
 
-| For | How |
+| 用途 | 方法 |
 |---|---|
-| one task, when it is added | `omh add "<title>" --research` (short for `--research.only true`) |
-| one task, later | `omh delegate <id> --research` (`--no-research` turns it off), `omh set research.only true --task <id>`, or its row on the task's settings page (`Research only`): on the terminal board, and on the web Board under the open task (**All settings**). All write the same one setting on the task |
-| a whole repo, or everything of yours | `omh set research.only true --repo <name>`, or without `--repo`. Every new task there is research only unless the task says otherwise (`--no-research`, or `set research.only false --task <id>`). The repo's own `.omh.json` may say it too: `{ "research": { "only": true } }` |
-| an [automation](automations.md) | `--research` when it is made, or `set research.only true --automation <name>`. Each task it makes has it as its own |
+| 添加某个任务时 | `omh add "<title>" --research`（`--research.only true` 的简写） |
+| 稍后对某个任务 | `omh delegate <id> --research`（`--no-research` 关掉）、`omh set research.only true --task <id>`，或任务设置页上的那一行（`Research only`）：终端看板上；网页看板在打开的任务下（**All settings**）。写的都是任务上的同一个设置 |
+| 整个仓库或你的全部任务 | `omh set research.only true --repo <name>`，或不带 `--repo`。那里每个新任务默认只研究，任务另有说明的除外（`--no-research`，或 `set research.only false --task <id>`）。仓库自己的 `.omh.json` 也能写：`{ "research": { "only": true } }` |
+| [自动化](automations.md) | 创建时加 `--research`，或 `set research.only true --automation <name>`。它生成的每个任务都带上自己的这份设置 |
 
-- **The Coordinator does it by itself** when you plainly ask for research, a review or a report with nothing to change
-  ("look into why the build is slow and tell me", "write me a report on …"). It does not when a change is wanted, or
-  when it cannot tell.
-- `omh show <id>` lists it with where the value came from (`this task`, `your entry for <repo>`, `you`,
-  `the repo's file`, `built in`). `unset research.only` takes an answer away again.
-- The name reads as what the board calls it everywhere, "research only", in the dotted style of `merge.by` and
-  `review.when`.
-- With [`chat.only`](chat.md) on as well, chat wins: the task is a conversation, research that never finishes by itself.
+- **协调者会自动这样做**：当你明确要的就是研究、评审或报告且不改东西（「查查构建为什么慢，告诉我」「给我写一份关于……的报告」）。想要改动时不会，它拿不准时也不会。
+- `omh show <id>` 会列出它和取值来源（`this task`、`your entry for <repo>`、`you`、`the repo's file`、`built in`）。`unset research.only` 可以撤掉某个来源的答案。
+- 名字就是看板各处的叫法“research only”，沿用 `merge.by`、`review.when` 的点号风格。
+- 同时开着 [`chat.only`](chat.md) 时以聊天优先：任务是一场永不自行结束的对话式研究。
 
-### On the board
+### 在看板上
 
-- The row says `[research]` after the task's name: on the board, in Herdr's sidebar and on the web Board, for an
-  automation's task and a task on another machine alike. The label comes from the setting, never from the title.
-- The task panel has a part **Research only** with the report's link (or `No report yet`). Its settings say
-  `Research  only · no change to the repo` where an ordinary task says how it merges.
+- 任务名后显示 `[research]`：看板、Herdr 侧栏和网页看板上都是，自动化生成的任务和另一台机器上的任务也一样。标签来自设置，绝不来自标题。
+- 任务面板有 **Research only** 部分，带报告链接（或 `No report yet`）。它的设置在普通任务显示合并方式的位置显示 `Research  only · no change to the repo`。
 
-## What its agent is told
+## 代理收到的交代
 
-- Change nothing in the repo: add, edit and delete no file, commit nothing.
-- The result is a report, saved as above.
-- Work that should follow from it is a short "Also noticed" list in that report. Nothing else is done with it, and the
-  agent adds no task for it.
-- The repo's check is not mentioned: there is no change to check.
+- 不改仓库：不新增、不编辑、不删除任何文件，不提交任何东西。
+- 结果是一份报告，按上文保存。
+- 由此应做的后续工作写成报告里一份简短的“Also noticed”清单。不对其做任何别的处理，代理也不为此加任务。
+- 不提仓库的检查：没有改动需要检查。
 
-Saving the report finishes nothing. The agent may save it early and add to it while it still waits for your answers, and
-you can open it meanwhile. The task is finished when its agent stops without saying that it waits
-([an agent that waits for you is not finished](waiting-for-you.md)).
+保存报告不代表结束。它可以提前保存、等你回答时继续补充，你也可以中途打开。只有代理在不再说等你时停下，任务才算完成（[等待你的代理不算完成](waiting-for-you.md)）。
 
-## What the board does when it finishes
+## 结束时看板做什么
 
-The board looks at the task's worktree and branch: files not committed (new ones too), everything the branch holds beyond
-the main it started from, and every commit on it, even one that changes no file, and a merge. A worktree on another branch
-than its own counts as a change.
+看板检查任务的工作树和分支：未提交的文件（新增的也算）、分支超出起点 main 的所有内容、分支上的每个提交（哪怕没改文件），以及一次合并。工作树不在自己的分支上也算一项改动。
 
-**Nothing changed** (the usual case):
+**什么都没变**（通常如此）：
 
-- The branch is not brought up to date with main, the repo's check does not run, nothing is pushed, and no pull request
-  is opened.
-- The reviewer reviews the report, unless the task has no review (`reviewer: off` or `review: none`). It is told the task
-  is research only: it reads the report and checks it against what was asked and against the code and sources it speaks
-  of. A change to the repo that it finds (a commit elsewhere, something pushed) is a critical finding, and so is a missing
-  report. A review that fails the gate goes back to the agent like any other ([the gate](gate.md)).
-- The task ends as **done**, with nothing to merge and its report's link on the task. With no report in the folder, its
-  line ends with `No report was found.`
+- 分支不与 main 同步，不跑仓库的检查，不推送，不开 PR。
+- 评审者评审报告，除非任务没有评审（`reviewer: off` 或 `review: none`）。它会被告知任务只做研究：读报告，对照要求以及报告提到的代码和资料核对。它发现的仓库改动（别处的提交、推送过的东西）是 critical 发现，缺少报告也是。没过评审门的评审像其它情况一样退回代理（[评审门](gate.md)）。
+- 任务以 **完成** 结束，没有要合并的东西，报告链接挂在任务上。文件夹里没报告时，那一行以 `No report was found.` 结尾。
 
-**Anything changed:**
+**有任何改动：**
 
-- Nothing is committed, pushed, opened as a pull request, or merged.
-- The task goes back to its agent with the list of what changed, to move the result out of the repo and undo every
-  change, commits too.
-- That is one round of the review loop. After `review.rounds` of them (3 by default), the task stops and waits for you.
-  Its row says why: `Research only, but its agent changed the repo again after 3 rounds (2 changes in the repo): nothing was pushed, opened or merged`.
-- From there, send it back once more (`ctrl+r`). Or, if you want the change after all, delegate it again as an ordinary
-  task: `omh delegate <id> --no-research`, which is `set research.only false --task <id>` and a start in one.
+- 不提交、不推送、不开 PR、不合并。
+- 任务带着改动清单退回代理，把结果移出仓库并撤销所有改动，包括提交。
+- 这算评审循环的一轮。走完 `review.rounds` 轮（默认 3）后，任务停下等你。行上说明原因：`Research only, but its agent changed the repo again after 3 rounds (2 changes in the repo): nothing was pushed, opened or merged`。
+- 之后可以再退回一次（`ctrl+r`）。或者你到底还是想要那个改动，就按普通任务重新派发：`omh delegate <id> --no-research`，等于 `set research.only false --task <id>` 加一次启动。
 
-**A research-only task can never be merged.** Approving one is refused, and `merge.by: itself` passes it by. To merge its
-change after all, turn the setting off for the task and delegate it again.
+**只研究任务永远不能合并。**批准会被拒绝，`merge.by: itself` 也会跳过它。要合并它的改动，先对任务关掉该设置再重新派发。
 
-## Changing it on a task that is under way
+## 改动进行中任务的这个设置
 
-The setting is read when the task's agent starts, as every setting is read when its step starts. The task keeps what it
-was started as until its next start: that is what the agent was told, what the finish line holds it to, and what the
-label says. "Starts" means the start of the agent's program itself, not the request for it: by then the task has its
-worktree, so the repo's own file counts as of the commit that worktree starts from, and its setup has run.
+设置在任务的代理启动时读取，就像每个设置在其步骤开始时读取一样。任务保持启动时的属性，直到下次启动：代理收到的交代、收尾流水线的约束、标签显示的都是启动时那套。“启动”指代理程序本身启动，不是发起请求：那时任务已有工作树，仓库自己的文件按工作树起点的提交算，setup 也已跑过。
 
-- **Not started yet, waiting for a free slot, or its setup still runs:** the change counts at once, the row follows, and
-  the agent starts as the setting says at that moment.
-- **Already started** (working, stopped, waiting for you, failed): the change is saved and counts **from its next
-  start**. Delegate it again, and its agent is told the new rules. Until then, `show <id>` and the settings page say so
-  beside the value: `counts from its next start: this run is not research only`. A changed default (for a repo, for you,
-  in the repo's file) never changes a task that was started either.
-- **Turning it on is refused** where it cannot be honoured, with the reason: once the task's agent has changed the repo
-  (a file, a commit) or its pull request is open. A research-only task changes nothing, so that work would have to be
-  thrown away. Undo it or close the pull request first, or add a new task as research only. The same holds for a task
-  that would start as research only by a default after it worked as an ordinary one: delegating it is refused until the
-  task says what it is (`set research.only false --task <id>`).
-- **Turning it off is never refused.** It counts from the next start, and from then on the task is an ordinary one.
+- **还没启动、等空闲槽位、setup 还在跑**：改动立即生效，行随之变化，代理按那一刻的设置启动。
+- **已经启动**（进行中、已停、等你、失败）：改动被保存，**从下次启动**起生效。重新派发，代理就收到新规则。在那之前，`show <id>` 和设置页会在取值旁说明：`counts from its next start: this run is not research only`。默认值的改动（某个仓库的、你自己的、仓库文件里的）也绝不会改变已启动的任务。
+- **开启被拒绝**：在没法照办的地方开启会被拒绝并说明原因：任务的代理已改过仓库（文件、提交），或它的 PR 已开。只研究任务不改任何东西，那些工作就得扔掉。先撤销或关掉 PR，或者新建一个只研究任务。一个按普通任务干过活、却因默认值要变成只研究的任务也一样：重新派发会被拒绝，直到任务说清自己是什么（`set research.only false --task <id>`）。
+- **关闭从不被拒绝。**从下次启动生效，此后任务就是普通任务。
 
-A task whose setting changed since its agent started is told at its next start that it is research only from now on (or
-no longer is), with the rules as they are from there.
+代理启动后设置有变的任务，下次启动时会被告知从现在起只研究（或不再只研究），并按从那时起的规则来。
 
-A task with the old `--research` mark, from before this was a setting, is still research only: the mark is read as the
-task's own `research.only`, and a task that was started keeps what it was started as.
+带旧 `--research` 标记（这还是个设置之前）的任务仍是只研究：标记被读作任务自己的 `research.only`，已启动的任务保持启动时的属性。
 
-## A task that works in your own checkout
+## 在你自己检出里干活的任务
 
-A task in a repo always has a worktree of its own now. But one an older version started in your checkout (it had
-`--no-worktree`), or one in a folder git cannot make a worktree of, has none, and what changes in your checkout may be
-yours. So:
+仓库里的任务现在总有自己的工作树。但旧版本在你检出里启动的任务（带 `--no-worktree`），或 git 建不了工作树的文件夹里的任务没有工作树，而你的检出里可能有你自己的改动。所以：
 
-- When the agent starts, the board writes down how the checkout stands: its commit, and every changed file with its
-  content, its mode and what is staged of it (the staged mode too). A file git was told not to look at
-  (`assume-unchanged`, `skip-worktree`) is read as well.
-- When the task finishes, every file that reads differently, and every commit since, is a change, and the task goes back
-  as above.
-- Its agent is told to undo only what it changed itself, file by file, and never to reset or clean your checkout.
-- A file you changed yourself while it worked is listed too: the board cannot tell whose it was. The agent says so, and
-  you retry, or delegate it again with `--no-research`.
+- 代理启动时，看板记下检出的状态：所在提交，以及每个有改动的文件的内容、模式和暂存情况（暂存模式也记）。git 被告知别看的文件（`assume-unchanged`、`skip-worktree`）也读。
+- 任务完成时，内容读起来不同的每个文件、以及之后的每个提交都算改动，任务按上文退回。
+- 代理被要求只撤销自己改过的东西，逐个文件来，绝不 reset 或 clean 你的检出。
+- 你干活期间自己改的文件也会计入：看板分不清是谁改的。代理会说明，你可以重试，或带 `--no-research` 重新派发。
 
-Only a folder that is no repo at all, or a repo with no commit yet, is not looked at: there is nothing to compare. There,
-the agent's rules and the reviewer are what hold.
+压根不是仓库的文件夹、或还没有提交的仓库不检查：没什么可比。那里以代理的规则和评审者为准。

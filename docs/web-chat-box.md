@@ -1,216 +1,120 @@
-# The web board's chat box
+# web 看板的输入框
 
-**The board's own box looks and works like the web UI's (Ovis's) own chat input**, so going from the Board to an agent's
-chat and back feels like one program. Most of the time the chat under the [web board](web-ui.md)'s list *is* the web
-UI's own chat, its box with it ([the web board's chat](web-chat.md)); this box is the one the board's own chat has
-where the web UI has none to show (a Coordinator not started yet, a task with no agent in its pane, another machine's
-Coordinator).
+**看板自己的输入框长得和用起来都像 web UI（Ovis）自己的聊天输入**，所以从 Board 到代理聊天再回来像是同一个程序。多数时候 [web 看板](web-ui.md)列表下方的聊天*就是* web UI 自己的聊天，连同它的输入框（[web 看板的聊天](web-chat.md)）；这里说的是 web UI 没有可显示内容时（协调者还没启动、任务面板里没代理、别的机器的协调者）看板自己聊天所用的那个输入框。
 
-It is not the web UI's code. The web UI's input is part of its bundled app, whose built files change with every
-release, so the Board loads nothing from them. It is the same thing built again in the Board's own page
-(`crates/web/src/webui/page/compose.js`, `compose.css`), from the web UI's CSS variables and its `DESIGN.md`, and then
-measured against the original.
+它不是 web UI 的代码。web UI 的输入是它打包应用的一部分，构建产物随每次发布变化，所以 Board 不从里面加载任何东西。同样的东西在 Board 自己的页面里重建（`crates/web/src/webui/page/compose.js`、`compose.css`），依据 web UI 的 CSS 变量和它的 `DESIGN.md`，然后对着原版测量。
 
-## Using it
+## 用法
 
-- **Enter sends, shift+enter is a new line**, on a phone too. If the web UI's Settings → Chat has "Enter sends" turned
-  off, ctrl or cmd with enter sends here as well. A keyboard that composes letters keeps its enter.
-- **Ctrl+S, or Send + start**, only on a machine with no Coordinator: adds your words as a task and puts an agent on it
-  (more below). A coordinator gets your words with enter alone, and decides itself what to start.
-- **The grip** on the card's top edge makes the box taller: drag it up (up to half the window, 480 px at most).
-  Double-click or tap it twice for the automatic height. With the keyboard: up and down a line (two with shift), and
-  Home. The height is kept in this browser.
-- **+** attaches files. Pasting a picture or dropping files works too.
-- **The mic** dictates.
-- **Call** (the phone, right after the mic) starts a [voice call](voice.md); while one rings or is on, it hangs up.
-- **Escape** goes one step back, as on the terminal board. The draft stays.
-- **Sending keeps the keyboard up** on a phone: the round button and **Send + start** never take the focus from the box,
-  as the web UI's Send does, so you can type the next message at once. A tap while the keyboard still composes the last
-  word (some Android keyboards compose every word) finishes that word and sends it; one that does not finish it at once
-  says `Finish the word, then send.`
+- **Enter 发送，shift+enter 换行**，手机上也是。如果 web UI 的 Settings → Chat 关着「Enter sends」，ctrl 或 cmd 加 enter 在这里也发送。输入法组字时的 enter 保留。
+- **Ctrl+S，或 Send + start**，只在没有协调者的机器上：把你的话加成任务并放上代理（见下）。协调者只用 enter 就收到你的话，自己决定启动什么。
+- **卡片上缘的拖拽条**把输入框拉高：向上拖（最多到窗口一半，最高 480 px）。双击或双击轻点恢复自动高度。用键盘：上下一行（shift 两行），Home。高度保存在这个浏览器里。
+- **+** 附带文件。粘贴图片或拖入文件也行。
+- **麦克风**听写。
+- **Call**（电话，紧跟麦克风）发起[语音通话](voice.md)；拨号或通话中它挂断。
+- **Escape** 后退一步，和终端看板一样。草稿保留。
+- **发送时手机键盘保持弹出**：圆形按钮和 **Send + start** 绝不从输入框抢走焦点，和 web UI 的 Send 一样，所以你可以马上打下一条。输入法还在组最后一个词时点按（有些安卓输入法逐词组字）会完成那个词并发送；不能立即完成的显示 `Finish the word, then send.`
 
-## What is the same as the web UI
+## 和 web UI 相同的部分
 
-Measured against **herdr-web-ui 0.4.8** (see [how](#how-it-was-measured)):
+对照 **herdr-web-ui 0.4.8** 测量（见[怎么量的](#怎么量的)）：
 
-- **The card**: the web UI's raised surface, a hairline border, its 24 px radius and its shadow. As wide as its chat
-  column and centred; 16 px from the sides and the bottom (12 px from the sides at 480 px and under). On a phone it is
-  the web UI's glass card.
-- **The message** is the card's first row, at full width: the web UI's type and size (15 px with a mouse, 16 px on touch
-  so an iPhone does not zoom), its text and hint colours, and its padding. It follows the web UI's own Settings → Chat
-  font size.
-- **It grows with the words.** One line is 44 px; each line adds one. From ten lines on it stays that tall and scrolls,
-  with the web UI's thin bar and no arrows.
-- **The grip** shows when the card is pointed at with a mouse, and always on touch.
-- **The round Send** in the lower right: the web UI's 32 px circle in its primary colour with an arrow up (inside a
-  40 px target on touch). Faded while there is nothing to send and while a message is on its way.
-- **Attaching files**, as in the web UI:
-  - The round **+** in the lower left picks any files. A picture pasted into the box, or files dropped on it, are taken
-    too (the card's border turns to the accent while files are over it).
-  - Each file stands as a tile above the message (a picture's thumbnail, else its name), saying Uploading, Attached or
-    Failed, with a cross to take it out.
-  - It goes into the message at its start, in the order the files were picked: a picture as `[Image 1] ` (numbered per
-    message; one character to the caret and to backspace, which takes it out whole, its tile with it), any other
-    file as `@<path> `. What is sent names
-    each as `@<path>`, which is how the agent reads it ([pictures pasted](image-paste.md)). Send waits while one is on
-    its way.
-  - The web UI's limits: 8 MB a file (a bigger one says so in a band over the box), three on their way at a time, and as
-    many at once as its Settings → Chat → Files at once says.
-  - The file is kept where whoever gets the words can read it: in the Coordinator's own folder (a heading's
-    coordinator's, for words to it), in a task's working folder under `.omh/files/` (git is told to leave it
-    alone), or, with no Coordinator, in the board's own folder (`files/` in its data folder).
-  - For another machine's agent or Coordinator (a task of that machine, its heading, or its board shown) the file goes
-    to that machine, and the path is where it landed there. First the web UI's own way, as its chat box sends a file
-    for a pane on another PC: kept beside that agent's pane, in `.ovis/` (`.herdr-web-ui/` before its rename; a task's
-    worktree leaves both out of git too). Where the web UI cannot (no PC for that machine in it, not connected, or the agent has no pane yet) it
-    goes over the board's own link to that machine. If neither works the box says why, and nothing is attached.
-- **Dictation**, as in the web UI, with the mic beside the add button:
-  - Tap it to start and tap again to finish, or hold it and let go (or hold ctrl+shift+space, cmd on a Mac).
-  - While it listens, a pill over the box shows Cancel, where it stands (Ready, Recording, Transcribing, or No
-    microphone input), the words heard so far, the level, the time (the last ten seconds counted down) and Done. Escape
-    cancels.
-  - The words go in at the caret, with a space against a word on either side, without taking the focus. Where the web
-    UI's server writes a tidied version afterwards, that replaces them unless you changed them meanwhile.
-  - A dictation too long for the box is refused whole. At most two minutes.
-  - It uses the web UI's own engines and settings: its server when it has an OpenAI key (Settings → Voice input there),
-    else the browser's own speech recognition. The mic shows as the web UI's does (on auto only where it can work, and
-    not on a phone), in its language, tidied or not as its Settings → Chat says.
-  - A device that may only watch dictates nothing.
-- **Focus is the card's**, never a rectangle on the field inside it.
-- **No browser look** on the field in Chrome, Firefox or Safari: no frame, no focus ring, no inner shadow, no resize
-  corner, no scroll arrows.
-- **Above a phone's keyboard**: the Board is as tall as the web UI's own shell, which follows the keyboard. What the
-  Board does there itself: [above a phone's keyboard](#above-a-phones-keyboard).
-- **Light, dark and every palette** of the web UI: they are its variables.
+- **卡片**：web UI 的凸起表面、发丝边框、24 px 圆角和阴影。与它的聊天列同宽并居中；距两侧和底部 16 px（480 px 及以下距两侧 12 px）。手机上是 web UI 的玻璃卡片。
+- **消息框**是卡片的第一行，全宽：web UI 的字体和字号（鼠标 15 px，触屏 16 px 让 iPhone 不缩放），它的文字和提示色，以及内边距。跟随 web UI 自己 Settings → Chat 的字号。
+- **随文字长高。** 一行 44 px；每行加一行。从十行起保持那个高度并滚动，带 web UI 的细滚动条，没有箭头。
+- **拖拽条**在鼠标指向卡片时出现，触屏上始终可见。
+- **右下角的圆形 Send**：web UI 的 32 px 圆形，主色加向上箭头（触屏上 40 px 的点击区）。没东西可发和消息在途时变淡。
+- **附带文件**，和 web UI 一样：
+  - 左下角的圆形 **+** 选择任意文件。粘贴进输入框的图片、拖到它上面的文件也被收下（文件悬在上方时卡片边框变强调色）。
+  - 每个文件作为一块瓷片排在消息上方（图片是缩略图，否则是文件名），显示 Uploading、Attached 或 Failed，带叉号移除。
+  - 它在消息开头按选中顺序进入消息：图片是 `[Image 1] `（每条消息内编号；对光标和退格都是一个字符，退格整块移除，瓷片一起），其他文件是 `@<path> `。发出的内容把每个都写成 `@<path>`，代理就这么读它（[粘贴图片](image-paste.md)）。有文件在途时 Send 等待。
+  - web UI 的限额：单文件 8 MB（更大的在输入框上方一条带里说明），同时最多三个在途，同时附带数量按它的 Settings → Chat → Files at once。
+  - 文件保存在收话人读得到的地方：协调者自己的文件夹（给标题协调者的话放在那）、任务工作文件夹的 `.omh/files/` 下（告知 git 不要理会），或没有协调者时放在看板自己的文件夹（数据文件夹的 `files/`）。
+  - 给别的机器的代理或协调者（那台机器的任务、它的标题、或显示着它的看板）时，文件去那台机器，路径是落在那边的位置。先走 web UI 自己的路子，像它的聊天框为另一台 PC 上的面板发文件那样：保存在那代理的面板旁，`.ovis/`（改名前是 `.herdr-web-ui/`；任务的工作树也把两者都排除在 git 之外）。web UI 做不到时（里面没有那台机器的 PC、没连上、代理还没有面板）走看板自己的到那台机器的链接。两条都不行时输入框说明原因，什么都不附。
+- **听写**，和 web UI 一样，麦克风在加号按钮旁：
+  - 点按开始、再点结束，或按住松开（或按住 ctrl+shift+space，Mac 上 cmd）。
+  - 听取时输入框上方的胶囊显示 Cancel、所处状态（Ready、Recording、Transcribing 或 No microphone input）、到目前为止听到的词、电平、时间（最后十秒倒计时）和 Done。Escape 取消。
+  - 词进入光标处，与两侧的词用空格隔开，不抢焦点。web UI 的服务器随后写出整理版时会替换它们，除非你已经改过。
+  - 长到输入框装不下的听写整条拒绝。最长两分钟。
+  - 用 web UI 自己的引擎和设置：有 OpenAI key 时用它的服务器（那里的 Settings → Voice input），否则用浏览器自带的语音识别。麦克风的显示和 web UI 一样（auto 只在能用的地方，手机上不用），用它的语言，是否整理按它的 Settings → Chat。
+  - 只能观看的设备不能听写。
+- **焦点在卡片上**，绝不在里面输入区的方框上。
+- **Chrome、Firefox、Safari 里输入区没有浏览器外观**：无边框、无焦点环、无内阴影、无缩放角、无滚动箭头。
+- **手机键盘弹出时**：Board 的高度和 web UI 自己的外壳一样，随键盘走。Board 在那里自己做的事：[手机键盘弹出时](#手机键盘弹出时)。
+- **web UI 的浅色、深色和每套调色板**：用的就是它的变量。
 
-## Above a phone's keyboard
+## 手机键盘弹出时
 
-**While you type with a phone's keyboard up, the box stays whole above it and the line you type on stays in view**,
-however long the words get (`crates/web/src/webui/page/room.js`):
+**用手机键盘打字时，输入框完整地留在键盘上方，你打字的那一行始终可见**，文字再长也一样（`crates/web/src/webui/page/room.js`）：
 
-- **The board's header, its chips and the list step aside**, as they do for the chat full screen: the chat has the
-  whole of what the keyboard leaves. The chat's bar, which says who gets your words, stays. When the keyboard goes down (or you
-  tap elsewhere), all of it is back.
-- **With the chat hidden, it stays hidden**: a tap in the box and typing there never open it. The board stays in view
-  over the chat's bar and the box, and the box stays whole above the keyboard (and the strip iOS floats over it). Only
-  the bar's Show (or Full screen) opens the chat; then the board steps aside as above. Hidden, the chat is only its bar
-  and its box, with or without a keyboard: the list has the rest (`crates/web/src/webui/page/keep.js`):
-  - **The list keeps at least a heading and two rows (120 px)**, however long the words: the box gives way first and
-    scrolls (never under its one line), with the line you type on in view.
-  - **Where even the box's one line leaves the list less** (a phone on its side), the board's header and chips step
-    aside, then the chat's bar (and the attached files' tiles, which stay attached), and the box's buttons stand
-    beside its line instead of under it. The list never steps aside: it has all that is left over the box. This is only while the keyboard is up; when it goes down, all of it is back.
-  - The same holds for the web UI's box, docked under the board ([web chat](web-chat.md#above-a-phones-keyboard)).
-- **The conversation takes what the box leaves**, over it. Where that is too little to read (104 px), it steps aside for
-  the words, and comes back when they are shorter.
-- **The box is never taller than the room left**: as tall as its words, up to ten lines (or the height set with the
-  grip), and less where the room is less; then it scrolls, never under one line. The files attached stand above the
-  words inside that same room, so they never push the words off the screen.
-- **The line with the caret stays in view**: when the box gets shorter, when the keyboard comes up, and when words go
-  in that you did not type (a file's path, a dictation). Measuring again (the window's size, the board drawn again
-  every two seconds) never moves where the box is scrolled to.
-- **Where not even one line fits** (a phone on its side, the keyboard leaving 200 px), all of the chat but the box steps
-  aside too (with the chat shown; hidden, see above): the chat's bar, the conversation, the grip and the attached files' tiles. The files stay
-  attached (they are in the words) and come back with the room.
-- **On an iPhone the box also stands clear of the strip iOS floats over the page** while its keyboard is up (its arrows
-  and Done): iOS counts it as part of the visible window, so the box keeps 72 px more room at its foot. That strip was
-  measured on an iPhone's screenshot (iOS 26): its top stands 73 px over the foot of the visible window.
-- **The keyboard is known** by the web UI's own mark (its shell marks the page while a keyboard is up, as it writes the
-  height that is left); elsewhere by the visible window being much shorter than the page (and not only zoomed in).
-- **Too tall for the board without a keyboard** (a short window), the box is likewise never taller than the room left.
+- **看板的头部、筛选片和列表让开**，像聊天全屏时那样：聊天占用键盘留下的全部空间。写着谁收你的话的聊天栏留下。键盘收起（或你点别处），全部回来。
+- **聊天隐藏时保持隐藏**：点进输入框打字绝不会打开它。看板一直在聊天栏和输入框之上可见，输入框完整地留在键盘上方（以及 iOS 浮在其上的条）。只有栏上的 Show（或 Full screen）打开聊天；然后看板按上文让开。隐藏时，聊天只有它的栏和它的输入框，有无键盘都一样：其余归列表（`crates/web/src/webui/page/keep.js`）：
+  - **列表至少保住一个标题和两行（120 px）**，文字再长也一样：输入框先让位并滚动（绝不低于它的一行），你打字的那行保持可见。
+  - **连输入框的一行都给列表留不够时**（手机横放），看板的头部和筛选片让开，然后是聊天栏（以及已附文件的瓷片，它们保持附着），输入框的按钮站到它那一行旁边而不是下面。列表绝不让开：它拿走输入框之上剩下的全部。这只是键盘弹出期间的事；键盘收起，全部回来。
+  - web UI 的输入框停靠在看板下时同理（[web 聊天](web-chat.md#手机键盘弹出时)）。
+- **对话拿走输入框让出的空间**，在它上方。那里太少读不了时（104 px），它给文字让位，文字变短就回来。
+- **输入框绝不高于剩下的空间**：和它的文字一样高，最多十行（或拖拽条设的高度），空间更少就更矮；然后滚动，绝不低于一行。附带的文件排在文字上方同一空间内，所以绝不会把文字挤出屏幕。
+- **带光标的那行保持可见**：输入框变矮时、键盘弹出时、以及有你没打的字进入时（文件的路径、听写）。重新测量（窗口尺寸、每两秒重画一次看板）绝不动输入框滚动到的位置。
+- **连一行都放不下时**（手机横放，键盘留 200 px），除输入框外整个聊天也让开（聊天显示时；隐藏时见上）：聊天栏、对话、拖拽条和已附文件的瓷片。文件保持附着（它们在文字里），空间回来时一起回来。
+- **iPhone 上输入框还避开 iOS 浮在页面上的那条**（它的箭头和 Done），键盘弹出期间：iOS 把它算作可见窗口的一部分，所以输入框底部多留 72 px。那条是在 iPhone 截图（iOS 26）上量的：它顶在可见窗口底部上方 73 px。
+- **键盘按 web UI 自己的标记判断**（它的外壳在键盘弹出时给页面打标记，同时写下剩余高度）；别处按可见窗口远短于页面判断（不只是放大）。
+- **没有键盘时对 Board 来说太高**（矮窗口），输入框同样绝不高于剩下的空间。
 
-Tried in Chromium and WebKit (Playwright) at an iPhone's size (440×956, the keyboard leaving 627 px) and an iPhone SE's
-(375×667, leaving 380), on a copy of the page with the iPhone's visible window and the web UI's mark played: an empty
-box, twenty lines, twenty lines with a picture attached, the caret in the middle with words typed there, and the
-keyboard going down; and at 844×390 on its side (the keyboard leaving 200 and 250 px) with forty lines and a picture.
-In each the card's foot and the caret's line stayed above the strip, also after a resize and after the board drew
-the chat again; before, the box ran 120 px (with a picture, 170 px) under the strip and the keyboard. Not tried on a
-real phone.
+在 Chromium 和 WebKit（Playwright）里按 iPhone 尺寸（440×956，键盘留 627 px）和 iPhone SE（375×667，留 380）试过，用页面副本模拟 iPhone 的可见窗口和 web UI 的标记：空输入框、二十行、二十行加一张图片、光标在中间打字、键盘收起；以及横放 844×390（键盘留 200 和 250 px）四十行加图片。每种情形下卡片底部和光标行都留在那条之上，缩放和看板重画聊天后也是；改前输入框在那条和键盘下 120 px（带图片 170 px）。没在真手机上试过。
 
-The chat hidden while you type was tried the same way (2026-10-21, Chromium and WebKit) at a phone's size (390×844, the
-keyboard leaving 470 px), on its side (844×390, leaving 200), a tablet's (820×1180, leaving 780) and a desktop's
-(1440×900, no keyboard), with the board's own box and with the web UI's docked: a tap in the box and typing kept the
-chat hidden and the list in view (on the phone 203 px of list over the box, before none). Twenty lines pasted kept
-121 px of list on the phone (the box 126 px, scrolled to the caret's line; before the list went down to 6 px); on its
-side the header and the chat's bar stepped aside and the list kept 137 px (twenty lines: 120 px; the web UI's box:
-120 px) over the box, where before the board was hidden whole. Show while typing opened the chat (the board stepping aside), Hide
-put it back, and with the keyboard down the header, the bar and the list's whole height were back. The page asked for
-no frame more than it did before while it sat still.
+打字时聊天隐藏同样方式试过（2026-10-21，Chromium 和 WebKit）：手机尺寸（390×844，键盘留 470 px）、横放（844×390，留 200）、平板（820×1180，留 780）和桌面（1440×900，无键盘），用看板自己的输入框和 web UI 停靠的：点进输入框打字保持聊天隐藏、列表可见（手机上输入框上方留 203 px 列表，改前没有）。粘贴二十行在手机上保住 121 px 列表（输入框 126 px，滚动到光标行；改前列表掉到 6 px）；横放时头部和聊天栏让开，列表在输入框上方保住 137 px（二十行：120 px；web UI 的输入框：120 px），改前整个看板被藏起来。打字时 Show 打开聊天（看板让开），Hide 收回，键盘收起后头部、栏和列表的完整高度都回来。页面静止时不比以前多要一帧。
 
-## What is the board's own, in that shape
+## 哪些是看板自己的
 
-| The board's | Where it is in the box |
+| 看板的 | 在输入框里的位置 |
 |---|---|
-| who gets your words: the Coordinator (and on which machine, where another one's shows) or a task's agent, with the task named | said by the switch over the box ([the web UI](web-ui.md)), not in it. The box's own hint says it too while empty (`Send message to Coordinator`) |
-| the lock that keeps a draft with who it was typed for | a filled chip in the lower left, beside the add button, only while the page shows somebody else: `To: HSW-34 agent · not who is shown above`. Attaching a file locks it as typing does |
-| the box's colour by who you type to ([colours](colours.md)) | the card's border: the plain text colour for the Coordinator, the task's status colour for its agent. The web UI's border is grey and turns to its accent on focus; here the border already says who, so focus draws a ring of that same colour round it |
-| the two ways to send | the round button and enter send. **Send + start** and tab, while there are words and no Coordinator to send them to, add them as a task and put an agent on it. **Send + start** is a chip of the web UI's (the shape of its one-tap replies). Each says in its tooltip what it does with the words |
-| who you talk to (the Coordinator or the task's agent), and the conversation | the chat's bar over the conversation: the switch of the two you can talk to, Hide and Full screen (Call is in the box, beside the mic); the conversation over the box, drawn as the web UI draws its own ([the web board's chat](web-chat.md)) |
-| the notice after sending | above the chat, as before |
-| a draft is never lost | it is kept with who it is for, also over a reload. While a message is on its way the words stay in the box and a second enter does nothing. Words the board could not take stay in the box |
-| a device that may only watch | the box is faded and says so |
+| 谁收你的话：协调者（以及哪台机器，别的机器的会显示）或任务的代理，带任务名 | 由输入框上方的切换器说明（[web UI](web-ui.md)），不在框里。框空着时它自己的提示也说（`Send message to Coordinator`） |
+| 把草稿锁定给收话人的锁 | 左下角一个实心片，在加号按钮旁，只在页面显示着别人时出现：`To: HSW-34 agent · not who is shown above`。附文件和打字一样会锁定 |
+| 输入框按收话人着色（[颜色](colours.md)） | 卡片的边框：协调者用素文字色，任务的代理用任务的状态色。web UI 的边框是灰色、聚焦时变强调色；这里边框已经说明是谁，所以聚焦只画一圈同色的环 |
+| 两种发送方式 | 圆形按钮和 enter 发送。有文字且没有协调者可发时，**Send + start** 和 tab 把它们加成任务并放上代理。**Send + start** 是 web UI 形制的片（它一键回复的样子）。各自的工具提示说明拿文字做什么 |
+| 你在和谁说话（协调者或任务的代理），以及对话 | 对话上方的聊天栏：两个可交谈对象的切换器、Hide 和 Full screen（Call 在输入框里，麦克风旁）；输入框上方的对话，按 web UI 画自己的方式画（[web 看板的聊天](web-chat.md)） |
+| 发送后的通知 | 聊天上文，一如既往 |
+| 草稿绝不丢失 | 连同收话人一起保存，刷新后也在。消息在途时文字留在输入框，再按 enter 无效。看板没拿走的话留在框里 |
+| 只能观看的设备 | 输入框变淡并说明 |
 
-## What the web UI's box has and the Board's has not
+## web UI 的输入框有而看板的没有
 
-Left out, because the Board cannot do it, rather than shown as a dead control:
+省略，因为 Board 做不到，而不是摆成死控件：
 
-- **Stop.** The web UI's round button turns into Stop while the agent works. The Board's stays Send; stopping a task's
-  agent is a button on the open task.
-- **The model, the effort and the context ring** between the controls: the Board's box talks to different agents.
-- **The menus for commands and files** (`/` and `@`), **one-tap replies**, **the agent's suggestion**, and **held
-  messages**: the Board hands your words on as they are.
-- **Escape stopping the agent.** In the web UI, Escape with a draft stops the agent. On the Board it goes one step back,
-  as on the terminal board, and the draft stays.
+- **Stop。** web UI 的圆形按钮在代理工作时变成 Stop。Board 的仍是 Send；停止任务的代理是打开任务上的一个按钮。
+- **控件之间的模型、effort 和上下文环**：Board 的输入框面向不同的代理。
+- **命令和文件的菜单**（`/` 和 `@`）、**一键回复**、**代理的建议**、**按住的消息**：Board 原样转交你的话。
+- **Escape 停止代理。** web UI 里带草稿按 Escape 停止代理。Board 上它后退一步，和终端看板一样，草稿保留。
 
-## How it was measured
+## 怎么量的
 
-A script, `scripts/chat-box-match.js`, opens the two side by side in a real browser: the web UI on an agent's chat, and
-the Board through its front door in front of that same web UI. At a phone's (390×800) and a desktop's (1280×800) size,
-in dark and light, with the box empty, with one line, with fourteen lines, focused, and focused and empty, it reads each
-one's sizes, places and styles, and compares the pixels of the message field and of the round Send. It exits with 1 when
-the two differ in anything but what is the board's own.
+脚本 `scripts/chat-box-match.js` 在真实浏览器里并排打开两者：web UI 在一个代理的聊天上，Board 经前门站在同一个 web UI 前面。按手机（390×800）和桌面（1280×800）尺寸、深浅两色、空框、一行、十四行、聚焦、聚焦且空，读取两者的尺寸、位置和样式，比较消息输入区和圆形 Send 的像素。除看板自己的东西外有一丝差异就以 1 退出。
 
     node chat-box-match.js --web-ui 'http://127.0.0.1:7317/?ws=…&pane=…&view=chat' \
         --board 'http://127.0.0.1:7327/#board' --playwright <the web UI's checkout> [--browser firefox] [--sending]
 
-With `--sending` it also compares the two **while a message is on its way**. It presses enter in each and holds the
-message back for four seconds on its way out (the web UI's on its socket, the board's on its own call), reads both boxes
-in that moment, and fails if either was not caught in it. That sends for real, four times: one line to the agent of that
-web UI's pane and one to the board. So run it against a scratch Herdr and a scratch board.
+带 `--sending` 时它还在**消息在途**时比较两者。它在两边按 enter 并把消息在出口上扣住四秒（web UI 的扣在它的 socket 上，board 的扣在自己的调用上），读那一刻的两个框，谁没被逮住就算失败。那是真发送，四次：一条给那个 web UI 面板的代理，一条给 board。所以要对着试验 Herdr 和试验看板跑。
 
-Where the script is: it is a Node program with Playwright, so it left the repo when the board became one Rust program.
-It is in the repo's history (`git log --all -- scripts/chat-box-match.js` finds it); the page it measures (`compose.js`,
-`compose.css`) is unchanged. It was never part of `npm run check`: it needs a running web UI with an agent's pane, the
-front door and a browser ([trying it against a copy](web-ui.md#trying-it-against-a-copy)). `compose.css` names the
-version it was measured against.
+脚本在哪：它是个带 Playwright 的 Node 程序，所以看板变成一个 Rust 程序后就离开了仓库。它在仓库历史里（`git log --all -- scripts/chat-box-match.js` 能找到）；它测的页面（`compose.js`、`compose.css`）没变。它从来不是 `npm run check` 的一部分：它需要一个跑着、有代理面板的 web UI、前门和浏览器（[对着副本试](web-ui.md#对着副本试用)）。`compose.css` 写着它测量所对照的版本。
 
-Measured on 2026-10-13 against herdr-web-ui 0.4.8 with Herdr 0.9.3, in Chromium 156 and Firefox 155:
+2026-10-13 对 herdr-web-ui 0.4.8、Herdr 0.9.3 测量，Chromium 156 和 Firefox 155：
 
-| What | Result |
+| 项目 | 结果 |
 |---|---|
-| the card's size, place, radius, shadow, background and border width, in all 24 states (six at each of two sizes in two themes), both browsers | the same |
-| the field's box, type, size, line height, padding, colours, least and greatest height | the same |
-| the round Send's box, circle, glyph, colours and faded look | the same; no pixel differs |
-| the field's pixels, holding the same words | none differ, but for some 350 at the card's two rounded top corners, where the border runs through the field's box: that is the border's colour, which is the board's own |
-| the field's pixels while empty | the hint's words differ (`Message Claude…` there; the board's own hint here), nothing else |
-| while a message is on its way, both caught in that moment, at both sizes in both themes | the same in both: the words stay in the box, the round Send is faded (0.7) and cannot be pressed, the card keeps its focus; the field's and the button's pixels match as above. When the answer comes both boxes empty |
-| on focus | the web UI's border turns to its accent; the board's keeps who it is for, with a ring of it |
+| 卡片的尺寸、位置、圆角、阴影、背景和边框宽度，全部 24 种状态（两种尺寸各六种、两种主题），两个浏览器 | 一致 |
+| 输入区的盒子、字体、字号、行高、内边距、颜色、最小和最大高度 | 一致 |
+| 圆形 Send 的盒子、圆、字形、颜色和变淡的样子 | 一致；无一像素不同 |
+| 输入区的像素，装同样的文字 | 除卡片两个圆角处约 350 个像素外无差异，边框穿过输入区盒子的地方：那是边框的颜色，属于看板自己 |
+| 输入区空着时的像素 | 提示文字不同（那边是 `Message Claude…`；这里是看板自己的提示），别无差异 |
+| 消息在途时，两边都被逮住，两种尺寸两种主题 | 两边一致：文字留在框里，圆形 Send 变淡（0.7）不可按，卡片保持焦点；输入区和按钮的像素同上。回答来了两个框都清空 |
+| 聚焦时 | web UI 的边框变强调色；看板的保留收话人颜色，画一圈同色的环 |
 
-Tried for real, through the front door, at both sizes: typing, shift+enter, sending with enter and with **Send + start**,
-the box while a message is on its way, a long draft, a reload with a draft, switching between the Coordinator and a
-task's agent, a draft locked to a task while another one shows and over a reload, the grip (drag, reload, double-click),
-pasting words and pasting a picture. In Firefox too, at the desktop's size.
+真实试过，经前门，两种尺寸：打字、shift+enter、enter 发送和 **Send + start**、消息在途时的输入框、长草稿、带草稿刷新、在协调者和任务代理间切换、草稿锁定给任务而显示另一个且刷新后、拖拽条（拖动、刷新、双击）、粘贴文字和粘贴图片。Firefox 里也试过，桌面尺寸。
 
-Not checked: Safari itself (its engine could not run on the machine this was measured on: the rules for it are written,
-`-webkit-appearance: none` and the rest, but not seen), and a real phone's keyboard.
+没检查：Safari 本身（它的引擎在这台测量机上跑不起来：给它写的规则是写了——`-webkit-appearance: none` 等等——但没见到），以及真手机的键盘。
 
-## When the web UI changes its box
+## web UI 改了它的输入框时
 
-Run the script again against the new version (from the repo's history, above). What it prints is what to change in
-`compose.css`. Then name the new version there and here.
+对着新版本（从仓库历史里，见上）再跑一遍脚本。它打印的就是 `compose.css` 里要改什么。然后在那里的这里写上新版本号。
 
-Already known: the web UI's code after 0.4.8 (its `main` on 2026-10-13, commit `a4b2295`, not released) changes its box,
-and the script says so (82 differences). The message has 4 px less padding at each side (16 px, 12 px on a phone), the
-round Send stands 4 px further in with a mouse, the model moves to the left beside the add button, and a strip with the
-folder and the branch hangs under the card, which lifts the card 29 px. The Board matches the released 0.4.8 until that
-is released.
+已知：0.4.8 之后的 web UI 代码（2026-10-13 的 `main`，提交 `a4b2295`，未发布）改了它的输入框，脚本能测出来（82 处差异）。消息左右内边距各少 4 px（16 px，手机上 12 px），鼠标下圆形 Send 往里挪 4 px，模型移到左边挨着加号按钮，一条带文件夹和分支的条挂在卡片下面，把卡片抬高 29 px。在它发布之前，Board 对齐已发布的 0.4.8。

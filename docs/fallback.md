@@ -1,14 +1,11 @@
-# The fallback agent: another agent takes over
+# 备用代理：换一个代理接手
 
-**When an agent cannot go on (out of allowance, logged out, its provider down), another agent can take over.** With
-many agents on subscriptions, that is the usual reason a night's work stops. Two settings:
+**代理进行不下去时（额度用完、登出、服务商挂了），另一个代理可以接手。** 用订阅账号的代理多了，这是夜间工作停下的常见原因。两个设置：
 
-- **`worker.fallback`**: who takes a task over when its working agent cannot go on.
-- **`reviewer.fallback`**: who reviews instead when the reviewer cannot.
+- **`worker.fallback`**：工作代理进行不下去时，谁接任务。
+- **`reviewer.fallback`**：评审者不行时，谁来评审。
 
-Each is a list of agents, tried in order, written like `worker.agent` with commas between them
-(`codex, claude/claude-opus-5-5`: a model after a slash), or `none`. `none` is built in: without a list nothing changes.
-**It costs nothing while all goes well**: nobody extra runs until a hand-over.
+各是一张代理列表，按序尝试，写法同 `worker.agent`，逗号分开（`codex, claude/claude-opus-5-5`：斜杠后是模型），或 `none`。`none` 是内置：没列表就什么都不变。**一切顺利时不花钱**：没有交接就没有多余的代理跑。
 
 ```
 omh set worker.fallback "codex, claude/claude-opus-5-5"   for every task of yours
@@ -17,145 +14,102 @@ omh set worker.fallback none --task 12                    not for this one
 omh delegate 12 --worker.fallback pi --reviewer.fallback claude
 ```
 
-## When a task is handed over
+## 任务何时交接
 
-The working agent **cannot go on** in three cases:
+工作代理**进行不下去**有三种情况：
 
-1. **Its provider is down**: the model is at capacity, the servers are overloaded, a rate limit, a dropped connection.
-   These pass by themselves, so the board first waits and tells the same agent to carry on, after 1, 2, 4 and 8 minutes
-   ([a turn cut off by the provider](provider-errors.md)). Only when the fifth try is cut off too is the task handed
-   over.
-2. **It is out of allowance, or logged out**, or its model is not there, or its reply was cut for good (out of room, a
-   refusal). Waiting does not fix these, so they are never retried: the task is handed over at once. A model the board
-   gave it that its program refuses comes first: the same program starts again on its own default model, and only when
-   that is refused too is the task handed over ([models](models.md#a-model-refused-while-the-agent-works)).
-3. **Its work still fails after its rounds.** A failed review goes back to the agent `review.rounds` times. When the
-   review after the last of those still fails, the next agent gets the work. Same for the repo's check: it goes back
-   `review.rounds` times, and a check that fails after that is handed over. With `review.rounds 0` nothing goes back by
-   itself, and nothing is handed over for a review or a check either: it waits for you.
+1. **服务商挂了**：模型满载、服务器过载、限流、断连。这些会自己过去，所以看板先等，让同一个代理继续，隔 1、2、4、8 分钟（[被服务商中断的回合](provider-errors.md)）。只有第五次也被掐断才交接任务。
+2. **额度用完，或登出**，或模型没了，或回复被永久截断（超长、拒绝）。等待修不好这些，所以绝不重试：任务立刻交接。看板给的模型被程序拒绝时先走这一步：同一个程序用自己的默认模型重启，也被拒才交接（[模型](models.md#代理运行中被拒绝的模型)）。
+3. **它的工作过了轮数还是失败。** 失败的评审退回代理 `review.rounds` 次。最后一次之后的评审仍失败，工作交给下一个代理。仓库的检查同理：退回 `review.rounds` 次，之后仍失败的检查就交接。`review.rounds 0` 时什么都不自动退回，评审或检查也不交接：等你。
 
-So for one turn that ends badly, the order is: **the board's own tries (only for an error that passes) → the next agent
-on `worker.fallback` → you.**
+所以一个糟糕回合的顺序是：**看板自己的重试（只对会过去的错误）→ `worker.fallback` 上的下一个代理 → 你。**
 
-**Not handed over**, as before: when the agent stops and says it waits for you, when it stops without a summary, when you
-stop it, for a conflict with main or feedback on its pull request, or while a merge you approved is being repaired.
-Those are yours.
+**不交接**，和以前一样：代理停下说等你、它没写收尾小结就停、你停了它、和 main 冲突或 PR 上有反馈、或你批准的合并正在修复。这些归你。
 
-## What a hand-over is
+## 交接包含什么
 
-The next agent on the list gets the task **in the same worktree**, on the same branch, in the same Herdr pane. The
-program that cannot go on is ended, and the next one starts where it was. It is told:
+列表上的下一个代理**在同一工作树**、同一分支、同一 Herdr 面板接任务。进行不下去的程序被结束，下一个从原处开始。它被告知：
 
-- the task, exactly as the first agent got it (title, description, the board's rules);
-- that it takes over, from whom and why, and to look at what is there and carry on, not start over;
-- **what was done so far**: the commits on the branch, whether changes lie uncommitted, and the last message of the agent
-  before it;
-- **the open findings**: what the last review found, when that review failed, or the failed check's output.
+- 任务，和第一个代理拿到的一模一样（标题、描述、看板的规则）；
+- 它接手、从谁手里、为什么，看看现有的继续，不要重来；
+- **到目前做了什么**：分支上的提交、有没有未提交的改动、上一个代理最后的话；
+- **未决的发现**：上次评审找到的问题，或那次评审失败了，或失败检查的输出。
 
-The new agent:
+新代理：
 
-- runs on the model its entry names (`claude/claude-opus-5-5`), else its program's own;
-- takes the task's `worker.effort` and `worker.access`, where its program takes them;
-- starts with rounds of its own: what the agent before it used up does not count against it.
+- 用它的条目写的模型（`claude/claude-opus-5-5`），否则程序自己的；
+- 接受任务的 `worker.effort` 和 `worker.access`，程序支持的话；
+- 轮数从头算：上一个用掉的不算它的。
 
-A yes you had given to the earlier work is asked for again.
+你之前给过的同意会被重新要一次。
 
-### Who is next
+### 谁是下一个
 
-The first on the list that:
+列表上第一个满足这些的：
 
-- is not the agent on the task;
-- was not on it since you last stepped in;
-- is installed on this machine;
-- can work under the task's access (`pi` cannot ask before it acts, so it is passed over while `worker.access` is
-  `ask`; one with no auto mode of its own, or too old for it, is passed over while it is `auto`).
+- 不是任务上的代理；
+- 你上次介入后没上过这个任务；
+- 装在这台机器上；
+- 能在任务的 access 下干活（`pi` 不会先问再动手，`worker.access` 是 `ask` 时跳过；没有自己的 auto 模式、或版本太老的，`auto` 时跳过）。
 
-One that cannot be started is passed over too. When nobody could be started, the task is exactly as it was: the same
-agent, its failure, the rounds it used.
+启动不了的也跳过。谁都起不来时，任务原样：同一代理、它的失败、用掉的轮数。
 
-**When the list is used up, the task waits for you as it would without a list**: the same "Agent stopped", "Needs a
-login" or failed review, plus a `Note` in the task panel that says who was passed over and why.
+**列表用尽时，任务像没列表一样等你**：同样的“Agent stopped”“Needs a login”或失败的评审，外加任务面板里一条 `Note`，说明跳过了谁、为什么。
 
-### Stepping in, and changing the list
+### 介入，与改列表
 
-- When you step in (a reply, `Ctrl+R`, typing in the agent's terminal), the agent on the task carries on, and the list
-  may be gone through again from the start: by then an allowance may be back.
-- Delegating the task anew starts with `worker.agent` again.
-- The setting is read at the moment of the hand-over. So you can set it on a task already under way, and it counts from
-  the next time its agent cannot go on.
+- 你一介入（回复、`Ctrl+R`、在代理的终端里打字），任务上的代理继续，列表可以从头再走一遍：那时额度可能回来了。
+- 重新派发任务从 `worker.agent` 重新开始。
+- 设置在交接那一刻读取。所以你可以在进行中的任务上设它，从下一次代理进行不下去时生效。
 
-## The reviewer
+## 评审者
 
-`reviewer.fallback` works the same for the reviewer, where it applies:
+`reviewer.fallback` 对评审者同理，适用于这些情况：
 
-- **Its provider is down** (after the board's own five tries), it is out of allowance or logged out, or its model is not
-  there: the next one on the list reviews, **as the same review**. The tries that were cut off are not reviews, and use up
-  no round.
-- **Its program is not installed on this machine**: the first one on the list that is installed reviews. That is a
-  hand-over like the others (`claude took over the review from codex: codex is not installed here`). Without a list, the
-  working agent's program reviews, as before.
+- **服务商挂了**（看板自己的五次重试后）、额度用完或登出、或模型没了：列表下一个**以同一次评审**评审。被掐断的尝试不算评审，不耗轮数。
+- **它的程序没装在这台机器上**：列表上第一个装了的评审。这是一次和其他一样的交接（`claude took over the review from codex: codex is not installed here`）。没有列表时，由工作代理的程序评审，和以前一样。
 
-A reviewer that took over reviews the later rounds of that task too, until you step in. With the list used up, the
-review fails as it does without one.
+接手的评审者也评审该任务之后的轮次，直到你介入。列表用尽时，评审像没有列表一样失败。
 
-**One case does not apply to the reviewer**: there is no "failed `review.rounds` times" for it. A reviewer that reviewed
-and found faults has done its work. Replacing it until one passes the change would be shopping for a verdict. A review
-that timed out or ended without a verdict (twice: the first time it is started once more) is a failed review as before,
-not a hand-over: nothing says another program would do better.
+**有一种情况不适用于评审者**：没有“失败 `review.rounds` 次”这一说。评审过并找出问题的评审者已做完它的工作。换人直到有人通过改动，是在挑结论。超时或没出结论就结束的评审（两次：第一次会再启动一次）和以前一样是失败的评审，不是交接：没有证据说换个程序会更好。
 
-## What you see
+## 你会看到什么
 
-- **The row** says the hand-over in plain words while the new agent gets going, until the Watcher writes its first line
-  about it: `codex took over from claude: out of allowance until 17:00`. Its program column names the agent on it now.
-- **The task panel** keeps every hand-over under `Status`, as `Took over` (beside the list: the latest; full screen: all
-  of them, each with its age). `On it` and the `Agent` row are the agent on it now. A `Takes over` row under each of the
-  two is its list. Each review says who made it once a reviewer took over.
-- **The history**: `omh details <id>` lists every hand-over (who, from whom, why, when) beside every review,
-  and says who is on it now.
-- **Herdr**: the agent's tab is `Agent (codex)` and a reviewer's `Reviewer #2 (claude)` once one took over, and the
-  sidebar names the agent: `agent codex · working`, `reviewer claude · under review`.
+- **行**在新代理起步时用大白话说交接，直到观察者写下第一行：`codex took over from claude: out of allowance until 17:00`。它的程序列显示现在的代理。
+- **任务面板**在 `Status` 下保留每次交接，作 `Took over`（列表旁：最近一次；全屏：全部，各带时间）。`On it` 和 `Agent` 行是现在的代理。两者下面各有一行 `Takes over`，是它的列表。一旦评审者交接过，每次评审都写明谁做的。
+- **历史**：`omh details <id>` 在每次评审旁列出每次交接（谁、从谁、为什么、何时），并说明现在谁在做。
+- **Herdr**：交接后代理的标签页是 `Agent (codex)`，评审者是 `Reviewer #2 (claude)`，侧栏点名代理：`agent codex · working`、`reviewer claude · under review`。
 
-The reason is said from the provider's own words:
+原因用服务商自己的话说：
 
-- `out of allowance until 17:00`, where they say when it comes back (`resets 5pm`, `try again at 5:00 PM`,
-  `try again in 2 hours`), and `out of allowance` where they do not;
-- `logged out`, `gpt-6.1 can't be used with your ChatGPT sign-in`, `claude can't use the model claude-x`, `its provider
-  is overloaded, still after 5 tries`;
-- `its work still failed review after 3 rounds`, `the check still failed after 4 tries`;
-- anything else, as the provider said it.
+- `out of allowance until 17:00`，服务商说了恢复时间时（`resets 5pm`、`try again at 5:00 PM`、`try again in 2 hours`）；没说就是 `out of allowance`；
+- `logged out`、`gpt-6.1 can't be used with your ChatGPT sign-in`、`claude can't use the model claude-x`、`its provider is overloaded, still after 5 tries`；
+- `its work still failed review after 3 rounds`、`the check still failed after 4 tries`；
+- 其他，按服务商原话。
 
-## A setting like every other
+## 和其他设置一样
 
-Both are work settings ([settings](settings.md)):
+两个都是工作设置（[设置](settings.md)）：
 
-- looked up nearest answer first: the task → your entry for the repo → you → built in;
-- set with `set`, taken away with `unset`, passed to `delegate` (and `add --delegate`) as `--worker.fallback <list>`;
-- held by [automations](automations.md);
-- listed by `show` and `show <id>` with where the value came from, and on the board's settings page (`Ctrl+E`:
-  `Agent's fallback`, `Reviewer's fallback`).
+- 就近取值：任务 → 你对仓库的条目 → 你 → 内置；
+- `set` 设置、`unset` 去掉、传给 `delegate`（和 `add --delegate`）作 `--worker.fallback <列表>`；
+- [自动化](automations.md)可以带着它们；
+- `show` 和 `show <id>` 列出它们和值的来源，看板设置页也有（`Ctrl+E`：`Agent's fallback`、`Reviewer's fallback`）。
 
-A wrong name refuses the whole list, changes nothing and names the nearest right one. A list that only names the agent
-that is on it anyway says that it does nothing.
+名字写错会拒绝整个列表，什么都不改，并给出最接近的正确名。只点名现在就在做任务的代理的列表，等于什么都不做。
 
-**A repo's own file may not set them.** `.omh.json` holds its seven facts and no more, so code an agent
-writes cannot switch a hand-over on or off ([settings](settings.md)).
+**仓库自己的文件不能设它们。** `.omh.json` 只放它的七项事实，不多，所以代理写的代码打不开也关不掉交接（[设置](settings.md)）。
 
-## Beside the other settings
+## 与其他设置的关系
 
-- **[Several attempts](attempts.md).** Each attempt is worked on like a task of its own, so each has the fallback list
-  for itself, and a hand-over in one attempt changes nothing in the others. When an attempt that changed hands is the one
-  chosen, the task keeps the agent that took it over, its model and the hand-overs. The two differ: a hand-over is one
-  agent after another, only on failure, and costs nothing when all goes well; attempts are side by side, always.
-- **[Limits on time and tokens](limits.md).** A task stopped at its limit is **not** handed over. The limit is your cap
-  on what the task may cost, a token limit counts all its agents together, and another agent would only go on spending.
-  It waits for you, as that page says.
+- **[并行尝试](attempts.md)。** 每个尝试像独立任务一样做，所以各有各的备用列表，一个尝试里的交接不改其他尝试。换过手的尝试被选中时，任务保留接手的代理、它的模型和交接记录。两者不同：交接是一个接一个、只在失败时、顺利不花钱；并行尝试是一起开、一直开。
+- **[时间与 token 限额](limits.md)。** 触到限额的任务**不**交接。限额是你给任务花费设的上限，token 限额把所有代理一起计，换代理只会接着花。它等你，如该页所说。
 
-## For contributors
+## 给贡献者
 
-The hand-over is one function (`hand_over` in `crates/flow/src/finish/hand_over.rs`) that any step can call with its
-reason.
+交接是一个函数（`crates/flow/src/finish/hand_over.rs` 里的 `hand_over`），任何一步都能带着原因调它。
 
-- `crates/core/src/store/handovers.rs`: what is kept on the task, the next on the list, the words;
-- `crates/flow/src/finish/hand_over.rs`: the working agent's hand-over;
-- `crates/flow/src/finish/review_fallback.rs`: the reviewer's;
-- tests: `tests/fallback.rs`, `tests/fallback_more.rs` and `tests/fallback_settings.rs`.
+- `crates/core/src/store/handovers.rs`：任务上存什么、列表下一个、措辞；
+- `crates/flow/src/finish/hand_over.rs`：工作代理的交接；
+- `crates/flow/src/finish/review_fallback.rs`：评审者的交接；
+- 测试：`tests/fallback.rs`、`tests/fallback_more.rs`、`tests/fallback_settings.rs`。
