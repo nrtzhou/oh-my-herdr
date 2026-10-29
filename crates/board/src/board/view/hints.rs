@@ -54,7 +54,7 @@ pub fn hints(s: &State, r: Option<&Obj>, who: Option<&Who>) -> (Vec<Hint>, Optio
         if let Some(c) = &head { return (vec![Hint { key: enter, words: format!("send to {}", c.name), stays: false, short: "send".into(), shortest: "send".into(), lit: c.name.clone(), tint: c.ink() }, line, put], chat_key); }
         if let (true, Some(r)) = (s.reply, r) {
             let (fresh, t) = (!r.b("host") && ["todo", "progress"].contains(&r.s("stage")), draft_task(s, r));
-            let (w, short) = if crate::board::update::actions::has_agent(r) { (format!("send to {t}'s agent"), format!("send to {t}")) } else if fresh { (format!("send, and start an agent on {t}"), format!("send to {t}")) } else if let Some(c) = crate::board::update::top::top(s) { (format!("send to {}, about {t}", c.name), format!("send to {}", c.name)) } else { (format!("add to {t}'s description"), format!("add to {t}")) };
+            let (w, short) = if crate::board::update::actions::has_agent(r) { (format!("send to {} agent", crate::board::update::top::possessive(&t)), format!("send to {t}")) } else if fresh { (format!("send, and start an agent on {t}"), format!("send to {t}")) } else if let Some(c) = crate::board::update::top::top(s) { (format!("send to {}, about {t}", c.name), format!("send to {}", c.name)) } else { (format!("add to {} description", crate::board::update::top::possessive(&t)), format!("add to {t}")) };
             return (vec![Hint { key: enter, words: w, stays: false, short, shortest: "send".into(), ..Default::default() }, line, put], chat_key);
         }
         if let Some(c) = crate::board::update::top::top(s) { return (vec![Hint { key: enter, words: format!("send to {}", c.name), stays: false, short: "send".into(), shortest: "send".into(), ..Default::default() }, line, put], chat_key); }
@@ -103,8 +103,8 @@ pub fn hints(s: &State, r: Option<&Obj>, who: Option<&Who>) -> (Vec<Hint>, Optio
     let at = if choosing(s, r) { attempt_now(s, r) } else { None };
     let opt = |b: bool, x: Hint| if b { Some(x) } else { None };
     let main: Vec<Option<Hint>> = if r.b("archivedAt") { vec![Some(h(hint(K::Archive, None))), Some(hk(K::Stop, "remove this task"))] }
-        else if let (Some(c), true) = (&at, st("pick")) { let l = c.s("letter"); vec![Some(Hint { short: format!("keep {l}"), ..hk(K::Yes, &format!("keep attempt {l}")) }), Some(h(hint(K::NextAttempt, None))), Some(hk(K::Open, &format!("open attempt {l}'s agent")))] }
-        else if let Some(c) = &at { vec![Some(hk(K::Open, &format!("open attempt {}'s agent", c.s("letter")))), Some(h(hint(K::NextAttempt, None))), Some(reply.clone()), Some(stop.clone())] }
+        else if let (Some(c), true) = (&at, st("pick")) { let l = c.s("letter"); vec![Some(Hint { short: format!("keep {l}"), ..hk(K::Yes, &format!("keep attempt {l}")) }), Some(h(hint(K::NextAttempt, None))), Some(hk(K::Open, &format!("open attempt {} agent", crate::board::update::top::possessive(&l))))] }
+        else if let Some(c) = &at { vec![Some(hk(K::Open, &format!("open attempt {} agent", crate::board::update::top::possessive(&c.s("letter"))))), Some(h(hint(K::NextAttempt, None))), Some(reply.clone()), Some(stop.clone())] }
         else if in_review(r) { vec![Some(Hint { short: "merge this task".into(), ..hk(K::Yes, "approve and merge this task") }), opt(sendable, hk(K::SendBack, "send the review to this task's agent")), Some(reply.clone())] }
         else if failed_review(r) { vec![opt(sendable, hk(K::SendBack, "send the review to this task's agent")), Some(Hint { short: "merge anyway".into(), ..hk(K::Yes, "merge this task anyway") }), Some(reply.clone())] }
         else if st("approval") && r.b("syncBlocked") { vec![Some(reply.clone()), Some(open.clone())] }
