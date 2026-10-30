@@ -35,14 +35,16 @@ pub static KINDS: &[Kind] = &[
         resume: &["--session-id", "{}"], session: &["--session-id", "{}"], standing: &["--append-system-prompt", "{}"], integration: "pi",
         checked: "everything the board does, on 1.1.0", ..BASE },
     // omp (oh-my-pi) saves its conversation as one line per entry (session.jsonl), read back like pi's. It has no
-    // folder-trust dialog of its own: it never asks to trust a folder, so none is pre-trusted for it.
+    // folder-trust dialog of its own: it never asks to trust a folder, so none is pre-trusted for it. Its fast tier
+    // is a one-session override (`--service-tier`, OpenAI-family models only), so the flag is left to newer versions.
     Kind { name: "omp", min_version: "17.4.2", efforts: &["off", "minimal", "low", "medium", "high", "xhigh", "max", "auto"],
+        fast: true, since: &[("--service-tier=priority", "18.14.0")],
         tokens: true, rules_file: Some("AGENTS.md"), reads_turn: true, model: &["--model={}"], effort: &["--thinking={}"],
         models: Models { list: &["models", "--json"], read: Read::Selectors, example: "omp/openai/gpt-5.2", ..NO_MODELS },
         access_full: &["--auto-approve"], access_ask: Some(&["--approval-mode=write"]), resume: &["--resume={}"],
         standing: &["--append-system-prompt={}"], integration: "omp", needs_integration: true,
         headless: Some(Headless { args: &["-p", "--no-session", "--no-tools", "--no-skills", "--no-rules"], model: &["--model={}"], system: &["--append-system-prompt={}"], prompt: &["{}"] }),
-        checked: "everything the board does, on 18.13.3", ..BASE },
+        checked: "everything the board does, on 18.13.3 to 18.14.0", ..BASE },
 ];
 /// Claude Code's full model names, newest first; a new one is one more entry.
 const CLAUDE_MODELS: &[&str] = &[

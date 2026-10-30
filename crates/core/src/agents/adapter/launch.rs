@@ -40,6 +40,8 @@ pub fn model_args(kind: &str, m: &str) -> Vec<String> {
 }
 pub fn effort_args(kind: &str, e: &str) -> Vec<String> { crate::agents::kinds::kind(kind).map(|a| fill(a.effort, e)).unwrap_or_default() }
 /// Codex's Fast mode (every request carries `service_tier: "priority"`); off names the default tier, last on the line.
+/// omp's is its one-session tier override, only for the models it realizes it on (OpenAI's family; a Claude or Google
+/// model takes its fast tier from omp's own `tier.*` settings, which the board never writes): off leaves them be.
 pub fn fast_args(kind: &str, on: bool) -> Vec<String> {
-    match (kind, on) { ("codex", true) => vec!["-c".into(), "service_tier=\"fast\"".into()], ("codex", false) => vec!["-c".into(), "service_tier=\"default\"".into()], _ => vec![] }
+    match (kind, on) { ("codex", true) => vec!["-c".into(), "service_tier=\"fast\"".into()], ("codex", false) => vec!["-c".into(), "service_tier=\"default\"".into()], ("omp", true) => vec!["--service-tier=priority".into()], _ => vec![] }
 }

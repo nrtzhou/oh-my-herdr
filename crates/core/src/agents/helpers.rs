@@ -1,4 +1,5 @@
-//! Helpers an agent runs inside its own work (Codex's sub-agents, Claude Code's background agents). A helper's turn
+//! Helpers an agent runs inside its own work (Codex's sub-agents, Claude Code's background agents, omp's task
+//! sub-agents). A helper's turn
 //! ending is not the agent's: Codex reports it like any turn end, with the helper's own thread, whose saved
 //! conversation names the thread that started it. And while a helper the agent started is still at work, the agent's
 //! own turn ending is not the end of its work: the helper's answer starts the agent again.
@@ -29,7 +30,7 @@ pub fn still_at_work(kind: &str, turn: Option<&Turn>, since: i64) -> bool { turn
 /// one set going before the program now running was started (`since`: a conversation resumed by a new program) is
 /// gone. Nothing else ends one: a helper may wait on a long command, without a word, for as long as it takes.
 pub fn running(kind: &str, file: &Path, since: i64) -> usize {
-    match kind { "codex" => codex_running(file, since), "claude" => claude_running(file, since), _ => 0 }
+    match kind { "codex" => codex_running(file, since), "claude" => claude_running(file, since), "omp" => omp_running(file, since), _ => 0 }
 }
 /// The whole file's lines that hold these words, as JSON: a helper may have been started long before the tail.
 fn lines_with(file: &Path, words: &[&str]) -> Vec<(String, Value)> {
@@ -78,4 +79,25 @@ fn claude_back(file: &Path, id: &str, at: i64) -> bool {
     let Ok(lines) = tail_lines(&own, 256 * 1024) else { return false };
     let Some(e) = lines.iter().rev().find(|e| ["user", "assistant"].contains(&e.s("type"))) else { return false };
     e.s("type") == "assistant" && e.at("message").s("stop_reason") == "end_turn" && when(e.at("timestamp")) >= at
+}
+/// omp: each task sub-agent it starts has a conversation of its own in the artifacts folder beside its
+/// (`<conversation>/<AgentName>.jsonl`), begun by the program now running (its `parentSession` names this
+/// conversation's file) and at work while its last turn is open. An `__advisor` review is no helper of its own.
+fn omp_running(file: &Path, since: i64) -> usize {
+    let Ok(dir) = std::fs::read_dir(file.with_extension("")) else { return 0 };
+    dir.flatten().map(|e| e.path())
+        .filter(|f| { let n = f.file_name().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default(); n.ends_with(".jsonl") && !n.starts_with("__") })
+        .filter(|f| {
+            let head = head_of(f, 8192);
+            let Some(Ok(m)) = head.lines().nth(1).map(|l| serde_json::from_str::<Value>(l)) else { return false };
+            m.s("type") == "session" && names_parent(&m.s("parentSession"), file) && when(m.at("timestamp")) >= since
+        })
+        .filter(|f| read_turn("omp", f, TAIL).map(|t| t.pending).unwrap_or(false))
+        .count()
+}
+/// The parent a sub-agent's conversation names: one path in two spellings (as given, and made absolute the same way).
+fn names_parent(said: &str, file: &Path) -> bool {
+    if said.is_empty() { return false; }
+    if Path::new(said) == file { return true; }
+    match (std::fs::canonicalize(said), std::fs::canonicalize(file)) { (Ok(a), Ok(b)) => a == b, _ => false }
 }

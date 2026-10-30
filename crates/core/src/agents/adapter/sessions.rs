@@ -105,20 +105,27 @@ pub fn latest_session(kind: &str, cwd: &Path, since: i64, was: Option<&Path>) ->
         _ => None,
     }
 }
-/// Codex names its own conversations: without a hook, the one for this task is the file made after launch, in this
-/// folder, whose prompts name this task and role. More than one: the one begun since launch (a review started again
-/// has the same words as the one before it). No match, or still more than one: none.
+/// Codex and omp name their own conversations: without a hook, the one for this task is the file made after launch,
+/// in this folder, whose prompts name this task and role. More than one: the one begun since launch (a review started
+/// again has the same words as the one before it). No match, or still more than one: none.
 pub fn find_session(kind: &str, cwd: &Path, since: i64, needle: &str) -> Option<String> { find_session_but(kind, cwd, since, needle, "") }
 /// The same, leaving out a conversation already known to be another's (`but`: the one a review started again had).
 pub fn find_session_but(kind: &str, cwd: &Path, since: i64, needle: &str, but: &str) -> Option<String> {
-    if kind != "codex" { return None; }
-    let real = real(cwd).display().to_string();
-    let hits: Vec<(i64, String)> = find_file(&codex_home().join("sessions"), &|n| n.ends_with(".jsonl"), 4).into_iter()
-        .filter(|f| mtime_ms(f).map(|m| m >= since - 60000).unwrap_or(false))
-        .filter(|f| !crate::agents::helpers::codex_helper_file(f)) // a helper's conversation carries the agent's first prompt along
-        .filter_map(|f| { let head = head_of(&f, 400000); let m = serde_json::from_str::<Value>(first_line(&head)).ok()?; let at = when(m.at("timestamp")); (m.at("payload").s("cwd") == real && at >= since - 5000 && head.contains(needle) && (but.is_empty() || m.at("payload").s("id") != but)).then(|| (at, m.at("payload").t("id"))) })
-        .collect();
+    let hits: Vec<(i64, String)> = match kind {
+        "codex" => find_file(&codex_home().join("sessions"), &|n| n.ends_with(".jsonl"), 4).into_iter()
+            .filter(|f| mtime_ms(f).map(|m| m >= since - 60000).unwrap_or(false))
+            .filter(|f| !crate::agents::helpers::codex_helper_file(f)) // a helper's conversation carries the agent's first prompt along
+            .filter_map(|f| { let head = head_of(&f, 400000); let m = serde_json::from_str::<Value>(first_line(&head)).ok()?; let at = when(m.at("timestamp")); (m.at("payload").s("cwd") == real(cwd).display().to_string() && at >= since - 5000 && head.contains(needle) && (but.is_empty() || m.at("payload").t("id") != but)).then(|| (at, m.at("payload").t("id"))) })
+            .collect(),
+        // omp's second line (the session's own entry) says whose it is; a sub-agent's names its parent and is left
+        // out, as a Codex helper's is.
+        "omp" => omp_files(&[cwd], &|n| n.ends_with(".jsonl")).into_iter()
+            .filter(|f| mtime_ms(f).map(|m| m >= since - 60000).unwrap_or(false))
+            .filter_map(|f| { let head = head_of(&f, 400000); let m: Value = serde_json::from_str(head.lines().nth(1)?).ok()?; let at = when(m.at("timestamp")); (m.s("type") == "session" && m.b("id") && !m.b("parentSession") && m.s("cwd") == real(cwd).display().to_string() && at >= since - 5000 && head.contains(needle) && (but.is_empty() || m.t("id") != but)).then(|| (at, m.t("id"))) })
+            .collect(),
+        _ => return None,
+    };
     let since_launch: Vec<&(i64, String)> = hits.iter().filter(|h| h.0 >= since).collect();
     match (hits.len(), since_launch.len()) { (1, _) => Some(hits[0].1.clone()), (_, 1) => Some(since_launch[0].1.clone()), _ => None }
 }
-pub fn can_find_session(kind: &str) -> bool { kind == "codex" }
+pub fn can_find_session(kind: &str) -> bool { matches!(kind, "codex" | "omp") }

@@ -14,11 +14,18 @@ fn has_pair(args: &[String]) -> bool { args.windows(2).any(|p| p[0] == FAST[0] &
 fn args(k: &str, o: StartOpts) -> Vec<String> { start_args(k, &o).unwrap() }
 fn opts(model: &str, effort: &str, fast: Option<bool>, access: &str, resume: &str) -> StartOpts { StartOpts { model: model.into(), effort: effort.into(), fast, access: access.into(), resume: resume.into(), ..Default::default() } }
 fn tail(v: &[String], n: usize) -> Vec<String> { v[v.len().saturating_sub(n)..].to_vec() }
+/// The version a program says it is here (the world counts every one as 9.9.9, "without being run for its version").
+fn version(k: &str, v: &str) {
+    let file = sw::store::files::data_dir().join("versions.json");
+    let mut all: Value = serde_json::from_str(&std::fs::read_to_string(&file).unwrap()).unwrap();
+    all[k] = json!({ "v": v, "at": sw::clock::now(), "found": true });
+    std::fs::write(&file, all.to_string()).unwrap();
+}
 
 #[test]
-fn fast_mode_only_codex_has_one_and_its_argument_comes_after_the_model_and_effort() {
+fn fast_mode_codex_and_omp_have_one_and_the_argument_comes_after_the_model_and_effort() {
     let _w = world();
-    assert_eq!([has_fast("codex"), has_fast("claude"), has_fast("pi"), has_fast("something-else")], [true, false, false, false]);
+    assert_eq!([has_fast("codex"), has_fast("claude"), has_fast("pi"), has_fast("omp"), has_fast("something-else")], [true, false, false, true, false]);
     assert_eq!(tail(&args("codex", opts("gpt-x", "high", Some(true), "", "")), 6), vec!["-m", "gpt-x", "-c", "model_reasoning_effort=\"high\"", FAST[0], FAST[1]]);
     assert!(!has_pair(&args("codex", opts("", "", Some(false), "", ""))));
     assert!(!args("codex", Default::default()).join(" ").contains("service_tier"));
@@ -28,6 +35,15 @@ fn fast_mode_only_codex_has_one_and_its_argument_comes_after_the_model_and_effor
     // the setting is the one switch: off names the default tier last, so it wins over a tier in Codex's own config
     // file; a caller that says nothing leaves Codex's setting alone
     assert_eq!(tail(&args("codex", opts("", "", Some(false), "", "")), 2), SLOW.to_vec());
+    // omp's is a one-session tier override its 18.14.0 and newer take: on adds it after the model and effort; off or
+    // a caller that says nothing leaves omp's own tier settings alone; an older omp is started without it (it quits
+    // at once on an argument it does not know)
+    version("omp", "18.14.0");
+    assert_eq!(args("omp", opts("gpt-x", "high", Some(true), "", "")), vec!["--auto-approve", "--model=gpt-x", "--thinking=high", "--service-tier=priority"]);
+    assert!(!args("omp", opts("", "", Some(false), "", "")).join(" ").contains("service-tier"));
+    assert!(!args("omp", Default::default()).join(" ").contains("service-tier"));
+    version("omp", "18.13.3");
+    assert!(!args("omp", opts("", "", Some(true), "", "")).join(" ").contains("service-tier"));
     // access: full access by default; `ask` leaves the permission flags out; a program that cannot ask is refused
     assert_eq!(args("codex", Default::default()), vec!["--dangerously-bypass-approvals-and-sandbox", "--no-daemon"]);
     assert_eq!(args("codex", opts("", "", None, "ask", "")), vec!["--no-daemon"]);

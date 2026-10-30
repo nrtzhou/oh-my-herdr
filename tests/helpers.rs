@@ -108,12 +108,34 @@ fn a_quiet_helper_is_at_work_however_long_and_one_started_before_its_program_is_
     // Claude Code: a background agent launched, its notification not back.
     let claude = std::path::PathBuf::from(std::env::var("CLAUDE_CONFIG_DIR").unwrap()).join("projects").join("x").join("s.jsonl");
     write(&claude, &[json!({ "timestamp": at, "type": "user", "message": { "role": "user", "content": [{ "type": "tool_result", "content": "Async agent launched successfully.\nagentId: aquiet01 (internal ID)" }] } })]);
+    // omp: a task sub-agent's conversation beside the agent's own, its turn open (a long build). A sub-agent that
+    // finished, an advisor's review and one belonging to another conversation are no helpers of this one.
+    let omp = std::path::PathBuf::from(std::env::var("OMP_CODING_AGENT_DIR").unwrap()).join("sessions").join("one").join("2026-10-30T00-00-00-000Z_root-quiet.jsonl");
+    write(&omp, &[
+        json!({ "type": "title", "v": 1, "title": "", "pad": "" }),
+        json!({ "type": "session", "version": 3, "id": "root-quiet", "cwd": "/work/x", "timestamp": at }),
+    ]);
+    let sub = |name: &str| omp.with_extension("").join(format!("{name}.jsonl"));
+    let open = |id: &str, parent: &str| vec![
+        json!({ "type": "title", "v": 1, "title": "", "pad": "" }),
+        json!({ "type": "session", "version": 3, "id": id, "cwd": "/work/x", "parentSession": parent, "timestamp": at }),
+        json!({ "type": "message", "id": "u1", "timestamp": at, "message": { "role": "user", "content": [{ "type": "text", "text": "Build it." }] } }),
+    ];
+    let root_s = omp.display().to_string();
+    write(&sub("BuildAll"), &open("sub-build", &root_s));
+    write(&sub("Orphan"), &open("sub-orphan", "/elsewhere/other.jsonl"));
+    write(&sub("__advisor"), &open("advisor", &root_s));
+    let mut done = open("sub-done", &root_s);
+    done.push(json!({ "type": "message", "id": "a1", "timestamp": at, "message": { "role": "assistant", "content": [{ "type": "text", "text": "Five." }], "stopReason": "stop" } }));
+    write(&sub("DoneOne"), &done);
     sw::clock::advance(3 * 3600000);
     assert_eq!(sw::agents::helpers::running("codex", &root, started), 1);
     assert_eq!(sw::agents::helpers::running("claude", &claude, started), 1);
+    assert_eq!(sw::agents::helpers::running("omp", &omp, started), 1, "the open one only: not the finished one, the advisor or another conversation's");
     // The program was started again since (a resumed conversation): helpers of the one before are gone with it.
     let again = sw::clock::now();
     assert_eq!(sw::agents::helpers::running("codex", &root, again), 0);
     assert_eq!(sw::agents::helpers::running("claude", &claude, again), 0);
+    assert_eq!(sw::agents::helpers::running("omp", &omp, again), 0);
     assert!(sw::agents::helpers::is_helper("codex", "helper-quiet") && !sw::agents::helpers::is_helper("codex", "root-quiet"));
 }
