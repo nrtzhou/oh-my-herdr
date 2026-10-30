@@ -227,7 +227,7 @@ fn the_web_board_has_pinned_on_its_filter_row_and_the_pin_mark() {
     sw::actions::filing::set_pin(&b, true).unwrap();
     let s = common::board::web(&w, "board", json!({}));
     assert!(s.at("list").at("head").at("tabs").is_null() && !s.at("flags").has("pinned"), "no tabs: {}", s.at("flags"));
-    let items = s.at("list").at("shows").arr("items").clone();
+    let items = s.at("list").at("shows").arr("items");
     let last = items.last().unwrap();
     assert_eq!((last.i("n"), last.s("name"), last.i("count")), (PINNED as i64, "Pinned", 1));
     assert_eq!(items[items.len() - 2].s("name"), "Automations");
