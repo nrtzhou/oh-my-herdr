@@ -100,3 +100,37 @@ fn the_finish_key_is_offered_on_a_task_stuck_at_finishing_and_finishes_it() {
     assert_eq!(t.s("stage"), "approval", "{} {}", t.s("msg"), t.at("failure"));
     assert_eq!(reviewer_starts(&w), 1);
 }
+
+#[test]
+fn a_stop_that_left_no_closing_note_is_asked_to_carry_on_once_and_no_more() {
+    let w = world();
+    let id = w.add("Unfinished");
+    let at = sw::clock::now();
+    let fixture = |name: &str| Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/endings").join(format!("{name}.jsonl"));
+    let set = |transcript: &Path, wrap: i64, kind: &str| sw::store::tasks::patch(&id, |t| {
+        t.put("agent", "omp"); t.put("transcript", transcript.display().to_string()); t.put("startedAgentAt", at);
+        t.put("wrapUp", wrap); if kind.is_empty() { t.del("kind"); } else { t.put("kind", kind); }
+    }).unwrap();
+    let note = sw::store::files::dir_of(&id).join("closing-note.md");
+    // a turn that stopped with nothing saying it finished and left no closing note: asked to carry on, once
+    set(&fixture("omp-pending-made"), 0, "");
+    let ask = sw::turn::wrap_up(&task(&id), "agent");
+    assert_eq!((ask.b("continue"), ask.s("additionalContext")), (true, sw::turn::CARRY_ON), "{ask}");
+    set(&fixture("omp-pending-made"), 1, "");
+    assert!(!sw::turn::wrap_up(&task(&id), "agent").b("continue"), "asked once: a second unfinished stop stands for the human");
+    // its closing note is written: nothing to ask for
+    set(&fixture("omp-pending-made"), 0, "");
+    std::fs::create_dir_all(note.parent().unwrap()).unwrap();
+    std::fs::write(&note, "Did v1.\n").unwrap();
+    assert!(!sw::turn::wrap_up(&task(&id), "agent").b("continue"));
+    std::fs::remove_file(&note).unwrap();
+    // never carried on: a turn that finished or was stopped by the human, one waiting on the human, or a reviewer's
+    set(&fixture("omp-finished-made"), 0, "");
+    assert!(!sw::turn::wrap_up(&task(&id), "agent").b("continue"));
+    set(&fixture("omp-aborted-made"), 0, "");
+    assert!(!sw::turn::wrap_up(&task(&id), "agent").b("continue"));
+    set(&fixture("omp-pending-made"), 0, "question");
+    assert!(!sw::turn::wrap_up(&task(&id), "agent").b("continue"));
+    set(&fixture("omp-pending-made"), 0, "");
+    assert!(!sw::turn::wrap_up(&task(&id), "reviewer").b("continue"));
+}

@@ -179,7 +179,17 @@ pub fn snap(t: &Obj) -> Value {
     let plan = if t.at("plan").b("at") { crate::plan::read_plan(t) } else { String::new() };
     let at = if tree.is_empty() { folder.clone() } else { tree.clone().into() };
     json!({ "talk": talk, "screen": screen, "plan": plan, "landsOn": if t.s("stage") == "approval" { json!(crate::sync::lands_on(t)) } else { Value::Null },
+        "helpers": helper_names(t),
         "folder": tilde(&folder.display().to_string()), "root": folder.display().to_string(), "tree": tilde(&tree), "treePath": tree, "branch": branch_of(&at),
         "settings": rows(&Scope::task(t)).iter().map(|r| r.json()).collect::<Vec<_>>(), "problems": problems(Some(t)), "canWorktree": can_worktree(&folder), "repo": in_repo(t),
         "worktreeGone": t.b("worktree") && tree.is_empty() })
+}
+/// The task sub-agents at work with its agent, by name (the bridge named them as they started: turn.rs), shown only
+/// while their own turns are open — the same reading the finish line waits on (agents/helpers.rs).
+fn helper_names(t: &Obj) -> Value {
+    let at = t.i("startedAgentAt");
+    let names: Vec<String> = t.arr("helpers").iter().filter(|h| h.i("at") >= at).map(|h| h.t("agent")).filter(|n| !n.is_empty()).collect();
+    let Some(f) = t.so("transcript") else { return Value::Null };
+    if names.is_empty() || crate::agents::helpers::running(&t.t("agent"), std::path::Path::new(f), at) == 0 { return Value::Null; }
+    json!(names)
 }

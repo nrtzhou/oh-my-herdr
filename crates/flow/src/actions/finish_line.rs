@@ -97,7 +97,7 @@ pub fn send_error_noted(id: &str, note: &str) -> Res<Said> {
     if cur.s("stage") == "failed" && cur.at("failure").s("stage") == "send" { return retry(&cid); }
     if awaits_plan(&cur) && cur.at("plan").b("reviewFailed") { return review_again(&cid); } // a plan whose review could not run
     if cur.s("stage") == "nosummary" || (cur.s("stage") == "failed" && cur.at("failure").b("auth") && cur.at("failure").s("stage") == "agent") {
-        let out = tell(&cid, &flow::send::with_tail(&cur, "You stopped before the work was finished. Continue the task where you left off."), false)?;
+        let out = tell(&cid, &flow::send::with_tail(&cur, crate::turn::CARRY_ON), false)?;
         return Ok(say(out.task, format!("{cid}: told the agent to continue")));
     }
     if !can_send_error(&cur) { crate::fail!("{cid} has no agent error to send. Login blockers need the human first."); }

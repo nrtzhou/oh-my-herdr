@@ -34,6 +34,17 @@ pub fn turn_ended(id: &str, role: &str, token: &str, round: i64, extra: &[String
     let Some(t) = t else { return log(&format!("no task {id}")) };
     if !["agent", "reviewer"].contains(&role) || !token_ok(t.s("id"), role, token, round) { return log(&format!("refused for {id} ({role}): wrong token")); }
     let j = input(extra);
+    // A task sub-agent went to work (the omp bridge's `before_subagent_spawn`): its name on the task for the board to
+    // show, and no turn of its own: a helper's turns are no turns of the task's (agents/helpers.rs).
+    if j.at("subagent").is_object() { return helper_started(&t, &j); }
+    // The session is about to settle (the omp bridge's `session_stop`): the board may ask for one turn more. Its
+    // answer goes out on the hook's own stdout, at once.
+    if j.b("session_stop") {
+        let a = wrap_up(&t, role);
+        if a.b("continue") { let _ = update_wait(t.s("id"), 2000, |t| { t.put("wrapUp", t.i("wrapUp") + 1); Ok(Change::Write) }); }
+        println!("{}", crate::json::text(&a));
+        return;
+    }
     // Codex also reports turns of side conversations: a real first prompt starts with the task line, so `side` marks
     // every other report for the runner to judge. And the turns of the agent's own helpers (agents/helpers.rs), which
     // carry its first prompt along: their conversation names the thread that started them.
@@ -56,6 +67,35 @@ pub fn turn_ended(id: &str, role: &str, token: &str, round: i64, extra: &[String
         Ok(Change::Write)
     });
     match r { Ok(_) => { if start { spawn_runner("finish", t.s("id"), &[]); } } Err(e) => log(&if e.kind == crate::err::Kind::Busy { format!("gave up on {id}: the task was busy") } else { e.msg }) }
+}
+/// A task sub-agent its agent started (the bridge's `before_subagent_spawn`): its name and model on the task, for the
+/// board to say whose work holds the turn up. No event of its own: a helper's turns are no turns of the task's.
+fn helper_started(t: &Task, j: &Value) {
+    let s = j.at("subagent");
+    let at = now();
+    let r = update_wait(t.s("id"), 2000, |t| {
+        let mut hs: Vec<Value> = t.arr("helpers").iter().filter(|h| h.i("at") >= t.i("startedAgentAt")).cloned().collect();
+        hs.push(json!({ "agent": s.t("agent"), "model": s.t("model"), "at": at }));
+        while hs.len() > 8 { hs.remove(0); }
+        t.put("helpers", hs);
+        Ok(Change::Write)
+    });
+    if let Err(e) = r { log(&format!("helper of {id} went unnoted: {}", e.msg, id = t.s("id"))); }
+}
+/// The words the board gives an agent it asks to carry on: at a session's stop, and when you send the failure back.
+pub const CARRY_ON: &str = "You stopped before the work was finished. Continue the task where you left off.";
+/// The one turn more the board asks for at a session's stop (the omp bridge's `session_stop`): a turn that stopped
+/// with nothing saying it finished and left no closing note — the finish line's "Stopped without a summary", asked
+/// for before it is held for you. Once for a task: a second unfinished stop stands for you to judge. Never for a turn
+/// that waits for you (its report or its question), went wrong, or was stopped by you.
+pub fn wrap_up(t: &Task, role: &str) -> Value {
+    if role != "agent" || t.i("wrapUp") >= 1 || crate::chat_only::is_chat(t) { return json!({}); }
+    if !t.at("expectedWake").is_null() || !t.s("kind").is_empty() || t.b("selfBlocked") || !crate::store::inbox::pending_text(&t.s("id")).is_empty() { return json!({}); }
+    if crate::flow::task::note_stat(t).map(|(_, n)| !n.trim().is_empty()).unwrap_or(false) { return json!({}); }
+    let w = why_stopped(t, role, None);
+    let over = w.turn.as_ref().map(|x| x.finished || !x.error.is_empty() || x.interrupted).unwrap_or(true);
+    if over { return json!({}); }
+    json!({ "continue": true, "additionalContext": CARRY_ON })
 }
 /// Why did this pane stop: { when, why, turn, hooked, kind, version, can_read }. The one seam for "when and why", fed
 /// by the hook's event and the saved conversation.

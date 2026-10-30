@@ -438,6 +438,7 @@
 - Markdown 按文本读：列表项的后续行排在它的话下面，代码保留行，标题、粗体和代码块的标记被剔除。
 - **你给它敲的命令**（`/clear`、`/compact`、`/model` …）按你敲的样子显示，然后用朴素的话说明它做了什么：`Chat reset: a fresh session started.`、`Conversation compacted: …`、`Model switched to …`。停止显示为 `Stopped: interrupted before it finished.` 程序给这些的标记（`<command-name>`、`<local-command-stdout>` …）绝不显示。
 - **它干活还没说新话时**，它最后的话留着，框上方的行说它此刻在做什么。还什么都没说的会说明：`The agent has just started: nothing to show yet.`
+- **它派出的子代理还在干活时**（omp 的桥报过名字的），「谁在说话」的行下有行灰字：`its helper BuildAll is at work`；子代理的回合一完就不再说。
 - **只在它屏幕上的对话框**（权限提示、带选项的问题）单独一行说明，附去那里的方法：`The agent shows a dialog on its screen that waits for your answer: enter opens it.` 协调者的在 Herdr 的 `Coordinator` 标签页，评审者的在任务空间里它的 `Reviewer #2` 标签页。
 - **进入代理**（`Alt+O`）是它真实的终端，原样不动。
 

@@ -27,6 +27,14 @@ pub fn chat_of(s: &mut State, t: &Theme, r: Option<&Obj>) -> Option<Who> {
     w.call = super::chat_call::lines(s);
     Some(w)
 }
+/// The task sub-agents at work with its agent, said under its words (snap's `helpers`).
+fn helper_note(r: &Obj) -> String {
+    let names = crate::json::strings(r.at("snap").at("helpers"));
+    if names.is_empty() { return String::new(); }
+    let shown: Vec<&str> = names.iter().map(String::as_str).take(2).collect();
+    let more = if names.len() > 2 { format!(", and {} more", names.len() - 2) } else { String::new() };
+    format!("its helper{} {}{} {} at work", if names.len() == 1 { "" } else { "s" }, shown.join(", "), more, if names.len() == 1 { "is" } else { "are" })
+}
 fn who_of(s: &mut State, t: &Theme, r: Option<&Obj>) -> Option<Who> {
     same_chat(s);
     if s.mode == Mode::Find { return None; }
@@ -58,7 +66,7 @@ fn who_of(s: &mut State, t: &Theme, r: Option<&Obj>) -> Option<Who> {
             v
         } else { vec![] };
         let h = r.at("handled");
-        return Some(Who { mark: mark(t, r), tag: number_tag(r, &s.data.keys, &s.scope, true), name: crate::shown::words::clean(if r.b("title") { r.s("title") } else { r.s("id") }), status: if echo { word } else { status }, progress, text, parts, mine: !mine.is_empty(), raw: raw && mine.is_empty(), said, turn: format!("{}|{}|{}", r.s("said"), crate::json::text(h.at("msg")), crate::json::text(h.at("comp"))), ..Default::default() });
+        return Some(Who { mark: mark(t, r), tag: number_tag(r, &s.data.keys, &s.scope, true), name: crate::shown::words::clean(if r.b("title") { r.s("title") } else { r.s("id") }), status: if echo { word } else { status }, progress, text, parts, mine: !mine.is_empty(), raw: raw && mine.is_empty(), said, turn: format!("{}|{}|{}", r.s("said"), crate::json::text(h.at("msg")), crate::json::text(h.at("comp"))), note: helper_note(r), ..Default::default() });
     }
     let far = if !s.scope.is_empty() && s.scope != "*" && s.remotes.contains_key(&s.scope) { s.scope.clone() } else { String::new() };
     if !far.is_empty() { return Some(far_who(s, t, &far)); }

@@ -63,21 +63,42 @@ export default function (pi: any) {{
             Ok(Some(vec!["-e".into(), file.display().to_string()]))
         }
         // A one-file extension of the task's own: omp's agent_end event runs the same command, with the session file
-        // on stdin. It says `willContinue` when the program goes on by itself: that is not a turn's end.
+        // on stdin. It says `willContinue` when the program goes on by itself: that is not a turn's end. Two more
+        // events tell the board what holds the turn up: a task sub-agent going to work (its name, on the task), and
+        // the session settling, where the board may ask for one turn more (its answer comes back on the stdout).
         "omp" => {
             let file = h.dir.join(format!("hook-{}.ts", h.role));
             let cmd = serde_json::to_string(&hook_command(h))?;
             write_private(&file, &format!(r#"import {{ spawn }} from "node:child_process";
 const cmd = {cmd};
-export default function (omp: any) {{
-  omp.on("agent_end", (_e: any, ctx: any) => {{
+function send(payload, done) {{
+  try {{
+    const c = spawn(cmd[0], cmd.slice(1), {{ stdio: ["pipe", done ? "pipe" : "ignore", "ignore"], detached: true }});
+    c.on("error", () => {{}}); if (c.stdin) c.stdin.on("error", () => {{}});
+    if (done && c.stdout) {{ let out = ""; c.stdout.on("data", (d) => {{ out += d; }}); c.on("close", () => {{ try {{ done(out); }} catch {{}} }}); }}
+    c.stdin.end(JSON.stringify(payload)); c.unref();
+  }} catch {{}}
+}}
+function file(ctx) {{ try {{ return (ctx && ctx.sessionManager && ctx.sessionManager.getSessionFile && ctx.sessionManager.getSessionFile()) || ""; }} catch {{ return ""; }} }}
+export default function (omp) {{
+  omp.on("agent_end", (_e, ctx) => {{
+    try {{ if (_e && _e.willContinue) return; send({{ transcript_path: file(ctx) }}); }} catch {{}}
+  }});
+  omp.on("before_subagent_spawn", (_e, ctx) => {{
+    try {{ const m = _e && _e.patterns; const one = Array.isArray(m) ? (m[0] || "") : (m || ""); send({{ transcript_path: file(ctx), subagent: {{ agent: (_e && _e.agent) || "", model: typeof one === "string" ? one : "" }} }}); }} catch {{}}
+  }});
+  omp.on("session_stop", (_e, ctx) => {{
     try {{
-      if (_e && _e.willContinue) return;
-      let file = ""; try {{ file = ctx?.sessionManager?.getSessionFile?.() || ""; }} catch {{}}
-      const c = spawn(cmd[0], cmd.slice(1), {{ stdio: ["pipe", "ignore", "ignore"], detached: true }});
-      c.on("error", () => {{}}); c.stdin.on("error", () => {{}});
-      c.stdin.end(JSON.stringify({{ transcript_path: file }})); c.unref();
-    }} catch {{}}
+      return new Promise((resolve) => {{
+        let done = false;
+        const finish = (v) => {{ if (!done) {{ done = true; try {{ resolve(v && v.continue ? {{ continue: true, additionalContext: v.additionalContext || "" }} : {{}}); }} catch {{ resolve({{}}); }} }} }};
+        const t = setTimeout(() => finish({{}}), 2500);
+        send({{ transcript_path: file(ctx), session_stop: true }}, (out) => {{
+          clearTimeout(t);
+          try {{ finish(JSON.parse((out || "").trim().split("\n").filter(Boolean).pop() || "{{}}")); }} catch {{ finish({{}}); }}
+        }});
+      }});
+    }} catch {{ return {{}}; }}
   }});
 }}
 "#))?;
