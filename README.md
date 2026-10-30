@@ -60,11 +60,11 @@ omh update && omh doctor         # 更新 + 体检
 
 ## 致谢与沿革
 
-基于 [Herdr Projects](https://github.com/eliasstravik/shepherdr)（Elias Stravik，MIT 许可）1.2.27 分叉维护，感谢原项目。
+基于上游项目（Elias Stravik，MIT 许可）1.2.27 分叉维护，感谢原项目。
 
 **分叉初衷：增强对 omp（oh-my-pi）的支持。** 本版把 omp 从「只能读屏的二等程序」提升到与 Claude Code / Codex / pi 同级：看板直接读它的会话——回合结束、token 用量（含侧调用）、聊天转录、会话发现与恢复、收尾钩子，`limit.tokens` 等能力一并生效。
 
-**与上游后续版本（Shepherdr 2.0）的理念区别**，也是本 fork 存在的理由：
+**与上游 2.0 的理念区别**，也是本 fork 存在的理由：
 
 - **人是合并闸门**：默认 `merge.by you`，评审通过后仍等你点头才合并；2.0 默认自动合并，人退到「被通知」。
 - **评审门独立裁决**：评审者只列发现，看板按固定规则判定通过与否；2.0 改为任务 agent 自评自判。
