@@ -27,15 +27,45 @@ fn note(w: &World, id: &str) -> String {
 fn report(id: &str, j: serde_json::Value) { sw::turn::turn_ended(id, "agent", "tok-1", 0, &[j.to_string()]); }
 
 #[test]
-fn a_helper_back_with_what_it_said_is_one_line_under_its_agents_words_until_its_turn_ends() {
+fn a_background_spawn_s_receipt_is_no_helper_back_and_a_settled_call_s_own_result_is() {
     let (w, id) = ready();
-    report(&id, json!({ "helper_back": { "agent": "BuildAll", "note": "Built all three." } }));
+    // The receipt of a background spawn (tools/task.md's background response): no result yet, so no helper is back.
+    report(&id, json!({ "task_result": { "agent": "BuildAll", "output": "", "state": "running", "results": 0 } }));
+    assert_eq!(note(&w, &id), "", "the receipt says no helper is back");
+    assert_eq!(task(&id).i("eventSeq"), 0);
+    // A settled call comes back with its own results: one line, until its turn ends.
+    report(&id, json!({ "task_result": { "agent": "BuildAll", "output": "Built all three.", "state": "", "results": 1 } }));
     assert_eq!(note(&w, &id), "its helper BuildAll is back: Built all three.");
     assert_eq!(task(&id).i("eventSeq"), 0, "a helper back is no turn of the task's");
     // the real turn's end takes the line away and stands as the turn it is
     report(&id, json!({ "transcript_path": "" }));
     assert_eq!(note(&w, &id), "", "its turn's end takes the line away");
     assert_eq!(task(&id).i("eventSeq"), 1);
+}
+
+/// The whole life of a background spawn as the board sees it (tools/task.md `Outputs`): its receipt says nothing, and
+/// its result comes back into the conversation itself (talk.rs's own line for an `async-result`), not as a note.
+#[test]
+fn a_background_spawn_s_result_comes_back_into_the_conversation_itself() {
+    let (w, id) = ready();
+    report(&id, json!({ "task_result": { "agent": "BuildAll", "output": "", "state": "running", "results": 0 } }));
+    assert_eq!(note(&w, &id), "", "the receipt says no helper is back");
+    let dir = w.base.join("omp-life");
+    std::fs::create_dir_all(&dir).unwrap();
+    let file = dir.join("session.jsonl");
+    std::fs::write(&file, format!("{}\n", json!({ "type": "custom_message", "customType": "async-result", "content": "<system-notice>\nBackground job bg_1 has completed.", "timestamp": 1 }))).unwrap();
+    let said = sw::agents::talk::talk_of("omp", Some(&file), "", std::path::Path::new("/"), 50).unwrap().iter().map(|m| m.text.clone()).collect::<Vec<_>>();
+    assert!(said.contains(&"Background job finished: its result went into the conversation.".to_string()), "{said:?}");
+}
+
+#[test]
+fn a_mixed_call_s_receipt_says_nothing_while_its_background_spawns_run() {
+    let (w, id) = ready();
+    // Its settled spawns' results ride the receipt, but the call is still running: its async results are the
+    // conversation's own lines when they come back.
+    report(&id, json!({ "task_result": { "agent": "BuildAll", "output": "Built one.", "state": "running", "results": 1 } }));
+    assert_eq!(note(&w, &id), "");
+    assert_eq!(task(&id).i("eventSeq"), 0);
 }
 
 #[test]

@@ -66,8 +66,9 @@ export default function (pi: any) {{
         // on stdin. It says `willContinue` when the program goes on by itself: that is not a turn's end. Two more
         // events tell the board what holds the turn up: a task sub-agent going to work (its name, on the task), and
         // the session settling, where the board may ask for one turn more (its answer comes back on the stdout).
-        // Three more events are one greyed line each for the chat, no turn of their own: a task's helper back with
-        // what it said (the `task` tool's result, its first line), an automatic compaction, an automatic retry.
+        // Three more events are one greyed line each for the chat, no turn of their own: a settled task call's own
+        // result (a background spawn's receipt is only `Spawned agent …`: its result comes back as one of the
+        // conversation's own lines, so the board is told the facts and decides), an automatic compaction, a retry.
         "omp" => {
             let file = h.dir.join(format!("hook-{}.ts", h.role));
             let cmd = serde_json::to_string(&hook_command(h))?;
@@ -107,9 +108,10 @@ export default function (omp) {{
       if (!_e || _e.toolName !== "task" || _e.isError) return;
       const i = _e.input || {{}};
       const one = Array.isArray(i.tasks) ? (i.tasks[0] || {{}}) : i;
-      const said = (Array.isArray(_e.content) ? _e.content : []).filter((c) => c && c.type === "text").map((c) => c.text || "").join("\n");
-      const line = (said.split("\n").map((l) => l.trim()).find(Boolean) || "").slice(0, 120);
-      send({{ transcript_path: file(ctx), helper_back: {{ agent: (one && one.name) || "", note: line }} }});
+      const d = _e.details || {{}};
+      const rs = Array.isArray(d.results) ? d.results : [];
+      const out = String((rs[0] && rs[0].output) || "").split("\n").map((l) => l.trim()).find(Boolean) || "";
+      send({{ transcript_path: file(ctx), task_result: {{ agent: (one && one.name) || "", output: out.slice(0, 120), state: (d.async && d.async.state) || "", results: rs.length }} }});
     }} catch {{}}
   }});
   omp.on("auto_compaction_start", (_e, ctx) => {{ try {{ send({{ transcript_path: file(ctx), compaction: "start" }}); }} catch {{}} }});

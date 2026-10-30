@@ -45,9 +45,9 @@ pub fn turn_ended(id: &str, role: &str, token: &str, round: i64, extra: &[String
         println!("{}", crate::json::text(&a));
         return;
     }
-    // The omp bridge's other reports, each no turn of its own: a task's helper back (its name and what it said), an
-    // automatic compaction, an automatic retry. One line each for the chat, kept until this turn ends.
-    if j.at("helper_back").is_object() || j.b("compaction") || j.b("retry_start") { return noted(&t, &j); }
+    // The omp bridge's other reports, each no turn of its own: a task call's own result (its name and what it said),
+    // an automatic compaction, an automatic retry. One line each for the chat, kept until this turn ends.
+    if j.at("task_result").is_object() || j.b("compaction") || j.b("retry_start") { return noted(&t, &j); }
     // Codex also reports turns of side conversations: a real first prompt starts with the task line, so `side` marks
     // every other report for the runner to judge. And the turns of the agent's own helpers (agents/helpers.rs), which
     // carry its first prompt along: their conversation names the thread that started them.
@@ -86,14 +86,19 @@ fn helper_started(t: &Task, j: &Value) {
     });
     if let Err(e) = r { log(&format!("helper of {id} went unnoted: {}", e.msg, id = t.s("id"))); }
 }
-/// One greyed line for the chat from the omp bridge's report that is no turn of its own (a helper back with what it
-/// said, an automatic compaction, an automatic retry): kept on the task until this turn ends (turn_ended's event).
-/// A report of the same kind stands again in its place.
+/// One greyed line for the chat from the omp bridge's report that is no turn of its own (a task call's own result, an
+/// automatic compaction, an automatic retry): kept on the task until this turn ends (turn_ended's event). A report of
+/// the same kind stands again in its place.
 fn noted(t: &Task, j: &Value) {
-    let (kind, text) = if j.at("helper_back").is_object() {
-        let h = j.at("helper_back");
-        let (a, n) = (one_line(&h.t("agent"), 60), one_line(&h.t("note"), 120));
-        (format!("helper {a}"), if n.is_empty() { format!("its helper {a} is back") } else { format!("its helper {a} is back: {n}") })
+    let (kind, text) = if j.at("task_result").is_object() {
+        // A background spawn's receipt (`Spawned agent …`, `async.state` `running`, no results) is not a helper back:
+        // only a settled call's own results are (tools/task.md `Outputs`); a mixed call is left to its async results,
+        // which are the conversation's own lines (talk.rs).
+        let r = j.at("task_result");
+        if r.i("results") <= 0 || r.t("state") == "running" { return; }
+        let (a, n) = (one_line(&r.t("agent"), 60), one_line(&r.t("output"), 120));
+        let back = if a.is_empty() { "its helper is back".to_string() } else { format!("its helper {a} is back") };
+        (format!("helper {a}"), if n.is_empty() { back } else { format!("{back}: {n}") })
     } else if j.b("compaction") {
         ("compaction".to_string(), if j.t("compaction") == "start" { "Compacting: the conversation is being shortened." } else { "Compacted: the conversation was shortened." }.to_string())
     } else {
