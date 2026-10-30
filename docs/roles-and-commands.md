@@ -37,7 +37,7 @@ time spent × (100 − percent) ÷ percent        40 minutes in at 80% → 10 mi
 
 ## 每个聊天都懂看板
 
-插件会在每个装好的代理程序自己的 skills 文件夹里放一份小型 how-to：一个名为 `omh` 的文件夹，内含 `SKILL.md`，位置在 `~/.claude/skills`、`~/.codex/skills` 和 `~/.pi/agent/skills`。所以任何普通聊天都能「add this to the board」（把这条加到看板），不用人教。
+插件会在每个装好的代理程序自己的 skills 文件夹里放一份小型 how-to：一个名为 `omh` 的文件夹，内含 `SKILL.md`，位置在 `~/.claude/skills`、`~/.codex/skills`、`~/.pi/agent/skills` 和 `~/.omp/agent/skills`。所以任何普通聊天都能「add this to the board」（把这条加到看板），不用人教。
 
 - 它给出的是命令的完整路径，所以 PATH 里没有 `omh` 也能用。
 - Herdr 的其他程序拿不到它：看板不知道它们的 skills 文件夹在哪。

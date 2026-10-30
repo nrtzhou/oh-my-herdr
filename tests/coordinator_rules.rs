@@ -25,7 +25,7 @@ fn the_rules_are_agents_md_in_the_folder_it_starts_in_on_no_launch_flag_and_stil
     w.script(json!({ "coordinator": [{ "said": "Hello." }] }));
     send(&w.root, "hello", false, "", &w.socket).unwrap(); drain();
     // What each supported program reads at every new conversation, by itself.
-    assert_eq!(["claude", "codex", "pi"].map(|k| sw::agents::kinds::kind(k).unwrap().rules_file), [Some("CLAUDE.md"), Some("AGENTS.md"), Some("AGENTS.md")]);
+    assert_eq!(["claude", "codex", "pi", "omp"].map(|k| sw::agents::kinds::kind(k).unwrap().rules_file), [Some("CLAUDE.md"), Some("AGENTS.md"), Some("AGENTS.md"), Some("AGENTS.md")]);
     let a = agent(&w);
     assert_eq!(file("AGENTS.md").matches(HEAD).count(), 1); assert!(file("AGENTS.md").contains("board add \"<short title"));
     assert!(file("AGENTS.md").contains(&format!("The board's command is: {}/bin/omh ", sw::store::files::data_dir().display())));

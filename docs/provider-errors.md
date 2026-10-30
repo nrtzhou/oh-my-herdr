@@ -13,8 +13,9 @@
 | Codex | `task_complete` 上的 `error` |
 | Claude Code | 带 `isApiErrorMessage` 的条目 |
 | pi | `stopReason` 为 `error` 的消息 |
+| omp | `stopReason` 为 `error` 的 assistant 消息，服务商原话在 `errorMessage` |
 
-程序自己的错误代码决定它算会过去（Codex 的 `codex_error_info`、Claude Code 的 `error` 和 HTTP 状态）。没有的话，看它说的话。
+程序自己的错误代码决定它算会过去（Codex 的 `codex_error_info`、Claude Code 的 `error` 和 HTTP 状态）。没有的话，看它说的话。omp 只记 HTTP 状态（`errorStatus`），所以看它说的话。
 
 ## 评审者
 
