@@ -63,11 +63,13 @@ fn a_task_sub_agent_the_bridge_named_is_on_the_task_and_said_while_it_works() {
     // the bridge's before_subagent_spawn report, as the hook sends it (its own token: a test world starts agents
     // without their hooks): its name on the task, no turn of its own
     sw::store::marks::set_token(&id, "agent", "tok-1", 0).unwrap();
+    // taken before the bridge's report: helper_names keeps only the helpers noted from `startedAgentAt` on, and one
+    // noted in the same millisecond must count as this run's, whatever the machine's speed
+    let at = sw::clock::now();
     sw::turn::turn_ended(&id, "agent", "tok-1", 0, &[json!({ "subagent": { "agent": "BuildAll", "model": "omp/x" } }).to_string()]);
     let h = task(&id).at("helpers").clone();
     assert_eq!((h[0]["agent"].as_str().unwrap_or(""), h[0]["model"].as_str().unwrap_or("")), ("BuildAll", "omp/x"), "{h}");
     // its conversation and the sub-agent's beside it, the sub-agent's turn open: the board says whose work waits
-    let at = sw::clock::now();
     let dir = std::env::temp_dir().join(format!("sw-named-{}", std::process::id()));
     let file = dir.join("root.jsonl");
     std::fs::create_dir_all(&dir).unwrap();
