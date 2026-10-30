@@ -31,6 +31,9 @@ fn auto_starts_claude_and_codex_in_their_own_auto_mode_and_full_and_ask_are_as_t
     assert_eq!(args("cursor", "auto"), ["--auto-review"]);
     assert_eq!(args("qwen", "auto"), ["--approval-mode", "auto"]);
     assert_eq!(args("qodercli", "auto"), ["--permission-mode", "auto"]);
+    // omp has no classifier: its `write` tier stands in for `auto` (and for `ask`, so no one's prompts grow).
+    assert_eq!(args("omp", "auto"), ["--approval-mode=write"]);
+    assert_eq!(args("omp", "ask"), ["--approval-mode=write"]);
     // full and ask: unchanged.
     assert_eq!(args("claude", "full"), ["--dangerously-skip-permissions"]);
     assert!(args("claude", "ask").is_empty());
@@ -45,9 +48,9 @@ fn auto_starts_claude_and_codex_in_their_own_auto_mode_and_full_and_ask_are_as_t
 #[test]
 fn a_program_with_no_auto_mode_is_refused_at_its_start_and_never_started_with_full_or_ask_instead() {
     let _w = world();
-    for k in ["pi", "agy", "copilot", "devin", "droid", "hermes", "kilo", "opencode", "omp"] {
+    for k in ["pi", "agy", "copilot", "devin", "droid", "hermes", "kilo", "opencode"] {
         let e = refused_start(k, "auto");
-        assert!(e.contains(&format!("{k} cannot be started with access \"auto\": it has no auto mode (only claude, codex, cursor, qodercli, qwen have one)")), "{e}");
+        assert!(e.contains(&format!("{k} cannot be started with access \"auto\": it has no auto mode (only claude, codex, omp, cursor, qodercli, qwen have one)")), "{e}");
         assert!(e.contains("Set the role's access to full or ask"), "{e}");
     }
     assert!(why_not("claude", "auto").is_empty() && why_not("codex", "auto").is_empty());
@@ -114,7 +117,7 @@ fn an_auto_written_by_hand_for_a_program_without_it_stays_auto_and_its_start_is_
 #[test]
 fn a_fallback_with_no_auto_mode_is_passed_over_for_one_that_has_it() {
     let _w = world();
-    assert_eq!(usable("pi", "auto"), "pi cannot do \"auto\": it has no auto mode (only claude, codex, cursor, qodercli, qwen have one)");
+    assert_eq!(usable("pi", "auto"), "pi cannot do \"auto\": it has no auto mode (only claude, codex, omp, cursor, qodercli, qwen have one)");
     assert_eq!([usable("claude", "auto"), usable("codex", "auto")], [String::new(), String::new()]);
     let list: Vec<String> = ["pi", "codex"].map(String::from).to_vec();
     let (next, skipped) = next_fallback(&list, "claude", &[], |a| usable(a, "auto"));

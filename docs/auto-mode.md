@@ -19,12 +19,13 @@
 - **Claude Code**：`claude --permission-mode auto`，从 Claude Code 2.1.111 起（2.1.71 到 2.1.110 还要额外加隐藏的 `--enable-auto-mode` 才认这个值，2.1.70 及更早直接退出）。一个分类器模型在每个动作运行前读它：留在仓库里的放行，可能在仓库外造成危害的（把下载当脚本运行、强推、生产环境改动）被拦下，并告诉 Claude 原因，让它换条路。拿不到自动模式时（模型不支持、Claude Code 设置里的 `disableAutoMode`、或账号层面关了），Claude Code 改用它的默认模式，也就是会询问的那种：绝不会用 `full`。
 - **Codex**：`codex --approve-for-me`，从 Codex 0.147.0 起。这是 Codex 的自动评审：在它的 workspace-write 沙箱里代理在仓库里自由工作，越界的请求由 Codex 自己的评审者回应，而不是你。连续 3 次拒绝，或最近 50 次里有 10 次拒绝，它带警告结束回合。
 - **Cursor** `cursor-agent --auto-review`（2026.06.22 起）、**Qwen Code** `qwen --approval-mode auto`（0.16.0 起）、**Qoder** `qodercli --permission-mode auto`（0.2.14 起）：各自有自己的分类器，见各自文档。这三个是从文档里读来的，没在这里试过。
+- **omp**：`omp --approval-mode=write`。它没有分类器；`write` 档是最接近的替身：文件改动不经询问直接做，执行命令前才问。`ask` 对 omp 也是这一档，所以提示不会因此变多。
 
 有些程序有个叫 `auto` 的 flag 但不是这个：`kilo --auto`、`opencode --auto`、`kimi --auto` 和 MastraCode 的 `--permission-mode auto` 会批准一切，和 `full` 一样。Hermes 和 Grok 在自己的设置文件里有受检模式，但没有启动它的 flag。这些都不给 `auto`。
 
 其他程序都没有这种模式，给它们 `auto` 会被拒绝，绝不会背着你变成 `full` 或 `ask`：
 
-- **你设置时**：`worker.agent: pi cannot do "auto": it has no auto mode (only claude, codex, cursor, qodercli, qwen have one)`；当角色的程序没有该模式时设 `worker.access auto` 同样被拒。
+- **你设置时**：`worker.agent: pi cannot do "auto": it has no auto mode (only claude, codex, omp, cursor, qodercli, qwen have one)`；当角色的程序没有该模式时设 `worker.access auto` 同样被拒。
 - **手写在设置文件里**，而别处指定了这样的程序：值保持 `auto`，不像不合适的 effort 或 `ask`（那些会落到下一处），因为下一处可能是 `full`。任务面板显示 `no auto mode in pi: it will not start`，代理不启动，任务说明原因：`pi cannot be started with access "auto": it has no auto mode (…). Set the role's access to full or ask, or choose another program.` `omh doctor` 会点出每一个这样的设置。
 - **任务面板的设置页**上，访问权限那行会跳过它的程序做不到的值：OpenCode 是 `full`、`ask`、`full`；两样都不行的 pi 停在 `full`。
 - **备用代理（fallback）**没有该模式时，在访问权限是 `auto` 期间被跳过，就像不能询问的在 `ask` 期间被跳过一样（[备用代理](fallback.md)）。

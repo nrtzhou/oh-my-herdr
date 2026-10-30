@@ -41,7 +41,9 @@ pub static KINDS: &[Kind] = &[
         fast: true, since: &[("--service-tier=priority", "18.14.0")],
         tokens: true, rules_file: Some("AGENTS.md"), reads_turn: true, model: &["--model={}"], effort: &["--thinking={}"],
         models: Models { list: &["models", "--json"], read: Read::Selectors, example: "omp/openai/gpt-5.2", ..NO_MODELS },
-        access_full: &["--auto-approve"], access_ask: Some(&["--approval-mode=write"]), resume: &["--resume={}"],
+        // omp has no classifier of its own: its `write` tier is the closest to `auto` (file acts run without asking,
+        // commands ask). `ask` stays on the same tier so no one's prompts grow.
+        access_full: &["--auto-approve"], access_ask: Some(&["--approval-mode=write"]), access_auto: Some((&["--approval-mode=write"], "")), resume: &["--resume={}"],
         standing: &["--append-system-prompt={}"], integration: "omp", needs_integration: true,
         headless: Some(Headless { args: &["-p", "--no-session", "--no-tools", "--no-skills", "--no-rules"], model: &["--model={}"], system: &["--append-system-prompt={}"], prompt: &["{}"] }),
         checked: "everything the board does, on 18.13.3 to 18.14.0", ..BASE },
