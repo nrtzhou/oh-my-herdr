@@ -36,6 +36,16 @@ fn each_program_s_own_list_is_read_in_its_own_format() {
     assert_eq!(cur.taken, ["auto", "claude-opus-4-8-high"]);
     let oc = read(Read::Lines, "[opencode-exe-dev] a note\nopencode/claude-opus-5-5\nanthropic/claude-opus-5-5\n");
     assert_eq!(oc.taken, ["opencode/claude-opus-5-5", "anthropic/claude-opus-5-5"]);
+    // omp: the selector is the name to write; its bare id is taken but not shown, and its window is kept beside the names.
+    const OMP: &str = r#"{"models":[{"provider":"magpie","id":"pleasure/gpt-6.1-sol","selector":"magpie/pleasure/gpt-6.1-sol","contextWindow":922000},{"provider":"magpie","id":"pleasure/deepseek-v4.1-flash","selector":"magpie/pleasure/deepseek-v4.1-flash","contextWindow":0}]}"#;
+    let o = read(Read::Selectors, OMP);
+    assert_eq!(o.taken, ["magpie/pleasure/gpt-6.1-sol", "pleasure/gpt-6.1-sol", "magpie/pleasure/deepseek-v4.1-flash", "pleasure/deepseek-v4.1-flash"]);
+    assert_eq!(o.shown, ["magpie/pleasure/gpt-6.1-sol", "magpie/pleasure/deepseek-v4.1-flash"]);
+    let w = sw::agents::models::listed::windows_of(OMP);
+    let win = |k: &str| w.get(k).and_then(serde_json::Value::as_f64);
+    assert_eq!(win("magpie/pleasure/gpt-6.1-sol"), Some(922000.0), "under its selector");
+    assert_eq!(win("pleasure/gpt-6.1-sol"), Some(922000.0), "and under its bare id");
+    assert_eq!(win("magpie/pleasure/deepseek-v4.1-flash"), None, "a list that says no window leaves none");
 }
 
 #[test]
@@ -96,6 +106,8 @@ fn claude_s_names_follow_its_own_rule_and_a_program_without_a_list_is_not_checke
     // No list of its own: any name, as before.
     taken("worker.agent", "agy/gemini-3-pro");
     taken("worker.agent", "copilot/whatever-it-takes");
+    // omp's own model roles (`@smol`, the ones its `modelRoles` names): user-defined, so they are passed on as written.
+    taken("worker.agent", "omp/@smol");
     // A list that cannot be had (not installed, not logged in): not checked, never a refusal.
     taken("worker.agent", "codex/gpt-5.5");
     // Codex on a provider of its own: its catalog says nothing of that provider's names.

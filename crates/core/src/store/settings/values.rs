@@ -121,8 +121,8 @@ fn check_agent(e: &Entry, v: &Value) -> Res<Value> {
         return refuse(format!("{}: no agent program \"{}\". It must be {}{}.{}", e.name, n.kind, KIND_NAMES.join(", "), if e.none { " or none" } else { "" }, hint(&k, &KIND_NAMES)));
     };
     if w.contains('/') {
-        // A model with its parameters in brackets (cursor: `claude-opus-4-8[effort=high]`), or its provider after an @.
-        let ok = n.model.chars().next().map(|c| c.is_ascii_alphanumeric()).unwrap_or(false) && n.model.chars().all(|c| c.is_ascii_alphanumeric() || "._:/@[]-=,".contains(c));
+        // A model with its parameters in brackets (cursor's `[effort=high]`), its provider after an @, or omp's own model role (`@smol`) as the whole name.
+        let ok = n.model.chars().next().map(|c| c.is_ascii_alphanumeric() || (c == '@' && k == "omp")).unwrap_or(false) && n.model.chars().all(|c| c.is_ascii_alphanumeric() || "._:/@[]-=,".contains(c));
         if !ok { return refuse(format!("{}: \"{}\" is not a model name.", e.name, n.model)); }
     }
     if let Some(why) = refusal(&e.name, &k, !n.model.is_empty()) { return refuse(why); }

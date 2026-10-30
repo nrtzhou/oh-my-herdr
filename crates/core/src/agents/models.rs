@@ -63,6 +63,8 @@ pub fn for_signin(n: &Names) -> String { if n.signin.is_empty() { String::new() 
 pub fn why_not(k: &str, m: &str) -> Option<String> {
     let a = kind(k)?;
     if m.is_empty() || a.model.is_empty() { return None; }
+    // omp's own model roles (`@smol`, the ones its `modelRoles` names): user-defined, so no list can say which exist.
+    if k == "omp" && m.starts_with('@') { return None; }
     let mut names = match names_of(k, false) {
         Listing::Names(n) => n,
         Listing::Unchecked => return None,

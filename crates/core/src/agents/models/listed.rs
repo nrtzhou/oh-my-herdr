@@ -118,7 +118,7 @@ pub fn read(how: Read, out: &str) -> Names {
     n
 }
 /// Each model's context window, from a list that says it (omp's `models --json`), under its selector and its bare id.
-fn windows_of(out: &str) -> Value {
+pub fn windows_of(out: &str) -> Value {
     let v: Value = serde_json::from_str(out).unwrap_or(Value::Null);
     let mut w = Obj::new();
     for m in v.arr("models") {

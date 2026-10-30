@@ -31,6 +31,7 @@ omh coordinator new --agent claude/sonnet --effort low   the next Coordinator on
 | `claude` | `claude/opus`、`claude/claude-opus-5-5`、`claude/claude-opus-5-5[1m]` | 短名（`default`、`fable`、`opus`、`sonnet`、`haiku`、`opusplan`：各是同类中最新的）或它的全名之一（`omh models claude`） |
 | `codex` | `codex/gpt-6.1-sol` | 当前登录账号在 Codex 列出的名字（其 app-server 的 `model/list`；问不到时用 `codex debug models`） |
 | `pi` | `pi/anthropic/claude-opus-5-5`（先写服务商）、`pi/anthropic/claude-opus-5-5:high` | `pi --list-models` 列出的名字 |
+| `omp` | `omp/openai/gpt-5.2`、`omp/@smol` | `omp models --json` 列出的名字（写它的 selector）；`@名字` 是 omp 自己的模型角色（它的 `modelRoles` 设置里定义），照原样交给 omp，不检查 |
 | `cursor` | `cursor/claude-opus-5-5-high`、`cursor/claude-opus-4-8[effort=high]` | `cursor-agent models` 列出的名字；列表里的模型名去掉最后一段后可用方括号带参数 |
 | `opencode` | `opencode/anthropic/claude-opus-5-5`（先写服务商） | `opencode models` 列出的名字 |
 | `droid`、`mastracode` | 不写模型 | 在程序自己的设置里选 |
