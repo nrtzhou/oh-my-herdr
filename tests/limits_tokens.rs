@@ -49,6 +49,17 @@ fn omp_counts_tokens_as_the_conversation_paid_for_them_and_keeps_its_place() {
 }
 
 #[test]
+fn an_omp_turns_context_window_comes_from_the_model_list_it_last_said() {
+    let _w = world();
+    let file = std::env::temp_dir().join(format!("omp-window-{}.jsonl", std::process::id()));
+    std::fs::write(sw::store::files::data_dir().join("models.json"), json!({ "omp": { "at": sw::clock::now(), "taken": ["magpie/mimo-v2.6-pro"], "windows": { "magpie/mimo-v2.6-pro": 1048576.0 } } }).to_string()).unwrap();
+    line(&file, json!({ "type": "message", "id": "a1", "timestamp": sw::clock::iso(1000), "message": { "role": "assistant", "model": "magpie/mimo-v2.6-pro", "content": [{ "type": "text", "text": "One." }], "usage": { "input": 10, "output": 5, "cacheRead": 0, "cacheWrite": 0, "totalTokens": 15 }, "stopReason": "stop" } }));
+    let t = sw::agents::read_turn::read_turn("omp", &file, u64::MAX).unwrap();
+    assert_eq!(t.usage.unwrap().window, Some(1048576.0), "from the list its program last said");
+    let _ = std::fs::remove_file(&file);
+}
+
+#[test]
 fn limit_tokens_counted_when_a_turn_ends_stops_before_more_is_spent_and_your_word_gives_it_the_limit_once_more() {
     let w = world();
     let id = at_work(&w, json!({ "limit.tokens": "500k" }));

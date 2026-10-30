@@ -60,14 +60,17 @@ pub fn listed(k: &str, fresh: bool) -> Listing {
     if crate::util::env_set("OMH_NO_MODEL_LIST") { return kept(had); }
     // Its app-server first: the names of the account it is signed in with. Its list command when that cannot be asked.
     let served = if a.models.server.is_empty() { Err(String::new()) } else { super::server::ask(program(k), a.models.server) };
+    let mut raw = String::new();
     let names = match served {
         Ok(Some(n)) => n,
         Ok(None) => return Listing::Unchecked,
-        Err(_) => match run(program(k), a.models.list) { Ok(Some(out)) => read(a.models.read, &out), Ok(None) => return Listing::Unchecked, Err(why) => return Listing::Failed(why) },
+        Err(_) => match run(program(k), a.models.list) { Ok(Some(out)) => { let n = read(a.models.read, &out); raw = out; n } Ok(None) => return Listing::Unchecked, Err(why) => return Listing::Failed(why) },
     };
     if names.taken.is_empty() { return Listing::Failed(format!("`{}` listed no models", list_command(k))); }
     let mut all = read_obj(&file()).unwrap_or_default();
-    all.put(k, json!({ "at": now(), "taken": names.taken, "shown": names.shown, "signin": names.signin, "from": names.from }));
+    let mut entry = json!({ "at": now(), "taken": names.taken, "shown": names.shown, "signin": names.signin, "from": names.from });
+    if a.models.read == Read::Selectors && !raw.is_empty() { entry["windows"] = windows_of(&raw); }
+    all.put(k, entry);
     let _ = write_json(&file(), &Value::Object(all));
     Listing::Names(names)
 }
@@ -113,4 +116,21 @@ pub fn read(how: Read, out: &str) -> Names {
         }
     }
     n
+}
+/// Each model's context window, from a list that says it (omp's `models --json`), under its selector and its bare id.
+fn windows_of(out: &str) -> Value {
+    let v: Value = serde_json::from_str(out).unwrap_or(Value::Null);
+    let mut w = Obj::new();
+    for m in v.arr("models") {
+        let n = m.f("contextWindow");
+        if n <= 0.0 { continue; }
+        for name in [m.s("selector"), m.s("id")] { if one_word(name) { w.insert(name.to_string(), json!(n)); } }
+    }
+    Value::Object(w)
+}
+/// A model's context window, from the list its program said last: never asks the program (a turn is read while the
+/// board works). None where the list was never read or held no window.
+pub fn kept_window(k: &str, model: &str) -> Option<f64> {
+    let w = read_obj(&file()).unwrap_or_default().at(k).at("windows").at(model).as_f64()?;
+    (w > 0.0).then_some(w)
 }

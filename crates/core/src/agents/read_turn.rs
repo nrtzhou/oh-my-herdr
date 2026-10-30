@@ -260,7 +260,7 @@ pub fn read_omp(file: &Path, bytes: u64) -> Option<Turn> {
     let m = e.at("message");
     let text = texts(m.at("content"), &["text"]).trim().to_string();
     let stop = m.t("stopReason");
-    let base = Turn { pos: when(e.at("timestamp")).max(when(m.at("timestamp"))), began, usage: usage.and_then(|(i, o)| usage_of(i, o, &model, None)), model: model.clone(), id: e.t("id"), ..Default::default() };
+    let base = Turn { pos: when(e.at("timestamp")).max(when(m.at("timestamp"))), began, usage: usage.and_then(|(i, o)| usage_of(i, o, &model, super::models::listed::kept_window("omp", &model))), model: model.clone(), id: e.t("id"), ..Default::default() };
     if !said_by_agent { return Some(Turn { pending: true, said: latest, ..base }); }
     Some(match stop.as_str() {
         "error" => {

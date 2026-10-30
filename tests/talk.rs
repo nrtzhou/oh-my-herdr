@@ -79,8 +79,16 @@ fn a_saved_conversation_is_read_as_its_words_alone_for_every_program() {
         json!({ "type": "message", "id": "b1", "timestamp": ts(55), "message": { "role": "user", "content": [{ "type": "text", "text": "Say hello" }], "attribution": "user", "timestamp": 1761729600000i64 } }),
         json!({ "type": "message", "id": "b2", "timestamp": ts(56), "message": { "role": "assistant", "content": [{ "type": "thinking", "thinking": "hm" }, { "type": "toolCall", "name": "bash" }, { "type": "text", "text": "hello" }], "stopReason": "stop" } }),
         json!({ "type": "message", "id": "b3", "timestamp": ts(57), "message": { "role": "toolResult", "content": [{ "type": "text", "text": "exit 0" }] } }),
-        json!({ "type": "message", "id": "b4", "timestamp": ts(58), "message": { "role": "assistant", "content": [], "stopReason": "aborted" } })]);
-    assert_eq!(words("omp", &omp), vec!["you: Say hello", "them: hello", "them: Stopped: interrupted before it finished."]);
+        json!({ "type": "message", "id": "b4", "timestamp": ts(58), "message": { "role": "assistant", "content": [], "stopReason": "aborted" } }),
+        // its own notices in plain words: a background job's result went in, and a chat reset; its other machinery
+        // (tool runs, mounts, digests) is never shown
+        json!({ "type": "custom_message", "customType": "async-result", "content": "<system-notice>\nBackground job bg_1 has completed.", "timestamp": ts(59) }),
+        json!({ "type": "custom_message", "customType": "tool_execution_start", "content": "bash", "timestamp": ts(60) }),
+        json!({ "type": "reset_boundary", "id": "r1", "timestamp": ts(61) }),
+        json!({ "type": "message", "id": "b5", "timestamp": ts(62), "message": { "role": "user", "content": [{ "type": "text", "text": "Again" }] } }),
+        json!({ "type": "message", "id": "b6", "timestamp": ts(63), "message": { "role": "assistant", "content": [{ "type": "text", "text": "ok" }], "stopReason": "stop" } })]);
+    assert_eq!(words("omp", &omp), vec!["you: Say hello", "them: hello", "them: Stopped: interrupted before it finished.",
+        "them: Background job finished: its result went into the conversation.", "them: Chat reset: a fresh session started.", "you: Again", "them: ok"]);
     assert!(talk_of("other", Some(&pi), "", Path::new("/"), 50).is_none());
     assert!(talk_of("claude", Some(&dir.join("none.jsonl")), "", Path::new("/"), 50).is_none());
     use std::io::Write;

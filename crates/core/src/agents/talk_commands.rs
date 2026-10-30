@@ -4,6 +4,8 @@
 
 /// What a stop says, for every program.
 pub const STOPPED: &str = "Stopped: interrupted before it finished.";
+/// What a chat reset says (`/clear`, or omp's `reset_boundary`).
+pub const RESET: &str = "Chat reset: a fresh session started.";
 /// What a compaction says: asked for (`/compact`), or done by the program itself to make room.
 pub const COMPACTED: &str = "Conversation compacted: it goes on from a summary of what was said.";
 pub const COMPACTED_ITSELF: &str = "Conversation compacted to make room: it goes on from a summary of what was said.";
@@ -50,7 +52,7 @@ fn plain(s: &str) -> String {
 /// says it (`then`), or nothing does (a shell command, a command of one's own that becomes a prompt).
 fn at_once(name: &str) -> Option<&'static str> {
     match name {
-        "clear" | "new" | "reset" => Some("Chat reset: a fresh session started."),
+        "clear" | "new" | "reset" => Some(RESET),
         "compact" => Some(COMPACTED),
         "exit" | "quit" => Some("Closed: the program has ended."),
         _ => None,

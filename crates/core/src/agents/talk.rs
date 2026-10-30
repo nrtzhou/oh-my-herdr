@@ -132,6 +132,8 @@ fn omp_talk(rows: &[Value]) -> Vec<Said> {
             add(&mut out, m.s("role") == "user", &text_of(m.at("content"), &["text"]), at);
             if m.s("role") == "assistant" && m.s("stopReason") == "aborted" { add(&mut out, false, STOPPED, at); }
         } else if e.s("type") == "compaction" { add(&mut out, false, cmd::COMPACTED, at); }
+        else if e.s("type") == "reset_boundary" { add(&mut out, false, cmd::RESET, at); }
+        else if e.s("type") == "custom_message" && e.s("customType") == "async-result" { add(&mut out, false, "Background job finished: its result went into the conversation.", at); }
         else if e.s("type") == "model_change" && e.t("model") != model {
             if !out.is_empty() && !model.is_empty() { add(&mut out, false, &format!("Model switched to {}.", e.t("model")), at); }
             model = e.t("model");
