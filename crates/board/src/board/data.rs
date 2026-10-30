@@ -180,6 +180,7 @@ pub fn snap(t: &Obj) -> Value {
     let at = if tree.is_empty() { folder.clone() } else { tree.clone().into() };
     json!({ "talk": talk, "screen": screen, "plan": plan, "landsOn": if t.s("stage") == "approval" { json!(crate::sync::lands_on(t)) } else { Value::Null },
         "helpers": helper_names(t),
+        "notes": note_lines(t),
         "folder": tilde(&folder.display().to_string()), "root": folder.display().to_string(), "tree": tilde(&tree), "treePath": tree, "branch": branch_of(&at),
         "settings": rows(&Scope::task(t)).iter().map(|r| r.json()).collect::<Vec<_>>(), "problems": problems(Some(t)), "canWorktree": can_worktree(&folder), "repo": in_repo(t),
         "worktreeGone": t.b("worktree") && tree.is_empty() })
@@ -192,4 +193,11 @@ fn helper_names(t: &Obj) -> Value {
     let Some(f) = t.so("transcript") else { return Value::Null };
     if names.is_empty() || crate::agents::helpers::running(&t.t("agent"), std::path::Path::new(f), at) == 0 { return Value::Null; }
     json!(names)
+}
+/// The greyed lines the omp bridge's events leave under its agent's words (turn.rs's `notes`): a helper back with what
+/// it said, an automatic compaction, an automatic retry — each said until its turn ends.
+fn note_lines(t: &Obj) -> Value {
+    let lines: Vec<String> = t.arr("notes").iter().map(|n| n.t("text")).filter(|s| !s.is_empty()).collect();
+    if lines.is_empty() { return Value::Null; }
+    json!(lines)
 }

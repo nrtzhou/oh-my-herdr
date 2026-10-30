@@ -66,6 +66,8 @@ export default function (pi: any) {{
         // on stdin. It says `willContinue` when the program goes on by itself: that is not a turn's end. Two more
         // events tell the board what holds the turn up: a task sub-agent going to work (its name, on the task), and
         // the session settling, where the board may ask for one turn more (its answer comes back on the stdout).
+        // Three more events are one greyed line each for the chat, no turn of their own: a task's helper back with
+        // what it said (the `task` tool's result, its first line), an automatic compaction, an automatic retry.
         "omp" => {
             let file = h.dir.join(format!("hook-{}.ts", h.role));
             let cmd = serde_json::to_string(&hook_command(h))?;
@@ -100,6 +102,19 @@ export default function (omp) {{
       }});
     }} catch {{ return {{}}; }}
   }});
+  omp.on("tool_result", (_e, ctx) => {{
+    try {{
+      if (!_e || _e.toolName !== "task" || _e.isError) return;
+      const i = _e.input || {{}};
+      const one = Array.isArray(i.tasks) ? (i.tasks[0] || {{}}) : i;
+      const said = (Array.isArray(_e.content) ? _e.content : []).filter((c) => c && c.type === "text").map((c) => c.text || "").join("\n");
+      const line = (said.split("\n").map((l) => l.trim()).find(Boolean) || "").slice(0, 120);
+      send({{ transcript_path: file(ctx), helper_back: {{ agent: (one && one.name) || "", note: line }} }});
+    }} catch {{}}
+  }});
+  omp.on("auto_compaction_start", (_e, ctx) => {{ try {{ send({{ transcript_path: file(ctx), compaction: "start" }}); }} catch {{}} }});
+  omp.on("auto_compaction_end", (_e, ctx) => {{ try {{ send({{ transcript_path: file(ctx), compaction: "end" }}); }} catch {{}} }});
+  omp.on("auto_retry_start", (_e, ctx) => {{ try {{ send({{ transcript_path: file(ctx), retry_start: true }}); }} catch {{}} }});
 }}
 "#))?;
             Ok(Some(vec!["-e".into(), file.display().to_string()]))

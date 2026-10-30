@@ -187,6 +187,7 @@ mod merge_rest;
 mod model_refused;
 mod notify;
 mod old_suggestions;
+mod omp_bridge;
 mod plan;
 mod plan_modes;
 mod plan_more;

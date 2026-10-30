@@ -27,13 +27,18 @@ pub fn chat_of(s: &mut State, t: &Theme, r: Option<&Obj>) -> Option<Who> {
     w.call = super::chat_call::lines(s);
     Some(w)
 }
-/// The task sub-agents at work with its agent, said under its words (snap's `helpers`).
+/// What is said under its words: the task sub-agents at work with its agent (snap's `helpers`), and the greyed lines
+/// the omp bridge's events left (snap's `notes`), one per line.
 fn helper_note(r: &Obj) -> String {
+    let mut lines: Vec<String> = vec![];
     let names = crate::json::strings(r.at("snap").at("helpers"));
-    if names.is_empty() { return String::new(); }
-    let shown: Vec<&str> = names.iter().map(String::as_str).take(2).collect();
-    let more = if names.len() > 2 { format!(", and {} more", names.len() - 2) } else { String::new() };
-    format!("its helper{} {}{} {} at work", if names.len() == 1 { "" } else { "s" }, shown.join(", "), more, if names.len() == 1 { "is" } else { "are" })
+    if !names.is_empty() {
+        let shown: Vec<&str> = names.iter().map(String::as_str).take(2).collect();
+        let more = if names.len() > 2 { format!(", and {} more", names.len() - 2) } else { String::new() };
+        lines.push(format!("its helper{} {}{} {} at work", if names.len() == 1 { "" } else { "s" }, shown.join(", "), more, if names.len() == 1 { "is" } else { "are" }));
+    }
+    lines.extend(crate::json::strings(r.at("snap").at("notes")));
+    lines.join("\n")
 }
 fn who_of(s: &mut State, t: &Theme, r: Option<&Obj>) -> Option<Who> {
     same_chat(s);
@@ -141,7 +146,7 @@ pub fn chat_lines(c: Option<&Who>, width: usize, tight: bool) -> Vec<Inked> {
     let Some(c) = c else { return vec![] };
     // Who it is is the box's own title now (chat_title.rs): above it only what goes with it.
     let mut out = if tight { vec![] } else { vec![Inked::new()] };
-    if !c.note.is_empty() && !tight { out.push(Inked::plain("   ").add(Inked::of(crate::text::cut(&c.note, width.saturating_sub(3).max(1)), Ink::Muted))); }
+    if !tight { for l in c.note.split('\n').filter(|l| !l.is_empty()) { out.push(Inked::plain("   ").add(Inked::of(crate::text::cut(l, width.saturating_sub(3).max(1)), Ink::Muted))); } }
     out.extend(c.call.iter().take(if tight { 1 } else { 3 }).map(|l| l.cut(width.max(1))));
     out
 }

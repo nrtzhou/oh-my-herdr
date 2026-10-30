@@ -46,7 +46,7 @@ codex --dangerously-bypass-approvals-and-sandbox --no-daemon
 
 每个回合结束时，钩子运行 `omh turn-ended`（静默，最多两秒，由每次启动的密钥保护）。收尾流水线随后读取那个代理已保存会话的结尾：它最后一条消息、API 或登录错误、token 用量。
 
-omp 的那个扩展还捎两种消息回来。它派出自己的子代理（subagent）时报上名字：子代理的回合开着时，聊天里「谁在说话」的行下有行灰字说谁在干活（`its helper BuildAll is at work`）。它要收住会话时，看板可以要它再跑一个回合：回合没做完、又没写收尾小结，就带着「继续做」问它一次（也只问一次），答完再收；第二次仍不收尾才像下面那样挂起。
+omp 的那个扩展还捎几种消息回来。它派出自己的子代理（subagent）时报上名字：子代理的回合开着时，聊天里「谁在说话」的行下有行灰字说谁在干活（`its helper BuildAll is at work`）。它要收住会话时，看板可以要它再跑一个回合：回合没做完、又没写收尾小结，就带着「继续做」问它一次（也只问一次），答完再收；第二次仍不收尾才像下面那样挂起。它捎回的子代理归来（`its helper BuildAll is back: …`，带结果的第一行）、自动压缩（`Compacted: the conversation was shortened.`）和自动重试（`Retrying after a provider error.`）各是聊天里的一行灰字：都不是回合，说完到本回合结束就不再说。
 
 **停下来等你的代理**（提问、要权限、要登录）并没有完成，无论它问多少次：收尾流水线一步都不跑。代理怎么表达、看板怎么处理：[等你的代理不算完成](waiting-for-you.md)。
 
