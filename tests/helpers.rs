@@ -1,6 +1,7 @@
 //! Helpers an agent runs inside its own work (Codex's sub-agents, Claude Code's background agents): a helper's turn
 //! ending is not the review's or the task's end, a turn that ends while a helper is still at work is waited past, and
-//! a reviewer that really ended without a verdict is started once more by itself. Seen on HP-1 (2026-10-15): a Codex
+//! a reviewer that really ended without a verdict is asked once for it in the same try, and only then started once more
+//! by itself. Seen on HP-1 (2026-10-15): a Codex
 //! reviewer's helper `/root/check_plans` finished, and the board failed the review for want of a verdict.
 use crate::common;
 use common::*;
@@ -48,13 +49,14 @@ fn a_claude_reviewer_whose_background_agent_is_still_at_work_is_waited_for() {
 }
 
 #[test]
-fn a_reviewer_that_ended_without_a_verdict_is_started_once_more_by_itself_as_the_same_round() {
+fn a_reviewer_that_ended_without_a_verdict_is_asked_for_it_in_the_same_try() {
     let w = cut_world("30", json!({}));
+    // Its turn ends clean with no verdict: the message asking for one wakes the same reviewer, whose work stands.
     w.script(json!({ "worker": [work()], "reviewer": [{ "ends": "codex-finished-made" }, { "verdict": verdict() }] }));
     let id = w.add("Second look");
     delegate(&id);
     let t = settle(&id);
-    passed(&t); assert_eq!(reviewer_starts(&w), 2);
+    passed(&t); assert_eq!(reviewer_starts(&w), 1);
     assert_eq!(review_round(&t), 1);
 }
 

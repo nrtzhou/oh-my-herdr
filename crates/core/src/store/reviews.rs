@@ -46,6 +46,15 @@ pub fn log_review(t: &mut Task, rv: &Value) {
     had.push(review_entry(rv, round, &json!(now())));
     t.put("reviews", had);
 }
+/// A try of a review that gave no verdict (cut off by its provider, out of time, or one that ended writing none): kept
+/// apart from the rounds, so what a review really took can be counted (`omh details`).
+pub fn log_try(t: &mut Task, round: i64, why: &str, session: &str) {
+    let mut tries: Vec<Value> = t.arr("reviewTries").to_vec();
+    let mut e = obj(json!({ "round": round, "at": now(), "why": one_line(why, 400) }));
+    if !session.is_empty() { e.put("session", Value::String(session.to_string())); }
+    tries.push(Value::Object(e));
+    t.put("reviewTries", tries);
+}
 pub fn review_history(t: &Task) -> Vec<Value> { if !t.arr("reviews").is_empty() { t.arr("reviews").to_vec() } else { saved_review(t, review_round(t)) } }
 /// A review cut off by its provider waits and starts again as the same review: during it the review the task is on is the next one.
 fn retrying(t: &Task) -> bool { t.at("waiting").s("who") == "reviewer" && matches!(t.s("stage"), "reviewing" | "reviewneeds") }

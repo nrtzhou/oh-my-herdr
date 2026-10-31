@@ -33,7 +33,8 @@ fn agy_works_and_reviews_a_task_from_start_to_approval() {
 fn a_reviewer_the_board_cannot_read_that_stops_without_a_verdict_ends_its_round_when_herdr_sees_it_stop() {
     let w = world_with(Opts { repo: true, settings: json!({ "worker.agent": "claude", "reviewer.agent": "qwen", "review.when": "always" }), ..Default::default() });
     unsafe { std::env::set_var("OMH_ENDED_MS", "0"); std::env::set_var("OMH_QUIET_MS", "0"); }
-    w.script(json!({ "worker": [work()], "reviewer": [{}, {}] }));
+    // Each try stops twice (its own turn, then its answer to the message asking for the verdict), still with no verdict.
+    w.script(json!({ "worker": [work()], "reviewer": [{}, {}, {}, {}] }));
     let id = w.add("No verdict");
     delegate(&id);
     let t = settle(&id);

@@ -26,6 +26,9 @@ use std::path::{Path, PathBuf};
 /// The look at a plan, not at work (plan/review.rs): what the reviewer is told. It is no round of the task's reviews.
 pub struct Plan { pub brief: Box<dyn Fn(&Obj, &Path) -> String> }
 fn sleep(ms: i64) { std::thread::sleep(std::time::Duration::from_millis(ms.max(0) as u64)); }
+/// What the reviewer is told when its turn ended clean with no verdict: one message asking for it now, keeping its
+/// work in the same try, before the review is started again from nothing.
+const WRAP_UP: &str = "You ended your turn without a verdict. Write your verdict.json now, with what you already have; then stop.";
 #[allow(clippy::too_many_arguments)]
 pub fn review_once(id: &str, g: &mut Guard, text: &str, change: Option<&Value>, to_land: bool, ch: &Obj, check: &str, plan: Option<&Plan>) -> Res<Reviewed> {
     // One that just took the review over says so on the row until the Watcher has a line of it.
@@ -100,18 +103,19 @@ pub fn review_once(id: &str, g: &mut Guard, text: &str, change: Option<&Value>, 
         let until = review_until(ch);
         let every = ms("OMH_POLL_MS", 3000);
         let (mut sent, mut sent_at, mut quiet_since, mut comp_at_send) = (false, 0i64, 0i64, Value::Null);
+        let mut nudged = false;
         let mut waited: Vec<i64> = vec![]; // its own turn-end reports while its helpers were still at work
         // Its turn ended while helpers it started are still at work (agents/helpers.rs): their answers start it again.
         let helpers_at_work = |ev: Option<&Value>| { let w = why_stopped(&get(id).unwrap_or(t.clone()), "reviewer", ev); w.turn.as_ref().map(|x| x.error.is_empty()).unwrap_or(false) && still_at_work(&w.kind, w.turn.as_ref(), started_at) };
         // The reviewer ended its turn with no verdict. Its saved conversation says why.
-        let mut no_verdict = |ev: Option<&Value>, or: &str| -> String {
+        let mut no_verdict = |ev: Option<&Value>, or: &str| -> (String, bool) {
             let mut w = why_stopped(&get(id).unwrap_or(t.clone()), "reviewer", ev);
             let until = now() + ms("OMH_READ_MS", 5000);
             while ev.is_some() && w.can_read && !w.turn.as_ref().map(|x| x.finished || !x.error.is_empty()).unwrap_or(false) && now() < until { sleep(400); w = why_stopped(&get(id).unwrap_or(t.clone()), "reviewer", ev); }
             auth = w.turn.as_ref().map(|x| x.auth).unwrap_or(false);
-            if let Some(x) = w.turn.as_ref().filter(|x| !x.error.is_empty()) { cut = Some(Cut { passing: x.passing, reason: x.reason.clone(), error: x.error.clone() }); return format!("the reviewer stopped: {}", x.error); }
-            if !or.is_empty() { return or.to_string(); }
-            format!("the reviewer finished without a verdict{}", w.turn.as_ref().filter(|x| x.finished && !x.said.is_empty()).map(|x| format!(". Its last message: {}", x.said.chars().take(1500).collect::<String>())).unwrap_or_default())
+            if let Some(x) = w.turn.as_ref().filter(|x| !x.error.is_empty()) { cut = Some(Cut { passing: x.passing, reason: x.reason.clone(), error: x.error.clone() }); return (format!("the reviewer stopped: {}", x.error), false); }
+            if !or.is_empty() { return (or.to_string(), false); }
+            (format!("the reviewer finished without a verdict{}", w.turn.as_ref().filter(|x| x.finished && !x.said.is_empty()).map(|x| format!(". Its last message: {}", x.said.chars().take(1500).collect::<String>())).unwrap_or_default()), true)
         };
         loop {
             g.check()?;
@@ -133,10 +137,19 @@ pub fn review_once(id: &str, g: &mut Guard, text: &str, change: Option<&Value>, 
                 sleep(every.min(1500));
                 if verdict_file.exists() { continue; }
                 if helpers_at_work(Some(r)) { waited.push(r.i("n")); continue; }
-                error = no_verdict(Some(r), ""); ended = true; break;
+                let (why, clean) = no_verdict(Some(r), "");
+                // It ended its turn clean, writing no verdict: one message asking for it now keeps its work in this
+                // same try, before the review is started again from nothing.
+                if !nudged && clean {
+                    nudged = true;
+                    waited.push(r.i("n"));
+                    let _ = crate::submit::hand(&api, &pane, WRAP_UP);
+                    continue;
+                }
+                error = why; ended = true; break;
             }
             let a = api.agent_get(&pane).ok().flatten();
-            if a.is_none() && sent { let gone = api.pane_get(&pane).is_none(); error = no_verdict(None, if gone { "the reviewer's terminal was closed" } else { "the reviewer exited without a verdict" }); ended = true; break; }
+            if a.is_none() && sent { let gone = api.pane_get(&pane).is_none(); error = no_verdict(None, if gone { "the reviewer's terminal was closed" } else { "the reviewer exited without a verdict" }).0; ended = true; break; }
             if a.is_none() && api.pane_get(&pane).is_none() { error = "the reviewer's terminal was closed".into(); break; }
             // herdr status is used only to notice a reviewer that is blocked: "review needs you".
             let blocked = a.as_ref().map(|a| a.s("agent_status") == "blocked").unwrap_or(false);
@@ -156,7 +169,11 @@ pub fn review_once(id: &str, g: &mut Guard, text: &str, change: Option<&Value>, 
                 // A program whose conversation the board does not read: herdr saw it finish a turn since the brief, and
                 // still no verdict 15 seconds later.
                 if quiet_since == 0 { quiet_since = now(); }
-                if now() - quiet_since > ms("OMH_QUIET_MS", 15000) && !verdict_file.exists() { error = no_verdict(None, ""); ended = true; break; }
+                if now() - quiet_since > ms("OMH_QUIET_MS", 15000) && !verdict_file.exists() {
+                    let (why, clean) = no_verdict(None, "");
+                    if !nudged && clean { nudged = true; quiet_since = 0; let _ = crate::submit::hand(&api, &pane, WRAP_UP); continue; }
+                    error = why; ended = true; break;
+                }
             } else if sent && !reads && !at_rest { quiet_since = 0;
             } else if sent && a.is_some() && reads && now() - sent_at > ms("OMH_ENDED_MS", 5000) {
                 // No hook: "idle" alone never fails a review. Only its saved conversation ending in a finished message or
@@ -167,7 +184,11 @@ pub fn review_once(id: &str, g: &mut Guard, text: &str, change: Option<&Value>, 
                 match turn {
                     Some(x) if x.pos > sent_at && (x.finished || !x.error.is_empty()) && !(x.error.is_empty() && still_at_work(&rkind, Some(&x), started_at)) => {
                         if quiet_since == 0 { quiet_since = now(); }
-                        if now() - quiet_since > ms("OMH_QUIET_MS", 15000) && !verdict_file.exists() { error = no_verdict(None, ""); ended = true; break; }
+                        if now() - quiet_since > ms("OMH_QUIET_MS", 15000) && !verdict_file.exists() {
+                            let (why, clean) = no_verdict(None, "");
+                            if !nudged && clean { nudged = true; quiet_since = 0; let _ = crate::submit::hand(&api, &pane, WRAP_UP); continue; }
+                            error = why; ended = true; break;
+                        }
                     }
                     _ => quiet_since = 0,
                 }
@@ -190,8 +211,13 @@ pub fn review_once(id: &str, g: &mut Guard, text: &str, change: Option<&Value>, 
     if get(id).map(|c| c.s("stage") == "reviewneeds").unwrap_or(false) { if let Err(e) = g.set(|t| { t.put("stage", "reviewing"); t.put("msg", "Review complete"); }) { if is_aborted(&e) { return Ok(Reviewed { aborted: true, ..Default::default() }); } } }
     if review.is_none() && cut.is_some() {
         // Not a review: the task's count of reviews is put back, so the next try has this number.
-        if let Err(e) = g.set(|t| { if plan.is_none() && t.i("reviewRound") == round { t.put("reviewRound", round - 1); } }) { if is_aborted(&e) { return Ok(Reviewed { aborted: true, ..Default::default() }); } }
+        if let Err(e) = g.set(|t| { if plan.is_none() && t.i("reviewRound") == round { t.put("reviewRound", round - 1); } if plan.is_none() { let ses = t.t("reviewSession"); crate::store::reviews::log_try(t, round, &error, &ses); } }) { if is_aborted(&e) { return Ok(Reviewed { aborted: true, ..Default::default() }); } }
         return Ok(Reviewed { cut: true, error, auth, by, cut_by: cut, ..Default::default() });
+    }
+    if plan.is_none() {
+        let ses = get(id).map(|c| c.t("reviewSession")).unwrap_or_default();
+        let why = if error.is_empty() { "no valid verdict".to_string() } else { error.clone() };
+        let _ = g.set(|t| { crate::store::reviews::log_try(t, round, &why, &ses); });
     }
     let Some(mut rv) = review else { return Ok(Reviewed { error: if error.is_empty() { "no valid verdict".into() } else { error }, auth, by, ended, screen, ..Default::default() }) };
     gate::stamp(&mut rv, ch.s("review.mustFix"));

@@ -128,7 +128,8 @@ fn an_error_waiting_cannot_fix_is_not_retried_a_missing_model_fails_at_once_a_mi
 #[test]
 fn a_reviewer_that_really_finished_without_a_verdict_twice_is_still_a_failed_review_with_its_last_message() {
     let w = cut_world("30,30", json!({}));
-    w.script(json!({ "worker": [work()], "reviewer": [{ "ends": "codex-finished-made" }, { "ends": "codex-finished-made" }] }));
+    // Each try ends clean twice (its own turn, then its answer to the message asking for the verdict): still none.
+    w.script(json!({ "worker": [work()], "reviewer": [{ "ends": "codex-finished-made" }, { "ends": "codex-finished-made" }, { "ends": "codex-finished-made" }, { "ends": "codex-finished-made" }] }));
     let id = w.add("No verdict");
     delegate(&id);
     let t = settle(&id);
