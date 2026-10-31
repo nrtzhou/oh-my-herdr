@@ -6,7 +6,9 @@ use crate::common;
 use common::*;
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
+use sw::herdr::Herdr;
 use sw::json::*;
+use sw::store::tasks::{update, Change};
 
 fn work(ends: &str) -> Value { json!({ "files": { "f.txt": "v1\n" }, "commit": "v1", "note": "Did v1.", "ends": ends, "hook": true }) }
 fn reviewer_starts(w: &World) -> usize { calls(w).iter().filter(|c| regex::Regex::new(r"^agent start \S+-r ").unwrap().is_match(c)).count() }
@@ -133,4 +135,25 @@ fn a_stop_that_left_no_closing_note_is_asked_to_carry_on_once_and_no_more() {
     assert!(!sw::turn::wrap_up(&task(&id), "agent").b("continue"));
     set(&fixture("omp-pending-made"), 0, "");
     assert!(!sw::turn::wrap_up(&task(&id), "reviewer").b("continue"));
+}
+
+#[test]
+fn a_stray_idle_reading_never_re_arms_a_task_whose_turn_was_already_handled() {
+    // MOM-4: a review that failed waited for the human, and a reading of its agent's idle pane re-armed the task by
+    // itself (the review restarted four seconds later). A completion count proves a new turn only where one was ever
+    // recorded: omp's handled turns carry no count at all.
+    let w = cut_world("30", json!({}));
+    w.script(json!({ "worker": [work("codex-finished-made")], "reviewer": [{ "status": "working" }] }));
+    let id = w.add("No verdict");
+    delegate_with(&id, json!({ "review.timeout": "1s" }));
+    let t = settle(&id);
+    assert_eq!(t.s("stage"), "failed", "{}", t.at("failure"));
+    // What stands behind an omp task: the handled turn has no completion count, and the saved conversation and the
+    // record disagree about the message that ended it (the one guard that would absorb the reading).
+    update(&id, |t| { let h = t.obj_mut("handled"); h.put("comp", Value::Null); h.put("msg", json!("a-message-it-no-longer-ends-in")); Ok(Change::Write) }).unwrap();
+    let pane = task(&id).at("link").t("pane");
+    let api = Herdr::new(Some(w.socket.clone()));
+    let reading = api.agent_get(&pane).unwrap().unwrap();
+    sw::hook::apply(&id, &reading, &api);
+    assert_eq!(task(&id).s("stage"), "failed", "an idle reading re-armed it: {}", task(&id).s("msg"));
 }

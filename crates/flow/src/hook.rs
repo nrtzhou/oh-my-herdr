@@ -234,7 +234,9 @@ fn after_handled(t: &Task, a: &Value, prev: Option<&Value>) -> bool {
 /// recorded reviewed commit.
 fn missed_turn(t: &Task, comp: &Value) -> bool {
     let h = t.at("handled");
-    if !comp.is_null() && h.is_object() && comp != h.at("comp") && number(comp) > h.f("comp") { return true; }
+    // A completion count proves a new turn only where one was ever recorded: a count seen against none (an omp task's
+    // handled turns carry no count) proves nothing and re-armed failed tasks by themselves (MOM-4).
+    if !comp.is_null() && h.is_object() && !h.at("comp").is_null() && comp != h.at("comp") && number(comp) > h.f("comp") { return true; }
     if let Some(n) = note_stat(t) { if h.is_object() && n.0 > h.f("note") && n.0 > t.f("armedAt") { return true; } }
     if t.s("stage") == "approval" && t.b("reviewedHead") && t.b("worktree") && Path::new(t.s("worktree")).exists() {
         let wt = Path::new(t.s("worktree"));
