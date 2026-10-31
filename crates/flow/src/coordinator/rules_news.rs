@@ -26,6 +26,7 @@ pub fn task_updates_at(c: &Obj) -> i64 {
 }
 /// Completed tasks attributed to this Coordinator, formatted from allowlisted fields only.
 pub fn completed_tasks(co: &Co, since: i64, through: i64) -> Option<String> {
+    // shortcut: include at most 12 updates per prompt; raise if Coordinators need more status history at once.
     const MAX: usize = 12;
     let keys = crate::store::keys::repo_keys();
     let mut done: Vec<(i64, String)> = crate::store::tasks::list(crate::store::tasks::ListOpts { include_archived: true, ..Default::default() }).into_iter()
