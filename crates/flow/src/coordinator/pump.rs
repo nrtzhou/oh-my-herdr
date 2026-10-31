@@ -205,9 +205,9 @@ fn run_pump(co: &Co, taken: &mut HashSet<String>) -> Res<()> {
             let (news, rules_hash) = super::rules_news::before_next(co, &current, m.b("autopilot"));
             let human_message = !m.b("autopilot") && !m.at("sender").is_object();
             let updates_at = human_message.then(crate::clock::now);
-            let status = updates_at.and_then(|through| super::rules_news::completed_tasks(co, super::rules_news::task_updates_at(&current), through));
+            let status_update = updates_at.and_then(|through| super::rules_news::completed_tasks(co, super::rules_news::task_updates_cursor(&current), through));
             let mut head = if intro { Some(intro_line_of(co)) } else { news };
-            if let Some(status) = status { head = Some(head.map(|h| format!("{h}\n{status}")).unwrap_or(status)); }
+            if let Some((status, _, _)) = status_update.as_ref() { head = Some(head.map(|h| format!("{h}\n{status}")).unwrap_or_else(|| status.clone())); }
             let words_in = super::rules_news::with_head(head, m.s("text"), m.b("autopilot"));
             let typed = match hand(&api, c.s("pane"), &words_in) {
                 Ok(t) => t,
@@ -233,7 +233,7 @@ fn run_pump(co: &Co, taken: &mut HashSet<String>) -> Res<()> {
             change(co, |c| { c.put("typed", if busy { let mut t = typed.as_ref().and_then(|t| t.as_object().cloned()).unwrap_or_default(); t.put("text", words.clone()); Value::Object(t) } else { Value::Null }); true })?;
             let mark = typed.clone().unwrap_or(Value::Null);
             if !confirm(&api, c.s("pane"), typed, Some(&|| said_in(co, &mark, &words))) { crate::fail!("{UNSENT}"); }
-            if let Some(at) = updates_at { change(co, |c| { c.put("taskUpdatesAt", at); true })?; }
+            if let Some((_, at, id)) = status_update { change(co, |c| { c.put("taskUpdatesAt", at); c.put("taskUpdatesId", id); true })?; }
         }
         if stuck { break; }
     }

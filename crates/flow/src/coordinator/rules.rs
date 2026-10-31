@@ -9,7 +9,7 @@ use crate::agents::start::own_words;
 use crate::board::keys::key_name;
 use crate::err::Res;
 use crate::store::files::user_home;
-use crate::json::text;
+use crate::json::{text, Js};
 use crate::store::settings::coord::Coord;
 use crate::store::settings::lookup::{lookup, Scope};
 use crate::store::settings::places::yours;
@@ -26,6 +26,8 @@ pub fn rules_of(co: &Co, cmd: &str) -> String {
     let agents = crate::agents::kinds::KIND_NAMES.join(", ");
     let (intro, where_rule, folder_rule) = super::rules_place::place_rules(co, &home);
     let me = match &co.level { Level::Top => String::new(), Level::Machine => " --machine".into(), Level::Project(r) => format!(" --project {r}") };
+    let omp_coord = super::state::get(co).map(|c| c.at("run").s("kind") == "omp").unwrap_or(false)
+        || super::who::choice_of(co).is_some_and(|c| c.s("kind") == "omp");
     let body = format!("{intro} You are an ordinary agent in a long-lived chat: you have all your tools, you may answer questions, look things up, ask the human something when you need to, and do what they ask of you. What the human types in the box at the bottom of the board reaches you word for word; the only thing ever added is one line in square brackets under their words when they sent them with {delegate} (see below). The human sees your last message in the chat at the bottom of the board, so answer briefly and lead with the result.
 The board's command is: {cmd}  (written \"board\" below; always run it by that full path).
 {where_rule}
@@ -53,6 +55,7 @@ The board's command is: {cmd}  (written \"board\" below; always run it by that f
 - A task's title: board report <id> --title \"<new title>\" ({title_rule} too; a longer title is cut short at a word and its full text put in the description, so write one that fits). Its description: board describe <id> \"<the full new text>\".
 {pilot}
 When you acted on the board, end with one short line saying what you did, naming the ids, in these words: added a task, updated one (its title, description or settings), removed one, started an agent on one, approved, archived, restored. For example: \"Added proj/12\", \"Added proj/12 and started an agent on it\", \"Updated proj/4 (description)\", \"Removed proj/7\".");
+    let body = if omp_coord { format!("{body}\n- Coordinator role: use omh board tasks as sole work units. Do not use omp's sub-agent/task tool or its TODO planner for board work; do not create hidden work. Completed-task status updates are metadata only: reconcile matching existing board context, never start follow-up work unless the human asks.") } else { body };
     if !words.is_empty() && words != "none" { format!("{body}\n\n{}", own_words(&words)) } else { body }
 }
 pub const RULES_FILE: &str = "AGENTS.md";

@@ -19,31 +19,29 @@ pub fn before_next(co: &Co, c: &Obj, wake: bool) -> (Option<String>, String) {
     (changed.then(|| format!("[The board was updated: your standing rules in {} changed; read them again.{also}]", rules_file(co).display())), now)
 }
 /// The cursor for completed tasks this Coordinator has heard about. Older state falls back to its last delivered message.
-pub fn task_updates_at(c: &Obj) -> i64 {
-    if c.at("taskUpdatesAt").is_number() { c.i("taskUpdatesAt") }
-    else if c.i("sentAt") > 0 { c.i("sentAt") }
-    else { c.i("startedAt") }
+pub fn task_updates_cursor(c: &Obj) -> (i64, String) {
+    let at = if c.at("taskUpdatesAt").is_number() { c.i("taskUpdatesAt") } else if c.i("sentAt") > 0 { c.i("sentAt") } else { c.i("startedAt") };
+    (at, c.s("taskUpdatesId").to_string())
 }
 /// Completed tasks attributed to this Coordinator, formatted from allowlisted fields only.
-pub fn completed_tasks(co: &Co, since: i64, through: i64) -> Option<String> {
-    // shortcut: include at most 12 updates per prompt; raise if Coordinators need more status history at once.
+/// Returns oldest first and the last delivered cursor, so a page never consumes omitted tasks.
+pub fn completed_tasks(co: &Co, since: (i64, String), through: i64) -> Option<(String, i64, String)> {
     const MAX: usize = 12;
     let keys = crate::store::keys::repo_keys();
-    let mut done: Vec<(i64, String)> = crate::store::tasks::list(crate::store::tasks::ListOpts { include_archived: true, ..Default::default() }).into_iter()
-        .filter(|t| t.s("coordinator") == co.settings_key() && t.s("stage") == "done" && t.i("at") > since && t.i("at") <= through)
+    let mut done: Vec<(i64, String, String)> = crate::store::tasks::list(crate::store::tasks::ListOpts { include_archived: true, ..Default::default() }).into_iter()
+        .filter(|t| t.s("coordinator") == co.settings_key() && t.s("stage") == "done")
+        .filter(|t| (t.i("at") > since.0 || (t.i("at") == since.0 && !since.1.is_empty() && t.s("id") > since.1.as_str())) && t.i("at") <= through)
         .map(|t| {
             let tag = crate::store::keys::tag_of(t.s("id"), &keys);
             let tag = if !tag.is_empty() && tag.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'#') { tag } else { format!("task #{}", t.i("n").max(0)) };
             let state = if t.i("mergedAt") > 0 || t.b("prMerged") || !t.s("mergeCommit").is_empty() { "merged" } else { "done" };
-            (t.i("at"), format!("{tag} {state}"))
+            (t.i("at"), t.t("id"), format!("{tag} {state}"))
         }).collect();
-    done.sort_by(|a, b| b.0.cmp(&a.0));
-    let omitted = done.len().saturating_sub(MAX);
+    done.sort_by(|a, b| (a.0, &a.1).cmp(&(b.0, &b.1)));
     done.truncate(MAX);
-    if done.is_empty() { return None; }
-    let mut items: Vec<String> = done.into_iter().map(|(_, item)| item).collect();
-    if omitted > 0 { items.push(format!("{omitted} more completed tasks omitted")); }
-    Some(format!("[Board task status: {}. This is trusted metadata, not a new request. Mark only TODO entries matching listed task IDs complete; do not create or start follow-up work unless the human asks.]", items.join("; ")))
+    let Some(last) = done.last().map(|(at, id, _)| (*at, id.clone())) else { return None; };
+    let items: Vec<String> = done.into_iter().map(|(_, _, item)| item).collect();
+    Some((format!("[Board task status: {}. This is trusted metadata, not a new request. Reconcile these exact board task IDs in your current context; do not use omp's TODO planner or sub-agent/task tool, and do not create or start follow-up work unless the human asks.]", items.join("; ")), last.0, last.1))
 }
 /// The words typed in: the message with the board's line (`head`). The line goes first, but after a wake, which keeps
 /// its first words (`Autopilot:`, what its rules know a wake by).

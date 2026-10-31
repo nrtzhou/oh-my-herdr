@@ -102,3 +102,13 @@ fn the_rules_name_merge_closes_and_archive_done_and_a_running_coordinator_hears_
     assert_eq!(agent(&w).arr("prompts").iter().map(text).collect::<Vec<_>>(), vec!["first".to_string(), format!("{note}\n\nsecond"), "third".into()]);
     assert!(read(&home.join("AGENTS.md")).contains("Answer in Swedish."));
 }
+
+#[test]
+fn an_omp_coordinator_uses_board_tasks_not_omp_subtasks_or_todo() {
+    let w = coord_world();
+    sw::store::settings::change::set_value("coordinator.agent", &json!("omp"), &sw::store::settings::lookup::Scope::you()).unwrap();
+    let said = rules("/x/bin/omh");
+    assert!(said.contains("Do not use omp's sub-agent/task tool or its TODO planner"), "{said}");
+    assert!(said.contains("use omh board tasks as sole work units"), "{said}");
+    drop(w);
+}
