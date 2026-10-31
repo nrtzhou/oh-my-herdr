@@ -120,7 +120,7 @@ fn finish_steps(id: &str, g: &mut Guard, mut t: Task, ev: Option<Value>, force: 
         // It said that it waits for the human, then stopped: that is not a finish.
         if waits(&t, turn.as_ref()) { stay(id, &t, turn.as_ref(), seen(), e.s("session")); return Ok(()); }
         // A turn that ended in a stage other than "working" was the human's, typed in the agent's own terminal.
-        if t.s("stage") != "working" { t = update_wait(id, 10000, |t| { human_turn(t); Ok(Change::Write) })?; flow::sidebar::tell_sidebar(&t); close_reviewer(id); }
+        if t.s("stage") != "working" { crate::hook::log(&format!("{id}: a turn that ended in stage {} is taken for the human's own turn", t.s("stage"))); t = update_wait(id, 10000, |t| { human_turn(t); Ok(Change::Write) })?; flow::sidebar::tell_sidebar(&t); close_reviewer(id); }
     } else {
         // 2b. The hook-less route: no event (a crash, a kind without a hook, a hook marked not working).
         if let Some(a) = &a { if ["working", "blocked"].contains(&a.s("agent_status")) { return Ok(()); } }

@@ -170,7 +170,7 @@ pub fn apply(id: &str, a: &Value, api: &Herdr) {
             if not_started(t) { return Ok(Change::Write); } // told "not started": a turn that ended before the text went in changes nothing
             let waiting = WAITING.contains(&t.s("stage")) && !runner_alive(t);
             if waiting && same_turn(t) { if !comp.is_null() { t.obj_mut("handled").put("comp", comp.clone()); } return Ok(Change::Write); } // herdr counted a turn the agent's own report already finished
-            if waiting && missed_turn(t, &comp) { human_turn_ended(t); then = Then::FinishForce; }
+            if waiting && missed_turn(t, &comp) { log(&format!("{id}: an idle reading is taken for the human's own turn")); human_turn_ended(t); then = Then::FinishForce; }
             return Ok(Change::Write);
         }
         if status == "unknown" && t.s("stage") == "working" && !runner_alive(t) {
