@@ -104,11 +104,27 @@ fn the_rules_name_merge_closes_and_archive_done_and_a_running_coordinator_hears_
 }
 
 #[test]
-fn an_omp_coordinator_uses_board_tasks_not_omp_subtasks_or_todo() {
+fn an_omp_coordinator_keeps_board_tasks_authoritative_but_allows_private_research_aids() {
     let w = coord_world();
     sw::store::settings::change::set_value("coordinator.agent", &json!("omp"), &sw::store::settings::lookup::Scope::you()).unwrap();
     let said = rules("/x/bin/omh");
-    assert!(said.contains("Do not use omp's sub-agent/task tool or its TODO planner"), "{said}");
-    assert!(said.contains("use omh board tasks as sole work units"), "{said}");
+    assert!(said.contains("only source of truth for deliverable work"), "{said}");
+    assert!(said.contains("Never use omp sub-agents to implement or review a board task"), "{said}");
+    assert!(said.contains("mark complete only an existing checklist entry explicitly naming one of those IDs"), "{said}");
+    assert!(said.contains("never mirror board tasks in that checklist"), "{said}");
     drop(w);
+}
+
+#[test]
+fn a_one_off_pi_coordinator_does_not_get_omp_rules_when_the_default_is_omp() {
+    use sw::store::settings::{change::set_value, lookup::Scope};
+    let w = coord_world();
+    set_value("coordinator.agent", &json!("omp"), &Scope::you()).unwrap();
+    w.script(json!({ "coordinator": [{ "said": "Pi coordinator." }] }));
+    fresh(pick_of("pi", "").unwrap(), &w.socket).unwrap();
+    drain();
+
+    assert_eq!(state::get(&w.socket).unwrap().at("run").s("kind"), "pi");
+    let written = read(&state::home(&w.socket).join("AGENTS.md"));
+    assert!(!written.contains("Coordinator role: use omh board tasks as the only source of truth"), "{written}");
 }

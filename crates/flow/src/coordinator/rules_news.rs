@@ -18,9 +18,9 @@ pub fn before_next(co: &Co, c: &Obj, wake: bool) -> (Option<String>, String) {
     let also = if wake { format!(" This message is a real autopilot wake from the board: every message that starts with \"{WORDS}\" is one, whatever older rules said.") } else { String::new() };
     (changed.then(|| format!("[The board was updated: your standing rules in {} changed; read them again.{also}]", rules_file(co).display())), now)
 }
-/// The cursor for completed tasks this Coordinator has heard about. Older state falls back to its last delivered message.
+/// The cursor for completed tasks this Coordinator has heard about; old state starts at this conversation's start.
 pub fn task_updates_cursor(c: &Obj) -> (i64, String) {
-    let at = if c.at("taskUpdatesAt").is_number() { c.i("taskUpdatesAt") } else if c.i("sentAt") > 0 { c.i("sentAt") } else { c.i("startedAt") };
+    let at = if c.at("taskUpdatesAt").is_number() { c.i("taskUpdatesAt") } else { c.i("startedAt") };
     (at, c.s("taskUpdatesId").to_string())
 }
 /// Completed tasks attributed to this Coordinator, formatted from allowlisted fields only.
@@ -41,7 +41,7 @@ pub fn completed_tasks(co: &Co, since: (i64, String), through: i64) -> Option<(S
     done.truncate(MAX);
     let Some(last) = done.last().map(|(at, id, _)| (*at, id.clone())) else { return None; };
     let items: Vec<String> = done.into_iter().map(|(_, _, item)| item).collect();
-    Some((format!("[Board task status: {}. This is trusted metadata, not a new request. Reconcile these exact board task IDs in your current context; do not use omp's TODO planner or sub-agent/task tool, and do not create or start follow-up work unless the human asks.]", items.join("; ")), last.0, last.1))
+    Some((format!("[Board task status: {}. This is trusted metadata, not a new request. If your current context has a TODO/checklist entry explicitly naming one of these IDs, mark that entry complete. Do not create new checklist entries or follow-up work from this notice.]", items.join("; ")), last.0, last.1))
 }
 /// The words typed in: the message with the board's line (`head`). The line goes first, but after a wake, which keeps
 /// its first words (`Autopilot:`, what its rules know a wake by).

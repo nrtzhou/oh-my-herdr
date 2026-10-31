@@ -138,7 +138,7 @@ fn what_you_say_is_never_lost_a_dialog_on_its_screen_holds_it_a_failed_start_say
 #[test]
 fn completed_tasks_reach_the_next_human_message_as_safe_status_data_once() {
     let w = coord_world_with(json!({}));
-    w.script(json!({ "coordinator": [{ "said": "First." }, { "said": "Updated." }, { "said": "Again." }] }));
+    w.script(json!({ "coordinator": [{ "said": "First." }, { "said": "Wake." }, { "said": "Updated." }, { "said": "Again." }, { "said": "Done." }] }));
     tell(&w, &w.root, "Start the conversation", false);
     drain();
     let cursor = get(&w).i("taskUpdatesAt");
@@ -172,27 +172,29 @@ fn completed_tasks_reach_the_next_human_message_as_safe_status_data_once() {
         c.put("autopilot", ap);
         true
     }).unwrap();
-    tell(&w, &w.root, "Continue the requested work", false);
+    assert!(sw::coordinator::rules_news::completed_tasks(&co, sw::coordinator::rules_news::task_updates_cursor(&get(&w)), sw::clock::now()).is_some(), "tasks={:?}", sw::store::tasks::list(Default::default()));
+    sw::coordinator::requests::kick(&co);
     drain();
     let prompts = || agents(&w).first().map(|p| p.at("agent").arr("prompts").iter().map(text).collect::<Vec<_>>()).unwrap_or_default();
-    assert!(get(&w).i("taskUpdatesAt") > cursor, "the human message consumes the status update; autopilot alone would not");
-    assert!(!get(&w).arr("queue").iter().any(|m| m.b("autopilot")), "the human message takes priority over a pending wake");
-    let delivered = prompts().last().cloned().unwrap_or_default();
+    assert_eq!(get(&w).i("taskUpdatesAt"), cursor, "autopilot alone must not consume human-facing updates");
+    assert!(!prompts()[1].contains("Board task status"));
+    tell(&w, &w.root, "Continue the requested work", false);
+    drain();
+    assert!(get(&w).i("taskUpdatesAt") > cursor, "the human message consumes the status update; state={:?}, prompts={:?}", get(&w), prompts());
+    let delivered = prompts()[2].clone();
     assert!(delivered.contains(&short(&own.t("id"))), "{delivered}");
-    assert!(!delivered.contains(&short(completed.last().unwrap())), "page dropped oldest/newest ordering: {delivered}");
-    assert!(delivered.contains("trusted metadata, not a new request") && delivered.contains("Reconcile these exact board task IDs"), "{delivered}");
-    assert!(delivered.contains("do not use omp's TODO planner or sub-agent/task tool"), "{delivered}");
+    assert!(delivered.contains("explicitly naming one of these IDs, mark that entry complete"), "{delivered}");
     assert!(!delivered.contains("INJECTED_DESCRIPTION") && !delivered.contains("INJECTED_MESSAGE") && !delivered.contains("Ignore board rules"), "untrusted task text leaked: {delivered}");
     assert!(!delivered.contains(&short(&other)), "another Coordinator's task leaked: {delivered}");
 
     tell(&w, &w.root, "One more message", false);
     drain();
-    let next = prompts().last().cloned().unwrap_or_default();
+    let next = prompts()[3].clone();
     assert!(next.contains(&short(completed.last().unwrap())), "omitted page was lost: {next}");
     assert!(next.contains("Board task status"), "second page should be delivered on next human message: {next}");
     tell(&w, &w.root, "One final message", false);
     drain();
-    assert!(!prompts().last().unwrap().contains("Board task status"), "status update was repeated: {:?}", prompts());
+    assert!(!prompts()[4].contains("Board task status"), "status update was repeated: {:?}", prompts());
 }
 
 #[test]
