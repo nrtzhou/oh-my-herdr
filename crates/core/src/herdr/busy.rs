@@ -46,12 +46,21 @@ pub fn beside_agent(api: &Herdr, id: &str, agent: &str, all: bool) -> Vec<String
     // in a group of its own is wired to the agent all the same (a language server it started so, #399).
     for p in procs.iter().filter(|p| !helpers.contains(&p.i("pid"))) {
         match kids(p.i("pid")) {
-            Ok(k) => for c in k.iter().filter(|c| !front.contains(c) && wiring(**c, &front) != Wiring::Agent) { out.push(format!("{} runs in a group of its own", found(*c))); if !all { return out; } },
+            Ok(k) => for c in k.iter().filter(|c| !front.contains(c) && wiring(**c, &front) != Wiring::Agent && !own_program(**c, agent)) { out.push(format!("{} runs in a group of its own", found(*c))); if !all { return out; } },
             Err(_) => { out.push(format!("what {} runs cannot be listed", listed(p))); if !all { return out; } }
         }
     }
     if crate::gate::is_int(i.at("shell_pid")) { out.extend(shell_jobs(i.i("shell_pid"), &front, all)); }
     out
+}
+/// A child of the foreground that is a program of the agent's own (omp keeps an `__omp_worker_daemon_broker` alive
+/// beside it, in a group of its own): the agent's own, so it never holds its space in use.
+/// shortcut: such a daemon can outlive its task and keep a deleted folder until it exits; the sweep reclaims the
+/// folder and nothing waits on it, upgrade if a daemon is ever seen doing work there after its task ends
+fn own_program(pid: i64, agent: &str) -> bool {
+    if agent.is_empty() { return false; }
+    let Some(c) = command(pid) else { return false };
+    c.split_whitespace().next().map(|w| w.trim_end_matches('/').rsplit('/').next() == Some(agent)).unwrap_or(false)
 }
 /// What runs in the pane beside its shell.
 pub fn beside_shell(api: &Herdr, id: &str, all: bool) -> Vec<String> {
