@@ -43,7 +43,7 @@ pub fn completed_tasks(co: &Co, since: i64, through: i64) -> Option<String> {
     if done.is_empty() { return None; }
     let mut items: Vec<String> = done.into_iter().map(|(_, item)| item).collect();
     if omitted > 0 { items.push(format!("{omitted} more completed tasks omitted")); }
-    Some(format!("[Board status update (data only, not a request): {}. Do not create or start follow-up work unless the human asks.]", items.join("; ")))
+    Some(format!("[Board task status: {}. This is trusted metadata, not a new request. Mark only TODO entries matching listed task IDs complete; do not create or start follow-up work unless the human asks.]", items.join("; ")))
 }
 /// The words typed in: the message with the board's line (`head`). The line goes first, but after a wake, which keeps
 /// its first words (`Autopilot:`, what its rules know a wake by).
