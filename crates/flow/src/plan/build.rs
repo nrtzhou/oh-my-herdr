@@ -18,7 +18,7 @@ use crate::json::*;
 use crate::runner::Guard;
 use crate::store::attempts::{attempt_agents, create_attempt, LETTERS};
 use crate::store::files::board_env;
-use crate::store::inbox::{take_text, untake_text};
+use crate::store::inbox::{ack_text, take_text, untake_text};
 use crate::store::repos::{cwd_of, is_repo};
 use crate::store::settings::lookup::{setting, setting_text};
 use crate::store::settings::values::agent_of;
@@ -106,18 +106,17 @@ pub fn start_build_by(id: &str, g: &mut Guard, by: &str) -> Res<()> {
         fan_out(g, &many)?;
         return Ok(());
     }
-    let waiting: Vec<String> = take_text(id)?.iter().map(|m| m.t("text")).collect();
+    let rows = take_text(id)?;
+    let claim = rows.first().map(crate::store::inbox::claim_of).unwrap_or_default();
+    let waiting: Vec<String> = rows.iter().map(|m| m.t("text")).collect();
     let r = (|| -> Res<()> {
         if planner { start_agent(id, g, &std::iter::once(first_prompt(&t)).chain(waiting.iter().cloned()).collect::<Vec<_>>().join("\n\n"), None)?; return Ok(()); }
         let a = api.agent_get(t.at("link").s("pane"))?;
         let words = std::iter::once(go_words(&t)).chain(waiting.iter().cloned()).collect::<Vec<_>>().join("\n\n");
         if a.is_some() && !t.at("plan").b("mode") {
-            // The same program goes on in the same conversation: the turn this starts is the first of the work.
             t = g.set(|t| { t.put("stage", "working"); t.put("armedAt", now()); t.put("expectedWake", Value::Null); t.put("turnOpen", true); t.put("turnBy", "start"); t.put("msg", ""); t.put("watch", Value::Null); t.del("kind"); })?;
             flow::send::deliver(&t, &flow::send::with_tail(&t, &words), None, false)?;
         } else {
-            // In the read-only mount (or, started by an older board, in Claude Code's own plan mode): neither ends by
-            // itself. Ended, and started again.
             if a.is_some() && !api.pane_quit(t.at("link").s("pane"), 6000) { crate::fail!("The agent's program could not be ended to leave its plan step. Close its terminal, then retry."); }
             if resumable(&t) { start_agent(id, g, &flow::send::with_tail(&t, &words), Some(t.s("session")))?; }
             else { start_agent(id, g, &std::iter::once(first_prompt(&t)).chain(waiting.iter().cloned()).collect::<Vec<_>>().join("\n\n"), None)?; }
@@ -125,6 +124,7 @@ pub fn start_build_by(id: &str, g: &mut Guard, by: &str) -> Res<()> {
         Ok(())
     })();
     if let Err(e) = r { if !waiting.is_empty() { untake_text(id, waiting.len())?; } return Err(e); }
+    if !waiting.is_empty() { let _ = ack_text(id, waiting.len(), &claim); }
     let t = update_wait(id, 10000, |t| { let p = t.obj_mut("plan"); p.put("built", now()); p.put("locked", false); p.del("ignored"); t.del("kind"); Ok(Change::Write) })?;
     flow::sidebar::tell_sidebar(&t);
     Ok(())

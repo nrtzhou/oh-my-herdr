@@ -29,7 +29,6 @@ fn one_chat_for_everyone_space_on_a_task_talks_to_its_agent_otherwise_to_the_coo
     unsafe { std::env::set_var("HERDR_ENV", "1") };
     let so = w.socket.clone();
     let chat_key = regex::escape(&key_name("chatMessage"));
-    let top = regex::escape(&crate::board_chat::top_name());
     let mut s = open(&w.root, 34);
     assert!(s.s.chat_open);
     assert!(has(&s.text(), &format!(r"\n╭─ [^\n]*╮\n(?:│ +│\n)?│ +❯ Ask it something, e\.g\. ")) && !s.text().contains(&format!("{} Not started", crate::board_chat::top_name())), "{}", s.text());

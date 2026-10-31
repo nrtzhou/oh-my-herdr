@@ -6,7 +6,7 @@ pub mod render;
 pub use render::{render_review_page, select_evidence, web_url, REVIEW_FILE};
 
 use crate::json::*;
-use crate::store::files::{artifacts_dir, bin, data_dir, pid_alive, proc_start, read_json, write_json};
+use crate::store::files::{artifacts_dir, bin, data_dir, pid_alive, proc_start, read_json, with_lock_wait, write_json};
 use crate::store::tasks::Task;
 use std::path::Path;
 use std::sync::OnceLock;
@@ -16,8 +16,7 @@ fn server_alive(info: &Value) -> bool { info.b("pid") && pid_alive(info.i("pid")
 /// The page server that runs now ({pid, port}), or None.
 pub fn server_info() -> Option<Value> { read_json(&serve_file()).filter(|i| server_alive(i) && i.b("port")) }
 pub fn ensure_server() -> Value {
-    if let Some(i) = server_info() { return i; }
-    start_server(&bin())
+    with_lock_wait("page-server", 10000, || Ok(server_info().unwrap_or_else(|| start_server(&bin())))).unwrap_or(Value::Null)
 }
 /// Start the page server (`<prog> serve`), detached, and wait a little for it to say its port. It is waited for when
 /// it ends: one that could not take its port, crashed or was told to go is no zombie of the keeper, which asks for it

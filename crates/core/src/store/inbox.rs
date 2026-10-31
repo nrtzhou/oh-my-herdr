@@ -5,24 +5,57 @@ use crate::err::Res;
 use crate::json::*;
 use std::path::PathBuf;
 
-// ---- the inbox: text for an agent that could not be delivered yet. Never dropped. ----------------------------------
+// ---- the inbox: text for an agent that could not be delivered yet. A claim is replayed after its process dies. ----
+const CLAIM_FIELD: &str = "_omh_inbox_claim";
+const CLAIM_AT_FIELD: &str = "_omh_inbox_at";
 fn inbox_file(id: &str) -> PathBuf { dir_of(id).join("inbox.jsonl") }
 fn offset_file(id: &str) -> PathBuf { dir_of(id).join("inbox.offset") }
+fn claim_file(id: &str) -> PathBuf { dir_of(id).join("inbox.claim") }
+fn lock_name(id: &str) -> String { format!("inbox:{id}") }
 fn offset(id: &str) -> usize { read_json(&offset_file(id)).map(|v| number(&v) as usize).unwrap_or(0) }
+fn clear_claim(id: &str) { let _ = std::fs::remove_file(claim_file(id)); }
+fn claim_live(id: &str) -> bool { read_obj(&claim_file(id)).is_some_and(|c| marker_alive(c.at("marker"))) }
+pub fn claim_of(v: &Value) -> String { v.t(CLAIM_FIELD) }
+pub fn claim_at(v: &Value) -> i64 { v.i(CLAIM_AT_FIELD) }
 pub fn queue_text(id: &str, text: &str, extra: Obj) -> Res<()> {
     let mut e = obj(json!({ "text": text, "at": now() }));
     for (k, v) in extra { e.insert(k, v); }
     append_line(&inbox_file(id), &Value::Object(e))
 }
 pub fn pending_text(id: &str) -> Vec<Value> { let all = read_lines(&inbox_file(id)); let off = offset(id).min(all.len()); all[off..].to_vec() }
+/// Claims pending messages without advancing the durable offset. A dead claim is replayed with its same id.
 pub fn take_text(id: &str) -> Res<Vec<Value>> {
-    let all = read_lines(&inbox_file(id));
-    let off = offset(id).min(all.len());
-    write_json(&offset_file(id), &json!(all.len()))?;
-    Ok(all[off..].to_vec())
+    with_lock(&lock_name(id), || {
+        if claim_live(id) { return Ok(vec![]); }
+        let old = read_obj(&claim_file(id));
+        clear_claim(id);
+        let all = read_lines(&inbox_file(id));
+        let old_range = old.as_ref().and_then(|c| {
+            let from = c.i("from").max(0) as usize; let to = c.i("to").max(0) as usize;
+            (!c.t("id").is_empty() && from <= to && to <= all.len()).then_some((from, to, c.t("id"), c.i("at")))
+        });
+        let (from, to, claim, at) = old_range.map(|(from, to, claim, at)| (from, to, claim, at.max(0)))
+            .unwrap_or_else(|| { let from = offset(id).min(all.len()); (from, all.len(), crate::util::random_hex(12), now()) });
+        if from == to { return Ok(vec![]); }
+        write_json(&claim_file(id), &json!({ "id": claim, "from": from, "to": to, "at": at, "marker": marker() }))?;
+        Ok(all[from..to].iter().map(|v| {
+            let mut v = v.clone();
+            if let Some(o) = v.as_object_mut() { o.put(CLAIM_FIELD, claim.clone()); o.put(CLAIM_AT_FIELD, at); }
+            v
+        }).collect())
+    })
 }
-/// Put taken text back (the delivery failed after all).
-pub fn untake_text(id: &str, count: usize) -> Res<()> { write_json(&offset_file(id), &json!(offset(id).saturating_sub(count))) }
+/// Commits one successful delivery. If the process dies before this, take_text replays it.
+pub fn ack_text(id: &str, count: usize, claim: &str) -> Res<()> {
+    with_lock(&lock_name(id), || {
+        let Some(c) = read_obj(&claim_file(id)) else { return Ok(()); };
+        let from = c.i("from").max(0) as usize; let to = c.i("to").max(0) as usize;
+        if c.s("id") != claim || to.saturating_sub(from) != count { return Err(crate::err::Error::new(format!("inbox claim for {id} changed"))); }
+        write_json(&offset_file(id), &json!(to))?; clear_claim(id); Ok(())
+    })
+}
+/// Releases a failed delivery without dropping its messages.
+pub fn untake_text(id: &str, _count: usize) -> Res<()> { with_lock(&lock_name(id), || { clear_claim(id); Ok(()) }) }
 
 // ---- dispatcher instructions: siblings of the tasks on disk, so a running or failed one survives the board ---------
 fn dispatch_dir() -> PathBuf { data_dir().join("dispatch") }

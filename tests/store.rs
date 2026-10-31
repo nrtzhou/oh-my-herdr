@@ -77,14 +77,37 @@ fn settings_the_built_in_values_your_own_one_tasks_own() {
 }
 
 #[test]
-fn the_inbox_never_drops_text_and_taken_text_can_be_put_back() {
+fn the_inbox_replays_same_claim_until_acked_and_torn_jsonl_keeps_only_complete_lines() {
     let w = world();
-    use sw::store::inbox::{pending_text, queue_text, take_text, untake_text};
+    use sw::store::inbox::{ack_text, claim_at, claim_of, pending_text, queue_text, take_text};
     let id = w.add("T");
     queue_text(&id, "one", Obj::new()).unwrap(); queue_text(&id, "two", Obj::new()).unwrap();
     assert_eq!(pending_text(&id).iter().map(|m| m.t("text")).collect::<Vec<_>>(), vec!["one", "two"]);
-    assert_eq!(take_text(&id).unwrap().len(), 2); assert_eq!(pending_text(&id).len(), 0);
-    untake_text(&id, 2).unwrap(); assert_eq!(pending_text(&id).len(), 2);
+    let first = take_text(&id).unwrap();
+    assert_eq!(first.len(), 2); assert_eq!(pending_text(&id).len(), 2);
+    let (claim, at) = (claim_of(&first[0]), claim_at(&first[0]));
+    let claim_file = sw::store::files::dir_of(&id).join("inbox.claim");
+    let mut saved = sw::store::files::read_json(&claim_file).unwrap();
+    saved["marker"]["pid"] = json!(i64::MAX);
+    std::fs::write(&claim_file, saved.to_string()).unwrap();
+    let replay = take_text(&id).unwrap();
+    assert_eq!(replay.len(), 2);
+    assert!(replay.iter().all(|m| claim_of(m) == claim && claim_at(m) == at));
+    queue_text(&id, "three", Obj::new()).unwrap();
+    ack_text(&id, 2, &claim).unwrap();
+    assert_eq!(pending_text(&id).iter().map(|m| m.t("text")).collect::<Vec<_>>(), vec!["three"]);
+    let torn = w.add("Torn");
+    let path = sw::store::files::dir_of(&torn).join("inbox.jsonl");
+    std::fs::write(&path, "{\"text\":\"three\"}\n{\"text\":\"cut").unwrap();
+    assert_eq!(sw::store::files::read_lines(&path).len(), 1);
+    std::fs::write(&path, "{\"text\":\"three\"}\n{broken}\n").unwrap();
+    assert!(sw::store::files::read_lines(&path).is_empty(), "a complete malformed line remains corruption");
+}
+#[test]
+fn inbox_delivery_does_not_treat_a_short_message_as_a_substring_of_old_sent_text() {
+    let _w = world();
+    let t = obj(json!({ "id": "proj/1", "agent": "claude", "sent": { "at": 200, "text": "fix login" } }));
+    assert!(!sw::submit::inbox_was_sent(&t, "new-claim", "fix", 100));
 }
 
 #[test]

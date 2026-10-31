@@ -32,7 +32,7 @@ fn the_box_talks_to_one_long_lived_coordinator_started_once_with_nothing_held_ba
     let t = s.text();
     // It opens on the top row, this machine's, whose coordinator the chat talks to: its box's edge names it, and the box
     // invites a first message.
-    let (host, top) = (regex::escape(&sw::shown::words::clean(&sw::remote::check::hostname())), regex::escape(&crate::board_chat::top_name()));
+    let host = regex::escape(&sw::shown::words::clean(&sw::remote::check::hostname()));
     assert!(has(&t, &format!(r#"\n╭─  {host}  · Machine coordinator ─*╮\n(?:│ +│\n)?│ +❯ Ask it something, e\.g\. "what's left to do here\?" +│\n(?:│ +│\n)?╰─+╯\n[^\n]*\? all keys *$"#)), "{t}");
     assert!(!has(&t, "claude|default model|default effort|last message|new task|reply to"), "{t}");
     s.typed("build a login page");

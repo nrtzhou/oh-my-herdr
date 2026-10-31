@@ -18,8 +18,8 @@ use crate::herdr::{cli::{current_socket, same_socket}, Herdr};
 use crate::json::*;
 use crate::limits::run::granted;
 use crate::runner::{runner_alive, spawn_runner};
-use crate::store::{failures::failure_patch, files::{data_dir, has_tasks}, handovers::fresh_list, inbox::{pending_text, take_text, untake_text}, repos::cwd_of, tasks::{get, list, update_wait, Change, ListOpts, Task}};
-use crate::submit::{hand, not_started, note_sent, rest, took, unconfirmed::taken};
+use crate::store::{failures::failure_patch, files::{data_dir, has_tasks}, handovers::fresh_list, inbox::{pending_text, take_text}, repos::cwd_of, tasks::{get, list, update_wait, Change, ListOpts, Task}};
+use crate::submit::{not_started, rest, took, unconfirmed::taken};
 use std::path::Path;
 
 /// Stages in which a finished turn nobody saw start (a short turn, a herdr restart, a lock wait) still counts.
@@ -257,12 +257,13 @@ pub fn human_turn_ended(t: &mut Task) {
     t.put("armedAt", armed); t.put("expectedWake", Value::Null); t.put("turnOpen", false);
     t.put("stage", "working"); t.put("msg", ""); t.del("kind"); t.put("mergeFailed", false);
 }
-fn deliver_inbox(t: &Task, api: &Herdr) {
+fn deliver_inbox(t: &Task, _api: &Herdr) {
     let id = t.s("id");
     let items = take_text(id).unwrap_or_default();
     if items.is_empty() { return; }
     let wake = items.iter().filter_map(|m| m.at("wake").as_object().filter(|_| m.b("wake")).cloned()).last();
-    // The send time arms the pipeline for the turn this starts, so it is written before the text goes out.
+    let claim = crate::store::inbox::claim_of(&items[0]);
+    let at = crate::store::inbox::claim_at(&items[0]);
     let before: Vec<(&str, Value)> = ["armedAt", "expectedWake", "stage", "msg"].iter().map(|k| (*k, t.at(k).clone())).collect();
     let _ = update_wait(id, 10000, |t| {
         t.put("armedAt", now());
@@ -271,12 +272,16 @@ fn deliver_inbox(t: &Task, api: &Herdr) {
         Ok(Change::Write)
     });
     let text = items.iter().map(|m| m.t("text")).collect::<Vec<_>>().join("\n\n");
-    match hand(api, t.at("link").s("pane"), &text) {
-        Ok(mark) => note_sent(id, mark, &text, items[0].b("first")),
-        Err(e) => {
-            let _ = untake_text(id, items.len());
+    match crate::submit::deliver_inbox(t, &text, &claim, at) {
+        Ok(true) => { let _ = crate::store::inbox::ack_text(id, items.len(), &claim); }
+        Ok(false) => {
+            let _ = crate::store::inbox::untake_text(id, items.len());
             let _ = update_wait(id, 10000, |t| { for (k, v) in &before { t.put(k, v.clone()); } Ok(Change::Write) });
-            if e.code != "agent_blocked" && e.code != "agent_not_ready" { log(&e.message); }
+        }
+        Err(e) => {
+            let _ = crate::store::inbox::untake_text(id, items.len());
+            let _ = update_wait(id, 10000, |t| { for (k, v) in &before { t.put(k, v.clone()); } Ok(Change::Write) });
+            log(&e.msg);
         }
     }
 }

@@ -126,7 +126,7 @@ pub fn confirm(api: &Herdr, pane: &str, mark: Option<Value>, said: Option<&dyn F
     }
     true
 }
-/// A task's agent: the mark rides on the task, and the housekeeping pass looks again. `first`: the text is everything
+/// The task's agent: the mark rides on the task, and the housekeeping pass looks again. `first`: the text is everything
 /// a freshly started program was given. Text typed earlier that the agent has not started on is still in its box.
 pub fn note_sent(id: &str, mark: Option<Value>, text: &str, first: bool) {
     crate::store::said_by::note_board(id, text);
@@ -135,18 +135,29 @@ pub fn note_sent(id: &str, mark: Option<Value>, text: &str, first: bool) {
         let old = if t.at("unsent").is_object() { Some(t.at("unsent").clone()) }
             else if t.at("sent").is_object() && mark.is_some() && (t.at("sent").b("busy") || took(t.at("sent"), was.as_ref(), None) == Some(false)) { Some(t.at("sent").clone()) } else { None };
         match &mark {
-            Some(m) => {
-                let mut s = m.as_object().cloned().unwrap_or_default();
-                s.put("text", match &old { Some(o) => format!("{}\n\n{text}", o.s("text")), None => text.to_string() });
-                s.put("first", match &old { Some(o) => o.b("first"), None => first });
-                t.put("sent", s);
-                t.put("unsent", Value::Null);
-            }
+            Some(m) => { let mut s = m.as_object().cloned().unwrap_or_default(); s.put("text", match &old { Some(o) => format!("{}\n\n{text}", o.s("text")), None => text.to_string() }); s.put("first", match &old { Some(o) => o.b("first"), None => first }); t.put("sent", s); t.put("unsent", Value::Null); }
             None => t.put("sent", Value::Null),
         }
-        t.del("unconfirmed"); // what was typed before is not looked for any more
+        t.del("unconfirmed");
         Ok(Change::Write)
     });
+}
+/// A queued message that herdr accepted, but whose inbox offset may not have been committed yet.
+pub fn inbox_was_sent(t: &Task, claim: &str, text: &str, at: i64) -> bool {
+    if t.at("inboxDelivered").s("claim") == claim && !claim.is_empty() { return true; }
+    crate::agents::installed::said_to(t.s("agent"), t.so("transcript").map(Path::new), t.s("session"), &cwd_of(t), text, at) == Some(true)
+}
+pub fn mark_inbox_sent(id: &str, claim: &str, at: i64) -> crate::err::Res<()> {
+    update_wait(id, 10000, |t| { t.put("inboxDelivered", json!({ "claim": claim, "at": at })); Ok(Change::Write) }).map(|_| ())
+}
+/// Deliver claimed inbox text without sending it again when its prior hand is already recorded.
+pub fn deliver_inbox(t: &Task, text: &str, claim: &str, at: i64) -> crate::err::Res<bool> {
+    if inbox_was_sent(t, claim, text, at) { return Ok(true); }
+    match hand(&crate::flow::task::h(t), t.at("link").s("pane"), text) {
+        Ok(mark) => { note_sent(t.s("id"), mark, text, false); mark_inbox_sent(t.s("id"), claim, at)?; Ok(true) }
+        Err(e) if e.code == "agent_blocked" || e.code == "agent_not_ready" => Ok(false),
+        Err(e) => Err(e.into()),
+    }
 }
 /// Task id -> when its saved conversation was last read for a text typed into a running turn.
 static LOOKED: LazyLock<Mutex<HashMap<String, i64>>> = LazyLock::new(Default::default);

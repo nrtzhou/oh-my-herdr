@@ -97,12 +97,18 @@ pub fn append_line(file: &Path, value: &Value) -> Res<()> {
     f.write_all(format!("{}\n", serde_json::to_string(&tidy(value.clone()))?).as_bytes())?;
     Ok(())
 }
-/// One JSON value a line; a file that cannot be read is no lines.
+/// One JSON value a line; an incomplete final line is ignored so earlier messages survive a torn append.
 pub fn read_lines(file: &Path) -> Vec<Value> {
     let Some(text) = read_text(file) else { return vec![] };
+    let complete = text.ends_with('\n');
+    let lines: Vec<&str> = text.split('\n').filter(|l| !l.is_empty()).collect();
     let mut out = vec![];
-    for l in text.split('\n').filter(|l| !l.is_empty()) {
-        match serde_json::from_str(l) { Ok(v) => out.push(v), Err(_) => return vec![] }
+    for (n, l) in lines.iter().enumerate() {
+        match serde_json::from_str(l) {
+            Ok(v) => out.push(v),
+            Err(_) if !complete && n + 1 == lines.len() => break,
+            Err(_) => return vec![],
+        }
     }
     out
 }
