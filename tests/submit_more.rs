@@ -5,7 +5,7 @@ use crate::common;
 use common::*;
 use serde_json::{json, Value};
 use sw::json::*;
-use sw::submit::{drawn, mark_of, took, NOT_STARTED, TRIES};
+use sw::submit::{drawn, mark_of, took, LATER_NOT_STARTED, TRIES};
 
 fn waits(ready: i64, submit: i64) { unsafe { std::env::set_var("OMH_READY_MS", ready.to_string()); std::env::set_var("OMH_SUBMIT_MS", submit.to_string()); } }
 fn pass(w: &World) { sw::housekeeping::housekeeping(&w.socket, sw::housekeeping::Force::Yes); }
@@ -104,7 +104,7 @@ fn a_later_message_whose_enter_is_lost_gets_it_again_and_pressing_enter_yourself
     first_agent(&w, |a| a["status"] = json!("idle"));
     tell(&id, "and another");
     for _ in 0..=(TRIES + 1) { pass(&w); }
-    assert_eq!((task(&id).t("stage"), row(&id).t("note")), ("failed".into(), NOT_STARTED.to_string()));
+    assert_eq!((task(&id).t("stage"), row(&id).t("note")), ("failed".into(), LATER_NOT_STARTED.to_string()));
     w.patch(|s| s["deaf"] = json!(0));
     use sw::herdr::cli::Fake;
     w.fake.run(&["agent".into(), "send-keys".into(), task(&id).at("link").t("pane"), "enter".into()], ""); // you, pressing enter in the agent's own terminal
@@ -165,6 +165,6 @@ fn an_agent_herdr_cannot_classify_is_checked_like_any_other() {
     first_agent(&w, |a| a["status"] = json!("unknown"));
     tell(&id, "NEVER TAKEN");
     for _ in 0..(TRIES + 3) { pass(&w); settle(&id); }
-    assert_eq!((task(&id).t("stage"), row(&id).t("note")), ("failed".into(), NOT_STARTED.to_string()));
+    assert_eq!((task(&id).t("stage"), row(&id).t("note")), ("failed".into(), LATER_NOT_STARTED.to_string()));
     assert!(task(&id).at("unsent").s("text").contains("NEVER TAKEN"));
 }

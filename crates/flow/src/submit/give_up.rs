@@ -1,6 +1,6 @@
 //! The board gives up on text a task's agent never started on: the task says "not started", its failure quotes the last
 //! lines of the agent's pane, and the text is kept for retry, which starts the agent's program again.
-use super::{flat, NOT_STARTED};
+use super::{flat, LATER_NOT_STARTED, NOT_STARTED};
 use crate::agents::hand_limits::as_typed;
 use crate::agents::screen_text::screen_text;
 use crate::finish::shared::last_lines;
@@ -26,13 +26,15 @@ pub fn on_screen(screen: &str, text: &str) -> bool {
 /// Failed as not started, with the last lines of the agent's pane at the end of the detail.
 pub fn fail(id: &str, field: &str, m: &Value, detail: &str, next: &str, screen: &str) {
     let tail = last_lines(screen, 8);
-    let detail = if tail.is_empty() { detail.to_string() } else { format!("{detail}\n\nThe last lines of its terminal:\n{tail}") };
+    let detail = if m.b("first") { detail.to_string() } else { format!("The board's later instruction was not submitted. {detail}") };
+    let detail = if tail.is_empty() { detail } else { format!("{detail}\n\nThe last lines of its terminal:\n{tail}") };
+    let (msg, title) = if m.b("first") { (NOT_STARTED, "The agent has not started on its instructions") } else { (LATER_NOT_STARTED, "A later instruction was not delivered to the agent") };
     let _ = update_wait(id, 10000, |c| {
         if !mine(c, field, m) || c.s("stage") != "working" { return Ok(Change::Keep); }
         c.put(field, Value::Null);
         c.put("unsent", json!({ "text": m.at("text"), "first": m.b("first"), "at": if m.b("typedAt") { m.at("typedAt").clone() } else { m.at("at").clone() }, "typed": true }));
-        c.put("stage", "failed"); c.put("msg", NOT_STARTED); c.put("turnOpen", false); c.put("watch", Value::Null);
-        for (k, v) in failure_patch(&obj(json!({ "stage": "send", "title": "The agent has not started on its instructions", "auth": false, "agentCanFix": false, "detail": detail, "next": next }))) { c.insert(k, v); }
+        c.put("stage", "failed"); c.put("msg", msg); c.put("turnOpen", false); c.put("watch", Value::Null);
+        for (k, v) in failure_patch(&obj(json!({ "stage": "send", "title": title, "auth": false, "agentCanFix": false, "detail": detail, "next": next }))) { c.insert(k, v); }
         Ok(Change::Write)
     });
 }

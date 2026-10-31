@@ -162,6 +162,7 @@ pub fn deliver_inbox(t: &Task, text: &str, claim: &str, at: i64) -> crate::err::
 /// Task id -> when its saved conversation was last read for a text typed into a running turn.
 static LOOKED: LazyLock<Mutex<HashMap<String, i64>>> = LazyLock::new(Default::default);
 pub const NOT_STARTED: &str = "Not started: its instructions sit unsent in its box";
+pub const LATER_NOT_STARTED: &str = "Not delivered: a later instruction sits unsent in its box";
 /// Called on every pass with the agent as herdr shows it now. Never waits: one look, at most one enter.
 pub fn check_sent(id: &str, a: Option<&Value>, api: &Herdr) {
     let Some(t) = get(id) else { return };

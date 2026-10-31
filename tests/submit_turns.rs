@@ -6,7 +6,7 @@ use common::*;
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 use sw::json::*;
-use sw::submit::{NOT_STARTED, TRIES};
+use sw::submit::{LATER_NOT_STARTED, NOT_STARTED, TRIES};
 
 fn waits(ready: i64, submit: i64) { unsafe { std::env::set_var("OMH_READY_MS", ready.to_string()); std::env::set_var("OMH_SUBMIT_MS", submit.to_string()); } }
 fn pass(w: &World) { sw::housekeeping::housekeeping(&w.socket, sw::housekeeping::Force::Yes); }
@@ -104,8 +104,8 @@ fn retry_on_not_started_never_restarts_a_session_that_is_alive_and_took_the_text
     rests(&w);
     // The record is an older board's: it holds the moment the agent came to rest, a minute after it took the words.
     let later = sw::clock::now() + 60000;
-    let patch = sw::store::failures::failure_patch(&obj(json!({ "stage": "send", "title": "The agent has not started on its instructions", "detail": "", "next": "" })));
-    sw::store::tasks::patch(&id, |c| { c.put("unsent", json!({ "text": said, "first": false, "at": later })); c.put("sent", Value::Null); c.put("stage", "failed"); c.put("msg", NOT_STARTED); for (k, v) in patch { c.insert(k, v); } }).unwrap();
+    let patch = sw::store::failures::failure_patch(&obj(json!({ "stage": "send", "title": "A later instruction was not delivered to the agent", "detail": "", "next": "" })));
+    sw::store::tasks::patch(&id, |c| { c.put("unsent", json!({ "text": said, "first": false, "at": later })); c.put("sent", Value::Null); c.put("stage", "failed"); c.put("msg", LATER_NOT_STARTED); for (k, v) in patch { c.insert(k, v); } }).unwrap();
     let pid = the_agent(&w, &id).i("pid");
     let quits = count(&w, r"^pane quit");
     let out = sw::actions::finish_line::retry(&id).unwrap().msg;
@@ -145,7 +145,7 @@ fn an_agent_that_exits_with_typed_text_not_taken_is_not_started_and_a_late_repor
     exits(&w);
     report();
     for _ in 0..3 { pass(&w); settle(&id); }
-    assert_eq!((task(&id).t("stage"), row(&id).t("note")), ("failed".into(), NOT_STARTED.to_string()));
+    assert_eq!((task(&id).t("stage"), row(&id).t("note")), ("failed".into(), LATER_NOT_STARTED.to_string()));
     assert!(task(&id).at("unsent").s("text").contains("LEFT IN THE BOX"));
     // Retry starts a program again and hands it the text; a message typed into that one, which then exits before
     // taking it, ends the same way without a single enter having been refused.
@@ -158,7 +158,7 @@ fn an_agent_that_exits_with_typed_text_not_taken_is_not_started_and_a_late_repor
     exits(&w);
     report();
     for _ in 0..3 { pass(&w); settle(&id); }
-    assert_eq!((task(&id).t("stage"), row(&id).t("note")), ("failed".into(), NOT_STARTED.to_string()));
+    assert_eq!((task(&id).t("stage"), row(&id).t("note")), ("failed".into(), LATER_NOT_STARTED.to_string()));
     assert!(task(&id).at("unsent").s("text").contains("GONE WITH IT"));
     assert!(task(&id).at("failure").s("detail").contains("program ended before it started on it"), "{}", task(&id).at("failure"));
     sw::actions::finish_line::retry(&id).unwrap();

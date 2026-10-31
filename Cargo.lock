@@ -679,7 +679,7 @@ dependencies = [
 
 [[package]]
 name = "omh"
-version = "1.2.31"
+version = "1.2.32"
 dependencies = [
  "chrono",
  "crossterm",
@@ -1172,7 +1172,7 @@ checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
 
 [[package]]
 name = "sw-board"
-version = "1.2.31"
+version = "1.2.32"
 dependencies = [
  "crossterm",
  "libc",
@@ -1185,7 +1185,7 @@ dependencies = [
 
 [[package]]
 name = "sw-core"
-version = "1.2.31"
+version = "1.2.32"
 dependencies = [
  "chrono",
  "crossterm",
@@ -1204,7 +1204,7 @@ dependencies = [
 
 [[package]]
 name = "sw-flow"
-version = "1.2.31"
+version = "1.2.32"
 dependencies = [
  "chrono",
  "libc",
@@ -1224,7 +1224,7 @@ dependencies = [
 
 [[package]]
 name = "sw-web"
-version = "1.2.31"
+version = "1.2.32"
 dependencies = [
  "chrono",
  "libc",

@@ -7,7 +7,7 @@ use crate::common;
 use common::*;
 use serde_json::json;
 use sw::json::*;
-use sw::submit::{NOT_STARTED, TRIES};
+use sw::submit::{LATER_NOT_STARTED, NOT_STARTED, TRIES};
 
 fn waits(ready: i64, submit: i64) { unsafe { std::env::set_var("OMH_READY_MS", ready.to_string()); std::env::set_var("OMH_SUBMIT_MS", submit.to_string()); } }
 fn pass(w: &World) { sw::housekeeping::housekeeping(&w.socket, sw::housekeeping::Force::Yes); }
@@ -68,7 +68,8 @@ fn a_message_typed_into_a_running_turn_gets_its_enter_once_the_agent_rests_with_
     sw::actions::talk::tell(&id, "REFUSED WHILE BUSY", false).unwrap();
     rests(&w);
     for _ in 0..(TRIES + 3) { pass(&w); settle(&id); }
-    assert_eq!((task(&id).t("stage"), row(&id).t("note"), task(&id).at("sent").is_null()), ("failed".into(), NOT_STARTED.to_string(), true));
+    assert_eq!((task(&id).t("stage"), row(&id).t("note"), task(&id).at("sent").is_null()), ("failed".into(), LATER_NOT_STARTED.to_string(), true));
+    assert_eq!(task(&id).at("failure").s("title"), "A later instruction was not delivered to the agent");
     assert!(task(&id).at("unsent").s("text").contains("REFUSED WHILE BUSY"));
     assert!(the_agent(&w, &id).s("box").contains("REFUSED WHILE BUSY"));
     w.patch(|s| s["deaf"] = json!(0));

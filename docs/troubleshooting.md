@@ -86,7 +86,8 @@ Codex 在代理第一个回合就拒绝了模型（`The 'sol-6.1' model is not s
 | `Waiting for a free slot`（`Q#2`） | `board.agents` 的名额全满 | 等待，或调高 `board.agents` |
 | `queued after HSW-12` | 在等其他任务完成（[一个接一个](after.md)） | 等待，或 `omh delegate <id> --now` |
 | `Has not started yet: pressing enter again` | 任务文本还在代理的输入框里 | 稍等：看板会再按一次回车 |
-| `Not started: its instructions sit unsent in its box` | 文本没发进去 | `Ctrl+L`（重试），或进代理里按回车（[交接](handing-over.md)） |
+| `Not started: its instructions sit unsent in its box` | 首次任务文本没发进去 | `Ctrl+L`（重试），或进代理里按回车（[交接](handing-over.md)） |
+| `Not delivered: a later instruction sits unsent in its box` | 原回合可能已完成，后来追加文本没发进去 | 确认是否要重跑追加指令；需要时按 `Ctrl+L`（[交接](handing-over.md)） |
 | `Finishing` 持续很久，代理已空闲 | 看板错过了回合（turn）结束 | `Ctrl+L`，或 `omh finish <id>` |
 | `Stopped without a summary` | 代理停了，看板无法判断它是否完成 | `Ctrl+R` 让它继续；`Ctrl+L` 按现状收下工作 |
 | `Agent's connection dropped, trying again in 2m` | 服务商切断了回合 | 不用管：看板自动重试（[被服务商切断的回合](provider-errors.md)） |

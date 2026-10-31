@@ -10,7 +10,8 @@
 |---|---|
 | `Starting`（或 `About to continue`） | 看板在等程序起来，或在确认文字已输入 |
 | `Has not started yet: pressing enter again` | 文字停在输入框里；看板再按一次回车 |
-| **Not started: its instructions sit unsent in its box** | 最后一次回车 40 秒后仍停在那里，或文字根本没到代理那里（3 分钟，见下） |
+| **Not started: its instructions sit unsent in its box** | 首次任务指令未发出：最后一次回车 40 秒后仍停在那里，或文字根本没到代理那里（3 分钟，见下） |
+| **Not delivered: a later instruction sits unsent in its box** | 原回合可能已经完成，但后来追加的指令未发出；重试会重新交付这条指令 |
 
 等待期间，行上从不显示 `working` 或 `finishing`。
 
