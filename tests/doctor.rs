@@ -4,7 +4,7 @@ use crate::common;
 use common::*;
 use serde_json::json;
 use std::path::{Path, PathBuf};
-use sw::doctor::{agents, disk, machines, plugin, program, problems, say, Found};
+use sw::doctor::{agents, deps, disk, machines, plugin, program, problems, say, Found};
 
 fn program_file(p: &Path) { std::fs::create_dir_all(p.parent().unwrap()).unwrap(); std::fs::write(p, "#!/bin/sh\n").unwrap(); use std::os::unix::fs::PermissionsExt; std::fs::set_permissions(p, std::fs::Permissions::from_mode(0o755)).unwrap(); }
 fn launcher_for(p: &Path) -> String { format!("#!/bin/sh\nexport OMH_DATA_DIR='/d'\nexec {} \"$@\"\n", sw::util::shq(&p.display().to_string())) }
@@ -188,4 +188,23 @@ fn a_disk_low_on_space_is_a_problem() {
     // This machine's own disks: the board's data is on one of them.
     let all = disk::ask();
     assert!(all.iter().any(|d| d.holds.iter().any(|h| h == "the board's data") && d.total > 0), "{all:?}");
+}
+
+#[test]
+fn a_repo_with_a_lockfile_and_no_set_up_says_so() {
+    let w = world();
+    // A lockfile at the root, then one only a folder down: both say the code needs an install step first.
+    std::fs::write(w.root.join("pnpm-lock.yaml"), "").unwrap();
+    assert!(deps::locked(&w.root));
+    std::fs::create_dir_all(w.root.join("frontend")).unwrap();
+    std::fs::write(w.root.join("frontend").join("yarn.lock"), "").unwrap();
+    std::fs::remove_file(w.root.join("pnpm-lock.yaml")).unwrap();
+    assert!(deps::locked(&w.root), "a lockfile one folder down counts");
+    let no_setup = ("mom".to_string(), String::new(), true);
+    let with_setup = ("mom".to_string(), "pnpm install --frozen-lockfile".to_string(), true);
+    let plain = ("docs".to_string(), String::new(), false);
+    assert_eq!(deps::check(&[with_setup.clone(), plain.clone()]), [Found::ok("Every repo that needs its dependencies installed has a workspace.setup")]);
+    let f = deps::check(&[no_setup, with_setup, plain]);
+    assert_eq!(f.len(), 1);
+    assert!(f[0].problem && f[0].what.starts_with("mom: its code holds a lockfile but workspace.setup is none") && f[0].fix.contains("workspace.setup"), "{:?}", f[0]);
 }

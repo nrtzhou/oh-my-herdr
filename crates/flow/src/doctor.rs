@@ -6,6 +6,7 @@
 //! slowest one; it exits 1 when there is a problem (docs/troubleshooting.md).
 pub mod agents;
 pub mod codex;
+pub mod deps;
 pub mod disk;
 pub mod machines;
 pub mod plan;
@@ -57,6 +58,7 @@ pub fn doctor_main() -> i32 {
         let mount = s.spawn(plan::ask);
         let far = s.spawn(machines::ask);
         let disks = s.spawn(disk::ask);
+        let deps = s.spawn(deps::ask);
         let left = s.spawn(|| stale::ask(&stale::cache_dir()));
         let waits = s.spawn(|| queue::ask(&crate::herdr::cli::current_socket(), now));
         let herdr = herdr.join().unwrap_or_default();
@@ -65,6 +67,7 @@ pub fn doctor_main() -> i32 {
         all.extend(plugin::check(&herdr));
         all.extend(agents::check(&progs.join().unwrap_or_default()));
         all.extend(codex::check());
+        all.extend(deps::check(&deps.join().unwrap_or_default()));
         all.extend(set.join().unwrap_or_default());
         if let Ok(m) = mount.join() { all.extend(plan::check(&m)); }
         all.extend(machines::check(far.join().unwrap_or_default().as_ref()));
