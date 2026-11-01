@@ -66,3 +66,35 @@ fn an_omp_conversations_prompts_are_its_own_words_in_order() {
     let got = prompts_of("omp", Some(&f)).unwrap();
     assert_eq!(got.iter().map(|(_, p)| p.as_str()).collect::<Vec<_>>(), ["Work board task proj/7, role: agent.", "Now f2."], "no tool result and no notice of the program's own among them");
 }
+
+#[test]
+fn an_omp_session_path_from_herdr_is_read_as_the_conversation_file() {
+    let _w = world_with(Opts::default());
+    let cwd = Path::new("/work/app");
+    let f = Path::new(&std::env::var("OMP_CODING_AGENT_DIR").unwrap()).join("sessions").join("one").join("2026_s.jsonl");
+    let at = sw::clock::now();
+    let words = "A later instruction that the agent did receive.";
+    std::fs::create_dir_all(f.parent().unwrap()).unwrap();
+    let lines = [
+        json!({ "type": "title", "v": 1, "title": "", "pad": "" }),
+        json!({ "type": "session", "version": 3, "id": "s", "cwd": cwd, "timestamp": sw::clock::iso(at) }),
+        json!({ "type": "message", "id": "u1", "timestamp": sw::clock::iso(at), "message": { "role": "user", "content": [{ "type": "text", "text": words }] } }),
+    ];
+    std::fs::write(&f, lines.iter().map(|l| format!("{l}\n")).collect::<String>()).unwrap();
+    assert_eq!(sw::agents::installed::said_to("omp", None, &f.display().to_string(), cwd, words, at), Some(true));
+}
+
+#[test]
+fn an_omp_session_path_is_not_passed_as_a_resume_id_on_restart() {
+    let _w = world_with(Opts::default());
+    let cwd = std::env::temp_dir().join(format!("omp-path-resume-{}", std::process::id()));
+    let f = Path::new(&std::env::var("OMP_CODING_AGENT_DIR").unwrap()).join("sessions").join("one").join("2026_s.jsonl");
+    std::fs::create_dir_all(&cwd).unwrap();
+    std::fs::create_dir_all(f.parent().unwrap()).unwrap();
+    std::fs::write(&f, "{}\n").unwrap();
+    let task = sw::json::obj(json!({ "id": "proj/1", "repo": "proj", "n": 1, "title": "Resume", "description": "", "root": cwd, "worktree": cwd, "agent": "omp", "session": f }));
+    assert!(!sw::delegate::resumable(&task));
+    let (resume, _) = sw::delegate::launch::again_prompt(&task, &[]);
+    assert!(resume.is_none(), "a file path must not become --resume: {resume:?}");
+    std::fs::remove_dir_all(cwd).unwrap();
+}

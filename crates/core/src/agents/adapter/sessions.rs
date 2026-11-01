@@ -9,6 +9,8 @@ fn real(p: &Path) -> PathBuf { fs::canonicalize(p).unwrap_or_else(|_| p.to_path_
 fn dashed(p: &Path) -> String { p.display().to_string().chars().map(|c| if c.is_ascii_alphanumeric() { c } else { '-' }).collect() }
 /// Where a conversation is saved.
 pub fn transcript(kind: &str, session: &str, cwd: &Path) -> Option<PathBuf> {
+    // herdr integrations may report the saved conversation's path instead of its id.
+    if Path::new(session).is_file() { return Some(PathBuf::from(session)); }
     match kind {
         "claude" => {
             let direct = claude_home().join("projects").join(dashed(&real(cwd))).join(format!("{session}.jsonl"));
@@ -23,6 +25,13 @@ pub fn transcript(kind: &str, session: &str, cwd: &Path) -> Option<PathBuf> {
         "omp" => { let (want, was) = (format!("_{session}.jsonl"), crate::store::move_home::moved_from(cwd)); omp_files(&[Some(cwd), was.as_deref()].into_iter().flatten().collect::<Vec<_>>(), &|n| n.ends_with(&want)).into_iter().next() }
         _ => None,
     }
+}
+
+/// A saved file path is readable, but never an agent's resume id.
+pub fn resume_id(session: &str) -> Option<String> {
+    let p = Path::new(session);
+    if session.is_empty() || p.is_absolute() || p.components().count() > 1 || p.extension().is_some_and(|e| e == "jsonl") { return None; }
+    Some(session.to_string())
 }
 /// pi keeps each working folder's conversations in a folder of their own, named after its path (`--home-me-app--`).
 fn pi_folder(cwd: &Path) -> PathBuf { let p = cwd.display().to_string(); pi_home().join("sessions").join(format!("--{}--", p.strip_prefix(['/', '\\']).unwrap_or(&p).replace(['/', '\\', ':'], "-"))) }

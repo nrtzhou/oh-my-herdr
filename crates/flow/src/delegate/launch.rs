@@ -44,6 +44,8 @@ pub fn launch_extras(t: &Task, role: &str, kind: &str, round: i64, standing: &st
 /// Used by a first delegation and by restarting an exited agent. The pane must be at its shell prompt.
 pub fn start_agent(id: &str, g: &mut Guard, prompt: &str, resume: Option<&str>) -> Res<&'static str> {
     let t = get(id).ok_or("the task is gone")?;
+    // A Herdr session path is readable, but never valid for an agent's --resume argument.
+    let resume = resume.filter(|id| adapter::resume_id(id).is_some());
     let api = flow::task::h(&t);
     let kind = t.t("agent");
     // The worker's settings, read now, as it starts. A planner of its own runs on its own program and model.
@@ -121,15 +123,17 @@ pub fn agent_now(g: &mut Guard, t: Task) -> Res<Task> {
 /// It resumes the conversation whose id the board chose (or learned) at launch, when the program still has it. A
 /// program whose files the board does not read is taken at its word: the id herdr's integration reported, or the one
 /// the board gave it, which it saved once it was prompted.
-pub fn resumable(t: &Task) -> bool {
+fn resume_of(t: &Task) -> Option<String> {
     let k = t.s("agent");
-    if !t.b("session") || adapter::resume_args(k, "x").is_empty() { return false; }
-    if !crate::agents::kinds::kind(k).map(|a| a.reads_turn).unwrap_or(false) { return t.b("sent") || t.b("said"); }
-    adapter::transcript(k, t.s("session"), &cwd_of(t)).is_some()
+    let session = adapter::resume_id(t.s("session"))?;
+    if adapter::resume_args(k, "x").is_empty() { return None; }
+    if !crate::agents::kinds::kind(k).map(|a| a.reads_turn).unwrap_or(false) { return (t.b("sent") || t.b("said")).then_some(session); }
+    adapter::transcript(k, &session, &cwd_of(t)).is_some().then_some(session)
 }
+pub fn resumable(t: &Task) -> bool { resume_of(t).is_some() }
 /// The prompt for an agent that is started again on a task it worked on before: (resume, prompt).
 pub fn again_prompt(t: &Task, waiting: &[String]) -> (Option<String>, String) {
-    if resumable(t) { return (Some(t.t("session")), flow::send::with_tail(t, &if waiting.is_empty() { "Continue where you left off.".into() } else { waiting.join("\n\n") })); }
+    if let Some(session) = resume_of(t) { return (Some(session), flow::send::with_tail(t, &if waiting.is_empty() { "Continue where you left off.".into() } else { waiting.join("\n\n") })); }
     let said = if t.b("said") { format!("Your last message was:\n{}", t.s("said")) } else { String::new() };
     (None, [first_prompt(t), said, "You were working on this before and your session ended. Continue from the state of this branch.".into(), waiting.join("\n\n")].into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join("\n\n"))
 }
@@ -139,6 +143,6 @@ pub fn unsent_prompt(t: &Task, waiting: &[String]) -> (Option<String>, String) {
     let mut all = vec![u.t("text")];
     all.extend(waiting.iter().cloned());
     if u.b("first") { return (None, all.join("\n\n")); }
-    if resumable(t) { (Some(t.t("session")), all.join("\n\n")) } else { again_prompt(t, &all) }
+    if let Some(session) = resume_of(t) { (Some(session), all.join("\n\n")) } else { again_prompt(t, &all) }
 }
 pub fn exists(p: &str) -> bool { !p.is_empty() && Path::new(p).exists() }
