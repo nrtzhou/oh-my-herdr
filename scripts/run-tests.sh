@@ -32,6 +32,10 @@ bins=$(grep '"profile":{[^}]*"test":true' "$tmp/built" | sed -n 's/.*"executable
 # The tests never reach your real board: a test that makes no world of its own keeps its board in this run's scratch
 # folder too, and the store refuses the real ~/.omh under them, loudly (crates/core/src/store/never_real.rs).
 OMH_TESTING=1; OMH_HOME="$tmp/board"; export OMH_TESTING OMH_HOME
+# A world's test sets HOME to its own folder process-wide: the compiler of a test running beside it must keep using the
+# real toolchain. Left to HOME, rustup's proxy would take the scratch folder for its own and install a toolchain into
+# it, an install the folder's removal races.
+RUSTUP_HOME="${RUSTUP_HOME:-$HOME/.rustup}"; export RUSTUP_HOME
 unset OMH_DATA_DIR OMH_CONFIG_DIR OMH_REPORTS_DIR
 sc_share
 procs="${OMH_TEST_PROCS:-$((sc_threads * 2))}"

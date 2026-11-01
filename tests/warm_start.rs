@@ -1,7 +1,9 @@
 //! [real programs] A new worktree's warm start (`scripts/warm-start.sh`): the build a worktree of the main line keeps,
 //! a later worktree copies, with only what changed since built again; what was built with the other folder's path in
-//! it built again too; nothing kept off the main line, from a changed folder or older than what is kept. The builds
+//! it built again too; nothing kept off the main line, from a changed folder or older than what is kept, and nothing
+//! kept or taken on a compiler that cannot say its version. The builds
 //! are stand-ins (files laid out as cargo lays them out): the script is what is tested, not cargo.
+use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{Duration, SystemTime};
@@ -51,12 +53,19 @@ impl Bench {
         self.write(wt, "target/quick/.fingerprint/serde-2b/lib-serde", "2");
     }
     /// The workspace setup's two steps around its build: `ws_seed`, the build (the stand-in, when `build`), `ws_keep`.
-    fn setup(&self, wt: &str, build: bool) -> String {
+    fn setup(&self, wt: &str, build: bool) -> String { self.setup_with(wt, build, None) }
+    /// The same, with a folder of your own at the front of the PATH: a `rustc` of your own (one that fails).
+    fn setup_with(&self, wt: &str, build: bool, bin: Option<&Path>) -> String {
         let script = Path::new(env!("CARGO_MANIFEST_DIR")).join("scripts/warm-start.sh");
         let built = if build { format!("mkdir -p target/quick && echo 'built in {wt}' > target/quick/omh") } else { ":".into() };
-        let o = Command::new("/bin/sh").arg("-c").arg(format!("set -e; . '{}'; ws_seed; {built}; ws_keep", script.display()))
+        let mut c = Command::new("/bin/sh");
+        c.arg("-c").arg(format!("set -e; . '{}'; ws_seed; {built}; ws_keep", script.display()))
             .current_dir(self.dir(wt)).env("XDG_CACHE_HOME", self.base.join("cache")).env_remove("OMH_NO_WARM")
-            .env_remove("CARGO_TARGET_DIR").env("GIT_CONFIG_GLOBAL", "/dev/null").env("GIT_CONFIG_NOSYSTEM", "1").output().unwrap();
+            .env_remove("CARGO_TARGET_DIR").env("GIT_CONFIG_GLOBAL", "/dev/null").env("GIT_CONFIG_NOSYSTEM", "1");
+        if let Some(bin) = bin {
+            c.env("PATH", format!("{}:{}", bin.display(), std::env::var("PATH").unwrap_or_default()));
+        }
+        let o = c.output().unwrap();
         assert!(o.status.success(), "the setup's steps failed: {}", String::from_utf8_lossy(&o.stderr));
         String::from_utf8_lossy(&o.stdout).into_owned()
     }
@@ -148,4 +157,23 @@ fn real_programs_no_build_is_kept_off_the_main_line_from_a_changed_folder_or_old
     assert!(b.changed("dirty", "src/a.rs") > long_ago(), "a file changed in the folder is built again");
     assert!(b.changed("dirty", "src/b.rs") < long_ago());
     assert_eq!(b.kept(), Some(second));
+}
+
+#[test]
+fn real_programs_a_compiler_that_cannot_say_its_version_takes_no_warm_start_and_keeps_nothing() {
+    let b = Bench::new("broken");
+    let first = b.git("repo", &["rev-parse", "HEAD"]);
+    b.worktree("one", "main");
+    b.setup("one", true);
+    assert_eq!(b.kept(), Some(first.clone()));
+    // a rustc that fails (its word is what the kept build is stamped with)
+    let bin = b.base.join("broken-bin");
+    std::fs::create_dir_all(&bin).unwrap();
+    std::fs::write(bin.join("rustc"), "#!/bin/sh\nexit 1\n").unwrap();
+    std::fs::set_permissions(bin.join("rustc"), std::fs::Permissions::from_mode(0o755)).unwrap();
+    b.write("repo", "src/b.rs", "b2");
+    b.commit("repo", "b changes");
+    b.worktree("two", "main");
+    assert_eq!(b.setup_with("two", true, Some(&bin)), "", "a compiler that cannot be read takes no warm start");
+    assert_eq!(b.kept(), Some(first), "a compiler that cannot be read keeps nothing");
 }

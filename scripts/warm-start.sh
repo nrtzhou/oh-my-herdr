@@ -15,7 +15,7 @@ ws_dir() {
   ws_git=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || return 1
   ws_root="${XDG_CACHE_HOME:-$HOME/.cache}/omh/warm/$(printf '%s' "$ws_git" | cksum | cut -d' ' -f1)"
 }
-ws_rustc() { rustc -vV 2>/dev/null | tr -d '\r'; }
+ws_rustc() { ws_v=$(rustc -vV 2>/dev/null) || return 1; printf '%s\n' "$ws_v" | tr -d '\r'; }
 # A copy of a folder that keeps every file's time: a clone where it can be, else a plain copy.
 ws_copy() {
   cp -pR --reflink=auto "$1" "$2" 2>/dev/null && return 0; rm -rf "$2"

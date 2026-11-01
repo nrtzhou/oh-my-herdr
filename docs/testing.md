@@ -168,7 +168,8 @@ Cargo 同一时间只让一个构建用某个文件夹的 `target/`：第二个�
 `scripts/warm-start.sh` 拷入主线最近留存的构建（`target/quick`），只重建此后改动的部分。
 
 - **留哪个构建：** 构建后，如果一个工作树的提交在主线上、比留存的构建新，且构建前和构建中都没有改动，
-  就把自己这次构建留作下一个的起点。
+  就把自己这次构建留作下一个的起点。读不到编译器的版本（`rustc -vV` 失败）就什么也不留、也不取别人的：
+  它的话是留存构建的印记，宁可全无。
 - **实测** 在 16 核机器上同时十个代理（每个构建两核）：新工作树的 setup 以前要 37 秒，现在略超 1 秒。
   主线前进后的第一个工作树凭编译器的笔记重新构建程序，约 15 秒，并把这次构建留给之后的。
 - **在哪：** `~/.cache/omh/warm/<repo>/`，一个仓库一个文件夹，`current` 指向最新的。新的先建在旧的旁边
@@ -285,7 +286,9 @@ world 会设置进程的环境，所以造 world 的测试要排队，在所有�
 **测试绝不读写你的真实看板。** `world()` 给它自己的 home 文件夹（`HOME`、`OMH_HOME`），把 Herdr 自己的
 变量（面板的 id、它的 socket）、`TMUX`、`NO_COLOR` 从环境里拿掉，并把 Herdr 指向它自己的 socket。不造
 world 的测试也有临时看板：`scripts/run-tests.sh` 把 `OMH_HOME` 设为本次运行自己的文件夹，并拿掉
-`OMH_DATA_DIR`、`OMH_CONFIG_DIR`、`OMH_REPORTS_DIR`。它还设 `OMH_TESTING`：在其下，store 拒绝真实的
+`OMH_DATA_DIR`、`OMH_CONFIG_DIR`、`OMH_REPORTS_DIR`，还把 `RUSTUP_HOME` 钉在真实的工具链上：world 改掉
+`HOME` 之后，并行的测试若在那一刻运行 `rustc`，rustup 的代理会把 world 的临时文件夹当自己的家、往里下载
+一套工具链，被 world 的删除追上、半途而废。它还设 `OMH_TESTING`：在其下，store 拒绝真实的
 `~/.omh`（从系统用户列表查到，不管 `HOME` 怎么说；经链接也一样），并在任何读写发生前就停住测试，给出
 该怎么做（`crates/core/src/store/never_real.rs`）的提示。
 
