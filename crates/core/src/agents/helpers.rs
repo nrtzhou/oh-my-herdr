@@ -95,6 +95,12 @@ fn omp_running(file: &Path, since: i64) -> usize {
         .filter(|f| read_turn("omp", f, TAIL).map(|t| t.pending).unwrap_or(false))
         .count()
 }
+/// The parent an omp conversation names in its session line ("" for a top-level conversation): a conversation that
+/// names one is a task sub-agent's, whose turns are no turns of the task's.
+pub fn omp_parent(file: &Path) -> String {
+    let head = head_of(file, 8192);
+    head.lines().nth(1).and_then(|l| serde_json::from_str::<Value>(l).ok()).map(|m| m.s("parentSession").to_string()).unwrap_or_default()
+}
 /// The parent a sub-agent's conversation names: one path in two spellings (as given, and made absolute the same way).
 fn names_parent(said: &str, file: &Path) -> bool {
     if said.is_empty() { return false; }

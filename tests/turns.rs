@@ -9,6 +9,8 @@ use sw::store::tasks::{update, Change};
 
 /// A turn's end that is not a turn (Claude Code compacting an idle session), and the words of one with no summary.
 mod ended_late;
+/// A turn end that is not the agent's own: a task sub-agent's, or any end while its own turn is still open.
+mod not_its_own;
 
 fn put(id: &str, f: impl FnOnce(&mut Obj)) { update(id, |t| { f(t); Ok(Change::Write) }).unwrap(); }
 fn with(t: &Obj, extra: Value) -> Obj { let mut o = t.clone(); for (k, v) in extra.as_object().cloned().unwrap_or_default() { o.insert(k, v); } o }

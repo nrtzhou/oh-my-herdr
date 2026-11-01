@@ -54,6 +54,15 @@ fn human_turn(t: &mut Task) {
 }
 /// Has this task's agent begun on anything since its program was started?
 fn begun(t: &Task) -> bool { t.at("handled").b("at") || t.s("turnBy") == "typed" || t.i("workedAt") >= t.i("startedAgentAt").max(1) }
+/// The task's own conversation still has an open turn: its work goes on, whatever end reached the board (MOM-18: a
+/// sub-agent's end was taken for the agent's while the agent's own turn was open). A conversation that cannot be read
+/// says nothing: only an open turn of its own holds the finish back.
+fn own_open(k: &str, t: &Task) -> bool {
+    let cwd = cwd_of(t);
+    let own = installed::read_turn_of(k, None, &t.t("session"), &cwd, false)
+        .or_else(|| installed::read_turn_of(k, t.so("transcript").map(Path::new), "", &cwd, false));
+    own.map(|x| x.pending).unwrap_or(false)
+}
 fn sleep(ms: i64) { std::thread::sleep(std::time::Duration::from_millis(ms.max(0) as u64)); }
 fn finish_once(id: &str, force: bool) -> bool {
     let Some(t) = get(id) else { return false };
@@ -114,9 +123,11 @@ fn finish_steps(id: &str, g: &mut Guard, mut t: Task, ev: Option<Value>, force: 
         }
         if reads { let _ = count_mark(&format!("reader:{k}"), &ver, turn.is_some()); }
         let _ = count_mark(&format!("hook:{k}"), &ver, true);
-        if let Some(x) = &turn { if !(newer(Some(x), &t) && ((x.finished && x.id != t.at("handled").s("msg")) || !x.error.is_empty())) { return Ok(()); } } // a repeat, or an earlier turn
+        if let Some(x) = &turn { if !(newer(Some(x), &t) && ((x.finished && x.id != t.at("handled").s("msg")) || !x.error.is_empty())) { crate::hook::log(&format!("{id}: a turn that is a repeat or not finished went unjudged")); return Ok(()); } } // a repeat, or an earlier turn
+        // Its own conversation is still in a turn: whatever ended here is not the end of its work.
+        if own_open(&k, &t) { crate::hook::log(&format!("{id}: its own conversation is still in a turn: no finish")); return Ok(()); }
         // Helpers it started are still at work (agents/helpers.rs): their answers start it again, and that turn's end counts.
-        if let Some(x) = turn.as_ref().filter(|x| x.finished && x.error.is_empty()) { if still_at_work(&k, Some(x), t.i("startedAgentAt")) { return Ok(()); } }
+        if let Some(x) = turn.as_ref().filter(|x| x.finished && x.error.is_empty()) { if still_at_work(&k, Some(x), t.i("startedAgentAt")) { crate::hook::log(&format!("{id}: a helper is still at work: no finish")); return Ok(()); } }
         // It said that it waits for the human, then stopped: that is not a finish.
         if waits(&t, turn.as_ref()) { stay(id, &t, turn.as_ref(), seen(), e.s("session")); return Ok(()); }
         // A turn that ended in a stage other than "working" was the human's, typed in the agent's own terminal.

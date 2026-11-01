@@ -48,6 +48,12 @@ pub fn turn_ended(id: &str, role: &str, token: &str, round: i64, extra: &[String
     // The omp bridge's other reports, each no turn of its own: a task call's own result (its name and what it said),
     // an automatic compaction, an automatic retry. One line each for the chat, kept until this turn ends.
     if j.at("task_result").is_object() || j.b("compaction") || j.b("retry_start") { return noted(&t, &j); }
+    // The omp bridge's `agent_end` runs in a task sub-agent's session too, reporting the sub-agent's own conversation
+    // (its session line names the parent that started it, agents/helpers.rs). A helper's turns are no turns of the
+    // task's: no event of its own (MOM-18: a scout's end finished the task while its agent was still at work).
+    if !helpers::omp_parent(Path::new(&j.t("transcript_path"))).is_empty() {
+        return log(&format!("a sub-agent's turn end went unnoted for {id}: no turn of the task's"));
+    }
     // Codex also reports turns of side conversations: a real first prompt starts with the task line, so `side` marks
     // every other report for the runner to judge. And the turns of the agent's own helpers (agents/helpers.rs), which
     // carry its first prompt along: their conversation names the thread that started them.
